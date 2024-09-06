@@ -9,7 +9,6 @@ import {
   Smile,
   User,
 } from 'lucide-react';
-import { useUser } from '@clerk/clerk-react';
 
 import {
   CommandDialog,
@@ -24,7 +23,6 @@ import {
 import { useSearch } from '@/hooks/use-search';
 
 export default function SearchCommand() {
-  const { user } = useUser();
   const [isMounted, setIsMounted] = useState(false);
 
   const toggle = useSearch((store) => store.toggle);
@@ -56,7 +54,7 @@ export default function SearchCommand() {
 
   return (
     <CommandDialog open={isOpen} onOpenChange={onClose}>
-      <CommandInput placeholder={`Search ${user?.firstName}'s Workspace`} />
+      <CommandInput placeholder={`Search...`} />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading='Suggestions'>

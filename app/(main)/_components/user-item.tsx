@@ -11,9 +11,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ChevronsLeftRightIcon } from 'lucide-react';
+import Spinner from '@/components/spinner';
 
 export default function UserItem() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -21,14 +22,19 @@ export default function UserItem() {
           role='button'
           className='flex items-center rounded-md p-2 text-sm hover:bg-accent'
         >
-          <div className='flex items-center gap-x-3'>
-            <Avatar className='h-7 w-7'>
-              <AvatarImage src={user?.imageUrl} />
-            </Avatar>
-            <span className='line-clamp-1 text-start font-medium'>
-              {user?.firstName}
-            </span>
-          </div>
+          {isLoaded ? (
+            <div className='flex items-center gap-x-3'>
+              <Avatar className='h-7 w-7'>
+                <AvatarImage src={user?.imageUrl} />
+              </Avatar>
+              <span className='line-clamp-1 text-start font-medium'>
+                {user?.firstName}
+              </span>
+            </div>
+          ) : (
+            <Spinner size='lg' />
+          )}
+
           <ChevronsLeftRightIcon className='ml-2 h-4 w-4 rotate-90 text-muted-foreground' />
         </div>
       </DropdownMenuTrigger>
