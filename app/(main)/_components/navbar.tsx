@@ -1,3 +1,4 @@
+import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
@@ -11,11 +12,16 @@ import { useSearch } from '@/hooks/use-search';
 import { cn } from '@/lib/utils';
 import { ChevronLeft } from 'lucide-react';
 import Image from 'next/image';
-import React, { ElementRef, useEffect, useRef, useState } from 'react';
+import React, {
+  ElementRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useMediaQuery } from 'usehooks-ts';
 import NavItem from './nav-item';
 import UserItem from './user-item';
-import { ModeToggle } from '@/components/mode-toggle';
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -63,15 +69,7 @@ export default function Navbar() {
   const [isResetting, setIsResetting] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    if (isMobile) {
-      handleCollapse();
-    } else {
-      handleResetWidth();
-    }
-  }, [isMobile]);
-
-  const handleResetWidth = () => {
+  const handleResetWidth = useCallback(() => {
     if (sidebarRef.current && isMobile) {
       setIsResetting(true);
       setIsSidebarOpen(true);
@@ -79,7 +77,15 @@ export default function Navbar() {
 
       setTimeout(() => setIsResetting(false), 300);
     }
-  };
+  }, [sidebarRef, isMobile]);
+
+  useEffect(() => {
+    if (isMobile) {
+      handleCollapse();
+    } else {
+      handleResetWidth();
+    }
+  }, [isMobile, handleResetWidth]);
 
   const handleCollapse = () => {
     if (sidebarRef.current) {
@@ -106,7 +112,7 @@ export default function Navbar() {
           onClick={handleCollapse}
           role='button'
           className={cn(
-            'absolute right-2 top-3 h-6 w-6 rounded-sm text-muted-foreground opacity-0 transition hover:bg-neutral-300 group-hover/sidebar:opacity-100 dark:hover:bg-neutral-600',
+            'absolute right-2 top-5 h-6 w-6 rounded-sm text-muted-foreground opacity-0 transition hover:bg-neutral-300 group-hover/sidebar:opacity-100 dark:hover:bg-neutral-600',
             isMobile && 'opacity-100'
           )}
         >
@@ -117,6 +123,7 @@ export default function Navbar() {
         </div>
       </aside>
       <div
+        onClick={handleCollapse}
         className={cn(
           'absolute z-[99998] hidden h-full w-full bg-black/50 blur-sm',
           isSidebarOpen && 'block'
