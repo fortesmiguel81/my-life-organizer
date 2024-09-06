@@ -147,46 +147,37 @@ export default function Navbar() {
               <NavigationMenu className='ml-16'>
                 <NavigationMenuList>
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger>
-                      Getting started
-                    </NavigationMenuTrigger>
+                    <NavigationMenuTrigger>Finance</NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className='grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]'>
-                        <li className='row-span-3'>
+                        <li className='row-span-2'>
                           <NavigationMenuLink asChild>
-                            <a
-                              className='flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md'
-                              href='/'
-                            >
+                            <div className='flex h-full w-full cursor-default select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md'>
                               <Image
-                                src='/logo.svg'
-                                alt='Login'
+                                src='/finance.svg'
+                                alt='Finance'
                                 width={50}
                                 height={50}
                               />
                               <div className='mb-2 mt-4 text-lg font-medium'>
-                                shadcn/ui
+                                Finance Management
                               </div>
                               <p className='text-sm leading-tight text-muted-foreground'>
-                                Beautifully designed components that you can
-                                copy and paste into your apps. Accessible.
-                                Customizable. Open Source.
+                                Manage your finance, track your expenses and
+                                income.
                               </p>
-                            </a>
+                            </div>
                           </NavigationMenuLink>
                         </li>
-                        <NavItem href='/docs' title='Introduction'>
-                          Re-usable components built using Radix UI and Tailwind
-                          CSS.
-                        </NavItem>
-                        <NavItem href='/docs/installation' title='Installation'>
-                          How to install dependencies and structure your app.
-                        </NavItem>
                         <NavItem
-                          href='/docs/primitives/typography'
-                          title='Typography'
+                          href='/finance/transactions'
+                          title='Transactions'
                         >
-                          Styles for headings, paragraphs, lists...etc
+                          Manage your transactions, track your expenses and
+                          income.
+                        </NavItem>
+                        <NavItem href='/finance/budgets' title='Budgets'>
+                          Manage your budgets
                         </NavItem>
                       </ul>
                     </NavigationMenuContent>
