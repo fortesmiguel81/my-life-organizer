@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { TransactionTablePagination } from './transactions-table-pagination';
+import { DataTablePagination } from './data-table-pagination';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -115,7 +115,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <TransactionTablePagination table={table} />
+      <DataTablePagination table={table} />
     </div>
   );
 }

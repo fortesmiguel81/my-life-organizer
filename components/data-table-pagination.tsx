@@ -20,7 +20,7 @@ interface TransactionsTablePaginationProps<TData> {
   table: Table<TData>;
 }
 
-export function TransactionTablePagination<TData>({
+export function DataTablePagination<TData>({
   table,
 }: TransactionsTablePaginationProps<TData>) {
   const isMobile = useMediaQuery('(max-width: 768px)');

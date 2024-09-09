@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Payment, columns } from './_components/columns';
-import { DataTable } from './_components/transactions-table';
+import { Payment, transactionsColumns } from './_components/columns';
+import { DataTable } from '../../../../components/data-table';
 
 async function getData(): Promise<Payment[]> {
   const categories = [
@@ -68,7 +68,7 @@ export default async function TransactionsPage() {
 
   return (
     <div className='w-full'>
-      <DataTable columns={columns} data={data} />
+      <DataTable columns={transactionsColumns} data={data} />
     </div>
   );
 }

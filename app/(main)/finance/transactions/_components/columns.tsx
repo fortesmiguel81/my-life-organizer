@@ -18,7 +18,7 @@ export type Payment = {
   longDescription: string;
 };
 
-export const columns: ColumnDef<Payment>[] = [
+export const transactionsColumns: ColumnDef<Payment>[] = [
   {
     accessorKey: 'date',
     header: ({ column }) => {
