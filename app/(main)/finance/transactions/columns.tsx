@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
+import { Category } from '../types/category';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -18,7 +19,7 @@ export type Payment = {
   longDescription: string;
 };
 
-export const transactionsColumns: ColumnDef<Payment>[] = [
+export const transactionsColumnsDefinition: ColumnDef<Payment>[] = [
   {
     accessorKey: 'date',
     header: ({ column }) => {
@@ -52,16 +53,23 @@ export const transactionsColumns: ColumnDef<Payment>[] = [
         </Button>
       );
     },
-    filterFn: 'arrIncludesAll',
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterCategories) => {
+      if (filterCategories.length === 0) return true;
+      const category = row.getValue(columnId);
+      return filterCategories.some((c: Category) => c.value === category);
+    },
   },
   {
     accessorKey: 'shortDescription',
     header: 'Description',
+    enableGlobalFilter: true,
     filterFn: 'includesString',
   },
   {
     accessorKey: 'payee',
     header: 'Payee',
+    enableGlobalFilter: true,
     filterFn: 'includesString',
   },
   {
@@ -97,6 +105,7 @@ export const transactionsColumns: ColumnDef<Payment>[] = [
   {
     accessorKey: 'account',
     header: 'Account',
+    enableGlobalFilter: true,
     filterFn: 'includesString',
   },
 ];

@@ -1,7 +1,7 @@
 import PageTitle from '@/components/page-title';
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionsDataTable } from './_components/transactions-data-table';
-import { Payment, transactionsColumns } from './columns';
+import { Payment, transactionsColumnsDefinition } from './columns';
 
 async function getData(): Promise<Payment[]> {
   const categories = [
@@ -73,7 +73,10 @@ export default async function TransactionsPage() {
         title='Transactions'
         subTitle='Manage your transactions history'
       />
-      <TransactionsDataTable columns={transactionsColumns} data={data} />
+      <TransactionsDataTable
+        columns={transactionsColumnsDefinition}
+        data={data}
+      />
     </div>
   );
 }

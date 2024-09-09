@@ -140,6 +140,11 @@ export function CategoryDropdownFilter({
                     <div className='flex h-6 items-center space-x-2'>
                       <Checkbox
                         id={category.value}
+                        checked={
+                          selectedCategories.find(
+                            (c) => c.value === category.value
+                          ) !== undefined
+                        }
                         onCheckedChange={() => {
                           setSelectedCategories((prevSelectedCategories) => {
                             const isAlreadySelected =

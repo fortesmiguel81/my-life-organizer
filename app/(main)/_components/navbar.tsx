@@ -32,7 +32,9 @@ export default function Navbar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleResetWidth = useCallback(() => {
+    console.log('resetting');
     if (sidebarRef.current && isMobile) {
+      console.log('resetting');
       setIsResetting(true);
       setIsSidebarOpen(true);
       sidebarRef.current.style.width = '260px';
