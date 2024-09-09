@@ -52,7 +52,7 @@ export const transactionsColumns: ColumnDef<Payment>[] = [
         </Button>
       );
     },
-    filterFn: 'includesString',
+    filterFn: 'arrIncludesAll',
   },
   {
     accessorKey: 'shortDescription',

@@ -1,6 +1,7 @@
+import PageTitle from '@/components/page-title';
 import { v4 as uuidv4 } from 'uuid';
-import { Payment, transactionsColumns } from './_components/columns';
-import { DataTable } from '../../../../components/data-table';
+import { TransactionsDataTable } from './_components/transactions-data-table';
+import { Payment, transactionsColumns } from './columns';
 
 async function getData(): Promise<Payment[]> {
   const categories = [
@@ -67,8 +68,12 @@ export default async function TransactionsPage() {
   const data = await getData();
 
   return (
-    <div className='w-full'>
-      <DataTable columns={transactionsColumns} data={data} />
+    <div className='flex w-full flex-col pt-6'>
+      <PageTitle
+        title='Transactions'
+        subTitle='Manage your transactions history'
+      />
+      <TransactionsDataTable columns={transactionsColumns} data={data} />
     </div>
   );
 }
