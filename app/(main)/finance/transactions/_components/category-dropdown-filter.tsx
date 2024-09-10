@@ -135,7 +135,7 @@ export function CategoryDropdownFilter({
           <Button
             variant='outline'
             size='sm'
-            className='flex h-10 items-center justify-start border-dashed leading-none'
+            className='flex h-9 items-center justify-start border-dashed leading-none'
           >
             <div className='flex items-center text-sm leading-none'>
               <PlusCircle className='mr-2 h-4 w-4 shrink-0' />

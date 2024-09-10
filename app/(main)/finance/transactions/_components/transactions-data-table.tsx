@@ -26,7 +26,7 @@ import { useEffect, useState } from 'react';
 import { CategoryDropdownFilter } from './category-dropdown-filter';
 import { Category } from '../../types/category';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { File, PlusCircle, X } from 'lucide-react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -69,34 +69,60 @@ export function TransactionsDataTable<TData, TValue>({
     table.getColumn('category')?.setFilterValue(selectedCategories);
   }, [selectedCategories, table]);
 
+  const handleExportTransactions = () => {
+    // TODO: Implement export transactions
+    alert('Exporting transactions...');
+  };
+
+  const handleAddNewTransaction = () => {
+    // TODO: implement add new transaction
+    alert('Exporting transactions...');
+  };
+
   return (
     <div className='flex flex-col'>
-      <div className='flex flex-1 items-center space-x-2 py-4'>
-        <Input
-          placeholder='Filter transactions...'
-          value={globalFilter}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-          className='h-10 max-w-sm'
-        />
-        <CategoryDropdownFilter
-          selectedCategories={selectedCategories}
-          setSelectedCategories={setSelectedCategories}
-        />
-        {(globalFilter || selectedCategories.length > 0) && (
+      <div className='mt-3 flex h-9 justify-between'>
+        <div className='flex flex-1 items-center space-x-2'>
+          <Input
+            placeholder='Filter transactions...'
+            value={globalFilter}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className='h-9 max-w-sm'
+          />
+          <CategoryDropdownFilter
+            selectedCategories={selectedCategories}
+            setSelectedCategories={setSelectedCategories}
+          />
+          {(globalFilter || selectedCategories.length > 0) && (
+            <Button
+              variant='ghost'
+              className='font-md h-9 px-3 py-0'
+              onClick={() => {
+                setGlobalFilter('');
+                setSelectedCategories([]);
+              }}
+            >
+              Reset
+              <X className='ml-2 h-4 w-4' />
+            </Button>
+          )}
+        </div>
+        <div className='flex items-center space-x-2'>
           <Button
-            variant='ghost'
-            className='font-md'
-            onClick={() => {
-              setGlobalFilter('');
-              setSelectedCategories([]);
-            }}
+            variant='outline'
+            className='font-md h-9'
+            onClick={handleExportTransactions}
           >
-            Reset
-            <X className='ml-2 h-4 w-4' />
+            <File className='mr-2 h-4 w-4' />
+            <span>Export</span>
           </Button>
-        )}
+          <Button className='font-md h-9' onClick={handleAddNewTransaction}>
+            <PlusCircle className='mr-2 h-4 w-4' />
+            <span>Add Transaction</span>
+          </Button>
+        </div>
       </div>
-      <div className='rounded-md border'>
+      <div className='mt-3 rounded-md border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

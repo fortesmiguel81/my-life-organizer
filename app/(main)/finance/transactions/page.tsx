@@ -69,7 +69,7 @@ export default async function TransactionsPage() {
   const data = await getData();
 
   return (
-    <div className='flex w-full flex-col pt-6'>
+    <div className='flex w-full flex-col gap-4 pt-6'>
       <PageTitle
         title='Transactions'
         subTitle='Manage your transactions history'
