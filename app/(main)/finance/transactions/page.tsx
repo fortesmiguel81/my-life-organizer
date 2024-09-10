@@ -13,6 +13,7 @@ async function getData(): Promise<Payment[]> {
     'Shopping',
     'Education',
     'Clothing',
+    'Pets',
   ];
   const payees = [
     'Demo Company',

@@ -25,6 +25,8 @@ import {
 import { useEffect, useState } from 'react';
 import { CategoryDropdownFilter } from './category-dropdown-filter';
 import { Category } from '../../types/category';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -80,6 +82,19 @@ export function TransactionsDataTable<TData, TValue>({
           selectedCategories={selectedCategories}
           setSelectedCategories={setSelectedCategories}
         />
+        {(globalFilter || selectedCategories.length > 0) && (
+          <Button
+            variant='ghost'
+            className='font-md'
+            onClick={() => {
+              setGlobalFilter('');
+              setSelectedCategories([]);
+            }}
+          >
+            Reset
+            <X className='ml-2 h-4 w-4' />
+          </Button>
+        )}
       </div>
       <div className='rounded-md border'>
         <Table>

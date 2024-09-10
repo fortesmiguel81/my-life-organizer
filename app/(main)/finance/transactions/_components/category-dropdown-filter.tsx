@@ -1,15 +1,22 @@
 'use client';
 
 import {
-  BookA,
   Car,
-  Hospital,
-  HousePlug,
+  Drama,
+  Gift,
+  GraduationCap,
+  HandCoins,
+  HandHeart,
+  HeartPulse,
+  Home,
+  PawPrint,
+  PiggyBank,
   PlusCircle,
-  Shirt,
+  RectangleEllipsis,
+  ShieldCheck,
+  ShoppingBag,
   ShoppingCart,
   TvMinimalPlay,
-  Utensils,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -34,14 +41,9 @@ import { Category } from '../../types/category';
 
 const categories: Category[] = [
   {
-    value: 'Food',
-    label: 'Food',
-    icon: Utensils,
-  },
-  {
-    value: 'Utilities',
-    label: 'Utilities',
-    icon: HousePlug,
+    value: 'Groceries',
+    label: 'Groceries',
+    icon: ShoppingCart,
   },
   {
     value: 'Transportation',
@@ -56,22 +58,62 @@ const categories: Category[] = [
   {
     value: 'Healthcare',
     label: 'Healthcare',
-    icon: Hospital,
+    icon: HeartPulse,
   },
   {
     value: 'Shopping',
     label: 'Shopping',
-    icon: ShoppingCart,
+    icon: ShoppingBag,
   },
   {
     value: 'Education',
     label: 'Education',
-    icon: BookA,
+    icon: GraduationCap,
   },
   {
-    value: 'Clothing',
-    label: 'Clothing',
-    icon: Shirt,
+    value: 'Pets',
+    label: 'Pets',
+    icon: PawPrint,
+  },
+  {
+    value: 'Housing',
+    label: 'Housing',
+    icon: Home,
+  },
+  {
+    value: 'Insurance',
+    label: 'Insurance',
+    icon: ShieldCheck,
+  },
+  {
+    value: 'Savings',
+    label: 'Savings',
+    icon: PiggyBank,
+  },
+  {
+    value: 'Investments',
+    label: 'Investments',
+    icon: HandCoins,
+  },
+  {
+    value: 'Gifts',
+    label: 'Gifts',
+    icon: Gift,
+  },
+  {
+    value: 'Donations',
+    label: 'Donations',
+    icon: HandHeart,
+  },
+  {
+    value: 'Leisure',
+    label: 'Leisure',
+    icon: Drama,
+  },
+  {
+    value: 'Miscellaneous',
+    label: 'Miscellaneous',
+    icon: RectangleEllipsis,
   },
 ];
 
