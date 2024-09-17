@@ -1,4 +1,4 @@
-import PageTitle from '@/components/page-title';
+import PageTitle from '@/app/(main)/_components/page-title';
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionsDataTable } from './_components/transactions-data-table';
 import { Payment, transactionsColumnsDefinition } from './columns';
