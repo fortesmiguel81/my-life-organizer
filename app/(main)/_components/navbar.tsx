@@ -21,12 +21,20 @@ import React, {
 } from 'react';
 import { useMediaQuery } from 'usehooks-ts';
 import NavItem from './nav-item';
-import UserItem from './user-item';
+import {
+  OrganizationSwitcher,
+  useOrganization,
+  UserButton,
+  useUser,
+} from '@clerk/nextjs';
+import Spinner from '@/components/spinner';
 
 export default function Navbar() {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const search = useSearch();
   const sidebarRef = useRef<ElementRef<'aside'>>(null);
+  const { isLoaded: isLoadedOrganization } = useOrganization();
+  const { user, isLoaded: isLoadedUser } = useUser();
 
   const [isResetting, setIsResetting] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -82,8 +90,20 @@ export default function Navbar() {
         >
           <ChevronLeft className='h-6 w-6' />
         </div>
-        <div>
-          <UserItem />
+        <div className='flex flex-col p-4'>
+          <div className='flex items-center gap-3'>
+            {isLoadedUser ? <UserButton /> : <Spinner size='lg' />}
+            <span>
+              {user?.firstName} {user?.lastName}
+            </span>
+          </div>
+        </div>
+        <div className='absolute bottom-2 p-2'>
+          {isLoadedOrganization ? (
+            <OrganizationSwitcher />
+          ) : (
+            <Spinner size='lg' />
+          )}
         </div>
       </aside>
       <div
@@ -95,8 +115,8 @@ export default function Navbar() {
       />
 
       <div className='fixed top-0 z-50 flex w-full border-border/40 bg-background/95 p-5 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
-        <div className='flex w-full items-center justify-start lg:justify-between'>
-          <div className='flex items-center'>
+        <div className='flex w-full items-center justify-start md:justify-between lg:justify-between'>
+          <div className='flex items-center gap-6'>
             <div
               className='flex items-center justify-between'
               role={isMobile ? 'button' : undefined}
@@ -107,8 +127,14 @@ export default function Navbar() {
                 <h1 className='ml-4 text-xl font-bold'>Life Organizer</h1>
               )}
             </div>
+            {!isMobile &&
+              (isLoadedOrganization ? (
+                <OrganizationSwitcher />
+              ) : (
+                <Spinner size='lg' />
+              ))}
             {!isMobile && (
-              <NavigationMenu className='ml-16'>
+              <NavigationMenu className='ml-4'>
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger>Finance</NavigationMenuTrigger>
@@ -150,7 +176,7 @@ export default function Navbar() {
               </NavigationMenu>
             )}
           </div>
-          <div className='ml-3 flex w-full items-center gap-3 lg:ml-0 lg:w-auto'>
+          <div className='ml-3 flex w-full items-center gap-3 md:ml-0 md:w-auto lg:ml-0 lg:w-auto'>
             <div className='h-full w-full flex-1 md:w-auto md:flex-none'>
               <Button
                 onClick={search.OnOpen}
@@ -163,7 +189,8 @@ export default function Navbar() {
               </Button>
             </div>
             <ModeToggle />
-            {!isMobile && <UserItem />}
+            {!isMobile &&
+              (isLoadedUser ? <UserButton /> : <Spinner size='lg' />)}
           </div>
         </div>
       </div>
