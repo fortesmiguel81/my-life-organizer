@@ -1,19 +1,23 @@
-'use client';
+"use client";
+
+import { useEffect, useState } from "react";
 
 import {
   ColumnDef,
   ColumnFiltersState,
+  SortingState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
   useReactTable,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
+import { File, PlusCircle, X } from "lucide-react";
 
-import { DataTablePagination } from '@/components/data-table-pagination';
-import { Input } from '@/components/ui/input';
+import { DataTablePagination } from "@/components/data-table-pagination";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -21,12 +25,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { useEffect, useState } from 'react';
-import { CategoryDropdownFilter } from './category-dropdown-filter';
-import { Category } from '../../types/category';
-import { Button } from '@/components/ui/button';
-import { File, PlusCircle, X } from 'lucide-react';
+} from "@/components/ui/table";
+
+import { Category } from "../../types/category";
+import { CategoryDropdownFilter } from "./category-dropdown-filter";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,7 +40,7 @@ export function TransactionsDataTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
 
@@ -65,29 +67,29 @@ export function TransactionsDataTable<TData, TValue>({
   });
 
   useEffect(() => {
-    console.log('Selected Categories Changed:', selectedCategories);
-    table.getColumn('category')?.setFilterValue(selectedCategories);
+    console.log("Selected Categories Changed:", selectedCategories);
+    table.getColumn("category")?.setFilterValue(selectedCategories);
   }, [selectedCategories, table]);
 
   const handleExportTransactions = () => {
     // TODO: Implement export transactions
-    alert('Exporting transactions...');
+    alert("Exporting transactions...");
   };
 
   const handleAddNewTransaction = () => {
     // TODO: implement add new transaction
-    alert('Exporting transactions...');
+    alert("Exporting transactions...");
   };
 
   return (
-    <div className='flex flex-col'>
-      <div className='mt-3 flex h-9 justify-between'>
-        <div className='flex flex-1 items-center space-x-2'>
+    <div className="flex flex-col">
+      <div className="mt-3 flex h-9 justify-between">
+        <div className="flex flex-1 items-center space-x-2">
           <Input
-            placeholder='Filter transactions...'
+            placeholder="Filter transactions..."
             value={globalFilter}
             onChange={(event) => setGlobalFilter(event.target.value)}
-            className='h-9 max-w-sm'
+            className="h-9 max-w-sm"
           />
           <CategoryDropdownFilter
             selectedCategories={selectedCategories}
@@ -95,34 +97,34 @@ export function TransactionsDataTable<TData, TValue>({
           />
           {(globalFilter || selectedCategories.length > 0) && (
             <Button
-              variant='ghost'
-              className='font-md h-9 px-3 py-0'
+              variant="ghost"
+              className="font-md h-9 px-3 py-0"
               onClick={() => {
-                setGlobalFilter('');
+                setGlobalFilter("");
                 setSelectedCategories([]);
               }}
             >
               Reset
-              <X className='ml-2 h-4 w-4' />
+              <X className="ml-2 h-4 w-4" />
             </Button>
           )}
         </div>
-        <div className='flex items-center space-x-2'>
+        <div className="flex items-center space-x-2">
           <Button
-            variant='outline'
-            className='font-md h-9'
+            variant="outline"
+            className="font-md h-9"
             onClick={handleExportTransactions}
           >
-            <File className='mr-2 h-4 w-4' />
+            <File className="mr-2 h-4 w-4" />
             <span>Export</span>
           </Button>
-          <Button className='font-md h-9' onClick={handleAddNewTransaction}>
-            <PlusCircle className='mr-2 h-4 w-4' />
+          <Button className="font-md h-9" onClick={handleAddNewTransaction}>
+            <PlusCircle className="mr-2 h-4 w-4" />
             <span>Add Transaction</span>
           </Button>
         </div>
       </div>
-      <div className='mt-3 rounded-md border'>
+      <div className="mt-3 rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -147,7 +149,7 @@ export function TransactionsDataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
+                  data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -163,7 +165,7 @@ export function TransactionsDataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className='h-24 text-center'
+                  className="h-24 text-center"
                 >
                   No results.
                 </TableCell>

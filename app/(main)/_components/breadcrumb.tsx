@@ -1,4 +1,10 @@
-'use client';
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+
+import { useMediaQuery } from "usehooks-ts";
 
 import {
   Breadcrumb,
@@ -6,42 +12,38 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbSeparator,
   BreadcrumbPage,
-} from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import {
-  DrawerTrigger,
+  Drawer,
+  DrawerClose,
   DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
   DrawerDescription,
   DrawerFooter,
-  DrawerClose,
-  Drawer,
-} from '@/components/ui/drawer';
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { useMediaQuery } from 'usehooks-ts';
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const ITEMS_TO_DISPLAY = 3;
 
 export function PageBreadcrumb() {
   const [isOpen, setIsOpen] = useState(false);
-  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const pathname = usePathname();
 
   function generateBreadcrumbItems(pathname: string) {
     const items = pathname
-      .split('/')
-      .filter((item) => item !== '')
+      .split("/")
+      .filter((item) => item !== "")
       .map((item) => {
         return {
           label: item.charAt(0).toUpperCase() + item.slice(1),
@@ -50,7 +52,7 @@ export function PageBreadcrumb() {
       });
 
     // remove href from last item
-    items[items.length - 1].href = '';
+    items[items.length - 1].href = "";
 
     return items;
   }
@@ -70,15 +72,15 @@ export function PageBreadcrumb() {
               {isDesktop ? (
                 <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
                   <DropdownMenuTrigger
-                    className='flex items-center gap-1'
-                    aria-label='Toggle menu'
+                    className="flex items-center gap-1"
+                    aria-label="Toggle menu"
                   >
-                    <BreadcrumbEllipsis className='h-4 w-4' />
+                    <BreadcrumbEllipsis className="h-4 w-4" />
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align='start'>
+                  <DropdownMenuContent align="start">
                     {items.slice(1, -1).map((item, index) => (
                       <DropdownMenuItem key={index}>
-                        <Link href={item.href ? item.href : '#'}>
+                        <Link href={item.href ? item.href : "#"}>
                           {item.label}
                         </Link>
                       </DropdownMenuItem>
@@ -87,30 +89,30 @@ export function PageBreadcrumb() {
                 </DropdownMenu>
               ) : (
                 <Drawer open={isOpen} onOpenChange={setIsOpen}>
-                  <DrawerTrigger aria-label='Toggle Menu'>
-                    <BreadcrumbEllipsis className='h-4 w-4' />
+                  <DrawerTrigger aria-label="Toggle Menu">
+                    <BreadcrumbEllipsis className="h-4 w-4" />
                   </DrawerTrigger>
                   <DrawerContent>
-                    <DrawerHeader className='text-left'>
+                    <DrawerHeader className="text-left">
                       <DrawerTitle>Navigate to</DrawerTitle>
                       <DrawerDescription>
                         Select a page to navigate to.
                       </DrawerDescription>
                     </DrawerHeader>
-                    <div className='grid gap-1 px-4'>
+                    <div className="grid gap-1 px-4">
                       {items.slice(1, -1).map((item, index) => (
                         <Link
                           key={index}
-                          href={item.href ? item.href : '#'}
-                          className='py-1 text-sm'
+                          href={item.href ? item.href : "#"}
+                          className="py-1 text-sm"
                         >
                           {item.label}
                         </Link>
                       ))}
                     </div>
-                    <DrawerFooter className='pt-4'>
+                    <DrawerFooter className="pt-4">
                       <DrawerClose asChild>
-                        <Button variant='outline'>Close</Button>
+                        <Button variant="outline">Close</Button>
                       </DrawerClose>
                     </DrawerFooter>
                   </DrawerContent>
@@ -126,14 +128,14 @@ export function PageBreadcrumb() {
               <>
                 <BreadcrumbLink
                   asChild
-                  className='max-w-20 truncate md:max-w-none'
+                  className="max-w-20 truncate md:max-w-none"
                 >
                   <Link href={item.href}>{item.label}</Link>
                 </BreadcrumbLink>
                 <BreadcrumbSeparator />
               </>
             ) : (
-              <BreadcrumbPage className='max-w-20 truncate md:max-w-none'>
+              <BreadcrumbPage className="max-w-20 truncate md:max-w-none">
                 {item.label}
               </BreadcrumbPage>
             )}

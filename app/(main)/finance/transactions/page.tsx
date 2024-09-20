@@ -1,39 +1,41 @@
-import PageTitle from '@/app/(main)/_components/page-title';
-import { v4 as uuidv4 } from 'uuid';
-import { TransactionsDataTable } from './_components/transactions-data-table';
-import { Payment, transactionsColumnsDefinition } from './columns';
+import { v4 as uuidv4 } from "uuid";
+
+import PageTitle from "@/app/(main)/_components/page-title";
+
+import { TransactionsDataTable } from "./_components/transactions-data-table";
+import { Payment, transactionsColumnsDefinition } from "./columns";
 
 async function getData(): Promise<Payment[]> {
   const categories = [
-    'Food',
-    'Utilities',
-    'Transportation',
-    'Entertainment',
-    'Healthcare',
-    'Shopping',
-    'Education',
-    'Clothing',
-    'Pets',
+    "Food",
+    "Utilities",
+    "Transportation",
+    "Entertainment",
+    "Healthcare",
+    "Shopping",
+    "Education",
+    "Clothing",
+    "Pets",
   ];
   const payees = [
-    'Demo Company',
-    'Utility Company',
-    'Transport Service',
-    'Streaming Service',
-    'Local Clinic',
-    'Online Store',
-    'Bookstore',
-    'Clothing Retail',
+    "Demo Company",
+    "Utility Company",
+    "Transport Service",
+    "Streaming Service",
+    "Local Clinic",
+    "Online Store",
+    "Bookstore",
+    "Clothing Retail",
   ];
   const accounts = [
-    'Savings Account',
-    'Checking Account',
-    'Credit Account',
-    'Debit Account',
-    'Health Savings Account',
-    'Electronic Wallet',
-    'Student Account',
-    'Gift Card',
+    "Savings Account",
+    "Checking Account",
+    "Credit Account",
+    "Debit Account",
+    "Health Savings Account",
+    "Electronic Wallet",
+    "Student Account",
+    "Gift Card",
   ];
 
   const additionalData = [];
@@ -69,10 +71,10 @@ export default async function TransactionsPage() {
   const data = await getData();
 
   return (
-    <div className='flex w-full flex-col gap-4 pt-6'>
+    <div className="flex w-full flex-col gap-4 pt-6">
       <PageTitle
-        title='Transactions'
-        subTitle='Manage your transactions history'
+        title="Transactions"
+        subTitle="Manage your transactions history"
       />
       <TransactionsDataTable
         columns={transactionsColumnsDefinition}

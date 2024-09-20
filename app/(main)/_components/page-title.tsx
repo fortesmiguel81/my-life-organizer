@@ -8,10 +8,10 @@ export default function PageTitle({
   subTitle: subPageTitle,
 }: PageTitleProps) {
   return (
-    <div className='flex flex-col'>
-      <h1 className='text-2xl font-medium'>{pageTitle}</h1>
+    <div className="flex flex-col">
+      <h1 className="text-2xl font-medium">{pageTitle}</h1>
       {subPageTitle && (
-        <h2 className='text-md mt-1 text-muted-foreground'>{subPageTitle}</h2>
+        <h2 className="text-md mt-1 text-muted-foreground">{subPageTitle}</h2>
       )}
     </div>
   );

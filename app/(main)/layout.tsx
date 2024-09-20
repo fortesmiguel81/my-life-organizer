@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import Navbar from '@/app/(main)/_components/navbar';
-import SearchCommand from '@/components/search-command';
-import { PageBreadcrumb } from './_components/breadcrumb';
+import Navbar from "@/app/(main)/_components/navbar";
+import SearchCommand from "@/components/search-command";
+
+import { PageBreadcrumb } from "./_components/breadcrumb";
 
 export default function MainLayout({
   children,
@@ -10,11 +11,11 @@ export default function MainLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className='h-full dark:bg-[#131313]'>
+    <div className="h-full dark:bg-[#131313]">
       <Navbar />
-      <main className='flex-1 overflow-y-auto pt-20'>
+      <main className="flex-1 overflow-y-auto pt-20">
         <SearchCommand />
-        <div className='flex flex-col px-14 py-6'>
+        <div className="flex flex-col px-14 py-6">
           <PageBreadcrumb />
           {children}
         </div>

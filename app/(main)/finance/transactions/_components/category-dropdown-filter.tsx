@@ -1,4 +1,6 @@
-'use client';
+"use client";
+
+import { Dispatch, SetStateAction, useState } from "react";
 
 import {
   Car,
@@ -17,9 +19,11 @@ import {
   ShoppingBag,
   ShoppingCart,
   TvMinimalPlay,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { Button } from '@/components/ui/button';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Command,
   CommandEmpty,
@@ -27,92 +31,90 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { Dispatch, SetStateAction, useState } from 'react';
-import { Separator } from '@/components/ui/separator';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Category } from '../../types/category';
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+
+import { Category } from "../../types/category";
 
 const categories: Category[] = [
   {
-    value: 'Groceries',
-    label: 'Groceries',
+    value: "Groceries",
+    label: "Groceries",
     icon: ShoppingCart,
   },
   {
-    value: 'Transportation',
-    label: 'Transportation',
+    value: "Transportation",
+    label: "Transportation",
     icon: Car,
   },
   {
-    value: 'Entertainment',
-    label: 'Entertainment',
+    value: "Entertainment",
+    label: "Entertainment",
     icon: TvMinimalPlay,
   },
   {
-    value: 'Healthcare',
-    label: 'Healthcare',
+    value: "Healthcare",
+    label: "Healthcare",
     icon: HeartPulse,
   },
   {
-    value: 'Shopping',
-    label: 'Shopping',
+    value: "Shopping",
+    label: "Shopping",
     icon: ShoppingBag,
   },
   {
-    value: 'Education',
-    label: 'Education',
+    value: "Education",
+    label: "Education",
     icon: GraduationCap,
   },
   {
-    value: 'Pets',
-    label: 'Pets',
+    value: "Pets",
+    label: "Pets",
     icon: PawPrint,
   },
   {
-    value: 'Housing',
-    label: 'Housing',
+    value: "Housing",
+    label: "Housing",
     icon: Home,
   },
   {
-    value: 'Insurance',
-    label: 'Insurance',
+    value: "Insurance",
+    label: "Insurance",
     icon: ShieldCheck,
   },
   {
-    value: 'Savings',
-    label: 'Savings',
+    value: "Savings",
+    label: "Savings",
     icon: PiggyBank,
   },
   {
-    value: 'Investments',
-    label: 'Investments',
+    value: "Investments",
+    label: "Investments",
     icon: HandCoins,
   },
   {
-    value: 'Gifts',
-    label: 'Gifts',
+    value: "Gifts",
+    label: "Gifts",
     icon: Gift,
   },
   {
-    value: 'Donations',
-    label: 'Donations',
+    value: "Donations",
+    label: "Donations",
     icon: HandHeart,
   },
   {
-    value: 'Leisure',
-    label: 'Leisure',
+    value: "Leisure",
+    label: "Leisure",
     icon: Drama,
   },
   {
-    value: 'Miscellaneous',
-    label: 'Miscellaneous',
+    value: "Miscellaneous",
+    label: "Miscellaneous",
     icon: RectangleEllipsis,
   },
 ];
@@ -129,29 +131,29 @@ export function CategoryDropdownFilter({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className='flex h-full items-center space-x-4'>
+    <div className="flex h-full items-center space-x-4">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant='outline'
-            size='sm'
-            className='flex h-9 items-center justify-start border-dashed leading-none'
+            variant="outline"
+            size="sm"
+            className="flex h-9 items-center justify-start border-dashed leading-none"
           >
-            <div className='flex items-center text-sm leading-none'>
-              <PlusCircle className='mr-2 h-4 w-4 shrink-0' />
+            <div className="flex items-center text-sm leading-none">
+              <PlusCircle className="mr-2 h-4 w-4 shrink-0" />
               <span>Category</span>
             </div>
             {selectedCategories.length > 0 && (
               <>
                 <Separator
-                  orientation='vertical'
-                  className='mx-2 h-4 w-[1px] shrink-0 bg-border'
+                  orientation="vertical"
+                  className="mx-2 h-4 w-[1px] shrink-0 bg-border"
                 />
-                <div className='flex items-center gap-2'>
+                <div className="flex items-center gap-2">
                   {selectedCategories.length >= 3 ? (
                     <Badge
-                      variant='secondary'
-                      className='rounded-sm py-1 text-sm leading-none'
+                      variant="secondary"
+                      className="rounded-sm py-1 text-sm leading-none"
                     >
                       {selectedCategories.length} selected
                     </Badge>
@@ -159,8 +161,8 @@ export function CategoryDropdownFilter({
                     selectedCategories.map((category) => (
                       <Badge
                         key={category.value}
-                        variant='secondary'
-                        className='rounded-sm py-1 text-sm leading-none'
+                        variant="secondary"
+                        className="rounded-sm py-1 text-sm leading-none"
                       >
                         {category.value}
                       </Badge>
@@ -171,15 +173,15 @@ export function CategoryDropdownFilter({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='p-0' side='bottom' align='start'>
+        <PopoverContent className="p-0" side="bottom" align="start">
           <Command>
-            <CommandInput placeholder='Change status...' />
+            <CommandInput placeholder="Change status..." />
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
                 {categories.map((category) => (
                   <CommandItem key={category.value} value={category.value}>
-                    <div className='flex h-6 items-center space-x-2'>
+                    <div className="flex h-6 items-center space-x-2">
                       <Checkbox
                         id={category.value}
                         checked={
@@ -206,10 +208,10 @@ export function CategoryDropdownFilter({
                           });
                         }}
                       />
-                      <category.icon className='h-4 w-4 shrink-0' />
+                      <category.icon className="h-4 w-4 shrink-0" />
                       <label
                         htmlFor={category.value}
-                        className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
                         {category.value}
                       </label>

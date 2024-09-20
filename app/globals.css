@@ -75,5 +75,5 @@ body,
 
 .cl-userButtonPopoverCard.cl-popoverBox.cl-userButton-popover.cl-internal-1nf23tp,
 .cl-organizationSwitcherPopoverCard.cl-popoverBox.cl-organizationSwitcher-popover.cl-internal-1nf23tp {
-z-index: 99999;
+  z-index: 99999;
 }
