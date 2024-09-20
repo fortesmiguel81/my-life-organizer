@@ -1,9 +1,10 @@
-import { v4 as uuidv4 } from "uuid";
 
 import PageTitle from "@/app/(main)/_components/page-title";
 
 import { TransactionsDataTable } from "./_components/transactions-data-table";
 import { Payment, transactionsColumnsDefinition } from "./columns";
+
+import { createId } from "@paralleldrive/cuid2";
 
 async function getData(): Promise<Payment[]> {
   const categories = [
@@ -41,7 +42,7 @@ async function getData(): Promise<Payment[]> {
   const additionalData = [];
   for (let i = 0; i < 50; i++) {
     additionalData.push({
-      id: uuidv4(),
+      id: createId(),
       date: getRandomDate(new Date(4, 1, 1), new Date(2024, 12, 31)),
       amount: getRandomInt(-1000, 1000),
       category: categories[i % categories.length],
