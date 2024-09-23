@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -12,6 +13,7 @@ import { useMediaQuery } from "usehooks-ts";
 
 import Spinner from "@/components/spinner";
 import { Button } from "@/components/ui/button";
+import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -132,6 +134,15 @@ export default function Navbar() {
             {!isMobile && (
               <NavigationMenu className="ml-4">
                 <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <Link href="/dashboard" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Dashboard
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger>Finance</NavigationMenuTrigger>
                     <NavigationMenuContent>

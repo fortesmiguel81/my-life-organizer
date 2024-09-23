@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -13,7 +14,26 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { File, PlusCircle, X } from "lucide-react";
+import {
+  Car,
+  Drama,
+  File,
+  Gift,
+  GraduationCap,
+  HandCoins,
+  HandHeart,
+  HeartPulse,
+  Home,
+  PawPrint,
+  PiggyBank,
+  PlusCircle,
+  RectangleEllipsis,
+  ShieldCheck,
+  ShoppingBag,
+  ShoppingCart,
+  TvMinimalPlay,
+  X,
+} from "lucide-react";
 
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { Button } from "@/components/ui/button";
@@ -35,6 +55,84 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
 }
 
+const categories: Category[] = [
+  {
+    value: "Groceries",
+    label: "Groceries",
+    icon: ShoppingCart,
+  },
+  {
+    value: "Transportation",
+    label: "Transportation",
+    icon: Car,
+  },
+  {
+    value: "Entertainment",
+    label: "Entertainment",
+    icon: TvMinimalPlay,
+  },
+  {
+    value: "Healthcare",
+    label: "Healthcare",
+    icon: HeartPulse,
+  },
+  {
+    value: "Shopping",
+    label: "Shopping",
+    icon: ShoppingBag,
+  },
+  {
+    value: "Education",
+    label: "Education",
+    icon: GraduationCap,
+  },
+  {
+    value: "Pets",
+    label: "Pets",
+    icon: PawPrint,
+  },
+  {
+    value: "Housing",
+    label: "Housing",
+    icon: Home,
+  },
+  {
+    value: "Insurance",
+    label: "Insurance",
+    icon: ShieldCheck,
+  },
+  {
+    value: "Savings",
+    label: "Savings",
+    icon: PiggyBank,
+  },
+  {
+    value: "Investments",
+    label: "Investments",
+    icon: HandCoins,
+  },
+  {
+    value: "Gifts",
+    label: "Gifts",
+    icon: Gift,
+  },
+  {
+    value: "Donations",
+    label: "Donations",
+    icon: HandHeart,
+  },
+  {
+    value: "Leisure",
+    label: "Leisure",
+    icon: Drama,
+  },
+  {
+    value: "Miscellaneous",
+    label: "Miscellaneous",
+    icon: RectangleEllipsis,
+  },
+];
+
 export function TransactionsDataTable<TData, TValue>({
   columns,
   data,
@@ -43,6 +141,45 @@ export function TransactionsDataTable<TData, TValue>({
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+
+  const router = useRouter();
+  const searchParams = useSearchParams(); // Used to read query params
+
+  // Update query parameters when filters change
+  useEffect(() => {
+    console.log("Updating query params");
+    const query = new URLSearchParams({
+      globalFilter,
+      selectedCategories: selectedCategories.map((cat) => cat.value).join(","),
+    });
+
+    router.replace(`?${query.toString()}`);
+  }, [globalFilter, selectedCategories, router]);
+
+  // Read filters from the URL on initial load
+  useEffect(() => {
+    const globalFilterParam = searchParams.get("globalFilter");
+    const selectedCategoriesParam = searchParams.get("selectedCategories");
+
+    if (globalFilterParam) {
+      setGlobalFilter(globalFilterParam);
+    }
+
+    if (selectedCategoriesParam) {
+      const categoryValues = selectedCategoriesParam.split(",");
+
+      const mappedCategories = categoryValues.map(
+        (value: string) =>
+          categories.find((category) => category.value === value) || {
+            value,
+            label: "Unknown", // Handle unknown categories
+            icon: File, // Default icon
+          }
+      );
+
+      setSelectedCategories(mappedCategories);
+    }
+  }, [searchParams]);
 
   const table = useReactTable({
     data,
@@ -67,7 +204,6 @@ export function TransactionsDataTable<TData, TValue>({
   });
 
   useEffect(() => {
-    console.log("Selected Categories Changed:", selectedCategories);
     table.getColumn("category")?.setFilterValue(selectedCategories);
   }, [selectedCategories, table]);
 
@@ -92,6 +228,7 @@ export function TransactionsDataTable<TData, TValue>({
             className="h-9 max-w-sm"
           />
           <CategoryDropdownFilter
+            categories={categories}
             selectedCategories={selectedCategories}
             setSelectedCategories={setSelectedCategories}
           />

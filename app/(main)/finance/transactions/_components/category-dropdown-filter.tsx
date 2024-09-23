@@ -2,24 +2,7 @@
 
 import { Dispatch, SetStateAction, useState } from "react";
 
-import {
-  Car,
-  Drama,
-  Gift,
-  GraduationCap,
-  HandCoins,
-  HandHeart,
-  HeartPulse,
-  Home,
-  PawPrint,
-  PiggyBank,
-  PlusCircle,
-  RectangleEllipsis,
-  ShieldCheck,
-  ShoppingBag,
-  ShoppingCart,
-  TvMinimalPlay,
-} from "lucide-react";
+import { PlusCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,90 +24,14 @@ import { Separator } from "@/components/ui/separator";
 
 import { Category } from "../../types/category";
 
-const categories: Category[] = [
-  {
-    value: "Groceries",
-    label: "Groceries",
-    icon: ShoppingCart,
-  },
-  {
-    value: "Transportation",
-    label: "Transportation",
-    icon: Car,
-  },
-  {
-    value: "Entertainment",
-    label: "Entertainment",
-    icon: TvMinimalPlay,
-  },
-  {
-    value: "Healthcare",
-    label: "Healthcare",
-    icon: HeartPulse,
-  },
-  {
-    value: "Shopping",
-    label: "Shopping",
-    icon: ShoppingBag,
-  },
-  {
-    value: "Education",
-    label: "Education",
-    icon: GraduationCap,
-  },
-  {
-    value: "Pets",
-    label: "Pets",
-    icon: PawPrint,
-  },
-  {
-    value: "Housing",
-    label: "Housing",
-    icon: Home,
-  },
-  {
-    value: "Insurance",
-    label: "Insurance",
-    icon: ShieldCheck,
-  },
-  {
-    value: "Savings",
-    label: "Savings",
-    icon: PiggyBank,
-  },
-  {
-    value: "Investments",
-    label: "Investments",
-    icon: HandCoins,
-  },
-  {
-    value: "Gifts",
-    label: "Gifts",
-    icon: Gift,
-  },
-  {
-    value: "Donations",
-    label: "Donations",
-    icon: HandHeart,
-  },
-  {
-    value: "Leisure",
-    label: "Leisure",
-    icon: Drama,
-  },
-  {
-    value: "Miscellaneous",
-    label: "Miscellaneous",
-    icon: RectangleEllipsis,
-  },
-];
-
 interface CategoryDropdownFilterProps {
+  categories: Category[];
   selectedCategories: Category[];
   setSelectedCategories: Dispatch<SetStateAction<Category[]>>;
 }
 
 export function CategoryDropdownFilter({
+  categories,
   selectedCategories,
   setSelectedCategories,
 }: CategoryDropdownFilterProps) {
