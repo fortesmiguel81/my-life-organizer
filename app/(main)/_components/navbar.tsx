@@ -1,11 +1,5 @@
 import Image from "next/image";
-import React, {
-  ElementRef,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
 
 import {
   OrganizationSwitcher,
@@ -13,10 +7,9 @@ import {
   useOrganization,
   useUser,
 } from "@clerk/nextjs";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, SettingsIcon } from "lucide-react";
 import { useMediaQuery } from "usehooks-ts";
 
-import { ModeToggle } from "@/components/mode-toggle";
 import Spinner from "@/components/spinner";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +21,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { useSearch } from "@/hooks/use-search";
+import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
 
 import NavItem from "./nav-item";
@@ -38,6 +32,7 @@ export default function Navbar() {
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const { isLoaded: isLoadedOrganization } = useOrganization();
   const { user, isLoaded: isLoadedUser } = useUser();
+  const settings = useSettings();
 
   const [isResetting, setIsResetting] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -189,7 +184,9 @@ export default function Navbar() {
                 </kbd>
               </Button>
             </div>
-            <ModeToggle />
+            <Button variant="ghost" onClick={settings.OnOpen}>
+              <SettingsIcon className="h-6 w-6 text-muted-foreground" />
+            </Button>
             {!isMobile &&
               (isLoadedUser ? <UserButton /> : <Spinner size="lg" />)}
           </div>
