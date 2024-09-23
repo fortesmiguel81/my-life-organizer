@@ -6,7 +6,9 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { ThemeProvider, useTheme } from "next-themes";
 
-import SettingsModal from "../modals/settings-modal";
+import SettingsModal from "@/components/modals/settings-modal";
+
+import { QueryProvider } from "./query-provider";
 import ThemeColorProvider from "./theme-color-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -43,8 +45,10 @@ function OtherProviders({ children }: { children: React.ReactNode }) {
         baseTheme: resolvedTheme === "dark" ? dark : undefined,
       }}
     >
-      <SettingsModal />
-      {children}
+      <QueryProvider>
+        <SettingsModal />
+        {children}
+      </QueryProvider>
     </ClerkProvider>
   );
 }

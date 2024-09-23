@@ -2,7 +2,6 @@
 
 import { useTheme } from "next-themes";
 
-import { useThemeContext } from "@/components/providers/theme-color-provider";
 import {
   Select,
   SelectContent,
@@ -11,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useThemeContext } from "@/providers/theme-color-provider";
 
 const availableThemeColors = [
   { name: "Zinc", light: "bg-zinc-900", dark: "bg-zinc-700" },
