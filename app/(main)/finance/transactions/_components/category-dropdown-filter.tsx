@@ -4,6 +4,8 @@ import { Dispatch, SetStateAction, useState } from "react";
 
 import { PlusCircle } from "lucide-react";
 
+import { CategoriesResponseType } from "@/app/api/response-types";
+import Icon from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,12 +24,10 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 
-import { Category } from "../../types/category";
-
 interface CategoryDropdownFilterProps {
-  categories: Category[];
-  selectedCategories: Category[];
-  setSelectedCategories: Dispatch<SetStateAction<Category[]>>;
+  categories: CategoriesResponseType[];
+  selectedCategories: CategoriesResponseType[];
+  setSelectedCategories: Dispatch<SetStateAction<CategoriesResponseType[]>>;
 }
 
 export function CategoryDropdownFilter({
@@ -67,11 +67,11 @@ export function CategoryDropdownFilter({
                   ) : (
                     selectedCategories.map((category) => (
                       <Badge
-                        key={category.value}
+                        key={category.id}
                         variant="secondary"
                         className="rounded-sm py-1 text-sm leading-none"
                       >
-                        {category.value}
+                        {category.name}
                       </Badge>
                     ))
                   )}
@@ -87,24 +87,24 @@ export function CategoryDropdownFilter({
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
                 {categories.map((category) => (
-                  <CommandItem key={category.value} value={category.value}>
+                  <CommandItem key={category.id} value={category.name}>
                     <div className="flex h-6 items-center space-x-2">
                       <Checkbox
-                        id={category.value}
+                        id={category.id}
                         checked={
                           selectedCategories.find(
-                            (c) => c.value === category.value
+                            (c) => c.id === category.id
                           ) !== undefined
                         }
                         onCheckedChange={() => {
                           setSelectedCategories((prevSelectedCategories) => {
                             const isAlreadySelected =
                               prevSelectedCategories?.some(
-                                (s) => s.value === category.value
+                                (s) => s.id === category.id
                               );
                             if (isAlreadySelected) {
                               return prevSelectedCategories.filter(
-                                (s) => s.value !== category.value
+                                (s) => s.id !== category.id
                               );
                             } else {
                               return [
@@ -115,12 +115,15 @@ export function CategoryDropdownFilter({
                           });
                         }}
                       />
-                      <category.icon className="h-4 w-4 shrink-0" />
+                      <Icon
+                        name={category.icon!}
+                        className="h-4 w-4 shrink-0"
+                      />
                       <label
-                        htmlFor={category.value}
+                        htmlFor={category.id}
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
-                        {category.value}
+                        {category.name}
                       </label>
                     </div>
                   </CommandItem>

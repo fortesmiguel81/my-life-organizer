@@ -4,11 +4,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { InferResponseType } from "hono";
 import { ArrowUpDown } from "lucide-react";
 
+import { CategoriesResponseType } from "@/app/api/response-types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { client } from "@/lib/hono";
-
-import { Category } from "../types/category";
 
 export type ResponseType = InferResponseType<
   typeof client.api.transactions.$get,
@@ -53,7 +52,9 @@ export const transactionsColumnsDefinition: ColumnDef<ResponseType>[] = [
     filterFn: (row, columnId, filterCategories) => {
       if (filterCategories.length === 0) return true;
       const category = row.getValue(columnId);
-      return filterCategories.some((c: Category) => c.value === category);
+      return filterCategories.some(
+        (c: CategoriesResponseType) => c.name === category
+      );
     },
   },
   {

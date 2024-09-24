@@ -31,6 +31,7 @@ export const categories = pgTable("categories", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
+  icon: text("icon"),
   userId: text("user_id"),
   orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),

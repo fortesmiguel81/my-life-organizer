@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 
+import categories from "./categories";
 import transactions from "./transactions";
 import webhooks from "./webhooks";
 
@@ -10,7 +11,8 @@ const app = new Hono().basePath("/api");
 
 const routes = app
   .route("/webhooks", webhooks)
-  .route("/transactions", transactions);
+  .route("/transactions", transactions)
+  .route("/categories", categories);
 
 export const GET = handle(app);
 export const POST = handle(app);

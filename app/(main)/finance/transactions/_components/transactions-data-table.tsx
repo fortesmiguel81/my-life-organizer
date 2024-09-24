@@ -14,27 +14,9 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  Car,
-  Drama,
-  File,
-  Gift,
-  GraduationCap,
-  HandCoins,
-  HandHeart,
-  HeartPulse,
-  Home,
-  PawPrint,
-  PiggyBank,
-  PlusCircle,
-  RectangleEllipsis,
-  ShieldCheck,
-  ShoppingBag,
-  ShoppingCart,
-  TvMinimalPlay,
-  X,
-} from "lucide-react";
+import { File, PlusCircle, X } from "lucide-react";
 
+import { CategoriesResponseType } from "@/app/api/response-types";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,116 +29,40 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { Category } from "../../types/category";
 import { CategoryDropdownFilter } from "./category-dropdown-filter";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+interface DataTableProps<TransactionsResponseType, TValue> {
+  columns: ColumnDef<TransactionsResponseType, TValue>[];
+  data: TransactionsResponseType[];
+  categories: CategoriesResponseType[];
 }
 
-const categories: Category[] = [
-  {
-    value: "Groceries",
-    label: "Groceries",
-    icon: ShoppingCart,
-  },
-  {
-    value: "Transportation",
-    label: "Transportation",
-    icon: Car,
-  },
-  {
-    value: "Entertainment",
-    label: "Entertainment",
-    icon: TvMinimalPlay,
-  },
-  {
-    value: "Healthcare",
-    label: "Healthcare",
-    icon: HeartPulse,
-  },
-  {
-    value: "Shopping",
-    label: "Shopping",
-    icon: ShoppingBag,
-  },
-  {
-    value: "Education",
-    label: "Education",
-    icon: GraduationCap,
-  },
-  {
-    value: "Pets",
-    label: "Pets",
-    icon: PawPrint,
-  },
-  {
-    value: "Housing",
-    label: "Housing",
-    icon: Home,
-  },
-  {
-    value: "Insurance",
-    label: "Insurance",
-    icon: ShieldCheck,
-  },
-  {
-    value: "Savings",
-    label: "Savings",
-    icon: PiggyBank,
-  },
-  {
-    value: "Investments",
-    label: "Investments",
-    icon: HandCoins,
-  },
-  {
-    value: "Gifts",
-    label: "Gifts",
-    icon: Gift,
-  },
-  {
-    value: "Donations",
-    label: "Donations",
-    icon: HandHeart,
-  },
-  {
-    value: "Leisure",
-    label: "Leisure",
-    icon: Drama,
-  },
-  {
-    value: "Miscellaneous",
-    label: "Miscellaneous",
-    icon: RectangleEllipsis,
-  },
-];
-
-export function TransactionsDataTable<TData, TValue>({
+export function TransactionsDataTable<TransactionsResponseType, TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+  categories,
+}: DataTableProps<TransactionsResponseType, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<
+    CategoriesResponseType[]
+  >([]);
 
   const router = useRouter();
-  const searchParams = useSearchParams(); // Used to read query params
+  const searchParams = useSearchParams();
 
-  // Update query parameters when filters change
   useEffect(() => {
-    console.log("Updating query params");
     const query = new URLSearchParams({
       globalFilter,
-      selectedCategories: selectedCategories.map((cat) => cat.value).join(","),
+      selectedCategories: selectedCategories
+        .map((category) => category.id)
+        .join(","),
     });
 
     router.replace(`?${query.toString()}`);
   }, [globalFilter, selectedCategories, router]);
 
-  // Read filters from the URL on initial load
   useEffect(() => {
     const globalFilterParam = searchParams.get("globalFilter");
     const selectedCategoriesParam = searchParams.get("selectedCategories");
@@ -170,10 +76,17 @@ export function TransactionsDataTable<TData, TValue>({
 
       const mappedCategories = categoryValues.map(
         (value: string) =>
-          categories.find((category) => category.value === value) || {
-            value,
-            label: "Unknown", // Handle unknown categories
-            icon: File, // Default icon
+          categories.find((category) => category.id === value) || {
+            orgId: "",
+            id: "",
+            description: "",
+            name: "",
+            userId: "",
+            created_at: "",
+            created_by: "",
+            updated_at: "",
+            updated_by: "",
+            icon: "",
           }
       );
 
