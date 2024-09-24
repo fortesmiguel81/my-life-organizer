@@ -5,7 +5,8 @@ import { Hono } from "hono";
 import { Webhook } from "svix";
 
 import { db } from "@/db/drizzle";
-import { memberships } from "@/db/schema";
+
+import { memberships } from "./../../../db/schema";
 
 const app = new Hono().post("/", async (c) => {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
@@ -39,7 +40,6 @@ const app = new Hono().post("/", async (c) => {
       "svix-signature": svix_signature,
     }) as WebhookEvent;
   } catch (err) {
-    console.error("Error verifying webhook:", err);
     return c.json({ error: "Error verifying webhook" }, 400);
   }
 
@@ -48,6 +48,28 @@ const app = new Hono().post("/", async (c) => {
   var data = null;
 
   switch (eventType) {
+    case "organization.created":
+      data = await db.insert(memberships).values({
+        id: createId(),
+        userId: evt.data.created_by,
+        orgId: evt.data.id,
+        created_at: new Date(),
+      });
+
+      break;
+    case "organization.deleted":
+      const orgMemberships = await db
+        .select()
+        .from(memberships)
+        .where(eq(memberships.orgId, evt.data.id!));
+
+      if (orgMemberships.length > 0) {
+        data = await db
+          .delete(memberships)
+          .where(eq(memberships.orgId, evt.data.id!));
+      }
+
+      break;
     case "organizationMembership.created":
       data = await db.insert(memberships).values({
         id: createId(),
@@ -57,26 +79,6 @@ const app = new Hono().post("/", async (c) => {
       });
 
       break;
-    case "organizationMembership.updated":
-      const membership = await db
-        .select()
-        .from(memberships)
-        .where(
-          and(
-            eq(memberships.orgId, evt.data.organization.id),
-            eq(memberships.userId, evt.data.public_user_data.user_id)
-          )
-        );
-
-      if (membership.length > 0) {
-        data = await db.insert(memberships).values({
-          id: createId(),
-          userId: evt.data.public_user_data.user_id,
-          orgId: evt.data.organization.id,
-          created_at: new Date(),
-        });
-      }
-
     case "organizationMembership.deleted":
       data = await db
         .delete(memberships)
