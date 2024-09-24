@@ -7,12 +7,33 @@ import { Hono } from "hono";
 import { db } from "@/db/drizzle";
 import { accounts, insertTransactionSchema, transactions } from "@/db/schema";
 
+import { IsOrganizationMember } from "../utils/is-organization-member";
+
 const app = new Hono()
   .get("/", clerkMiddleware(), async (ctx) => {
     const auth = getAuth(ctx);
 
     if (!auth?.userId) {
       return ctx.json({ error: "Unauthorized" }, 401);
+    }
+
+    const orgId = ctx.req.query("orgId");
+
+    let whereCondition;
+
+    if (orgId) {
+      const isMember = await IsOrganizationMember(orgId, auth.userId);
+
+      whereCondition = eq(accounts.orgId, orgId);
+
+      if (!isMember) {
+        return ctx.json(
+          { error: "User does not belong to the organization!" },
+          400
+        );
+      }
+    } else {
+      whereCondition = eq(accounts.userId, auth.userId);
     }
 
     const data = await db
@@ -30,7 +51,7 @@ const app = new Hono()
       })
       .from(transactions)
       .innerJoin(accounts, eq(transactions.accountId, accounts.id))
-      .where(eq(accounts.userId, auth.userId));
+      .where(whereCondition);
 
     return ctx.json({ data });
   })

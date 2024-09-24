@@ -1,10 +1,9 @@
+import { createId } from "@paralleldrive/cuid2";
 
 import PageTitle from "@/app/(main)/_components/page-title";
 
 import { TransactionsDataTable } from "./_components/transactions-data-table";
 import { Payment, transactionsColumnsDefinition } from "./columns";
-
-import { createId } from "@paralleldrive/cuid2";
 
 async function getData(): Promise<Payment[]> {
   const categories = [
