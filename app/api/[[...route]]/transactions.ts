@@ -1,60 +1,79 @@
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
+import { z } from "zod";
 
 import { db } from "@/db/drizzle";
-import { accounts, insertTransactionSchema, transactions } from "@/db/schema";
+import {
+  accounts,
+  categories,
+  insertTransactionSchema,
+  transactions,
+} from "@/db/schema";
 
 import { IsOrganizationMember } from "../utils/is-organization-member";
 
 const app = new Hono()
-  .get("/", clerkMiddleware(), async (ctx) => {
-    const auth = getAuth(ctx);
+  .get(
+    "/",
+    zValidator(
+      "query",
+      z.object({
+        orgId: z.string().optional(),
+        accountId: z.string().optional(),
+      })
+    ),
+    clerkMiddleware(),
+    async (ctx) => {
+      const auth = getAuth(ctx);
 
-    if (!auth?.userId) {
-      return ctx.json({ error: "Unauthorized" }, 401);
-    }
+      if (!auth?.userId) {
+        return ctx.json({ error: "Unauthorized" }, 401);
+      }
 
-    const orgId = ctx.req.query("orgId");
+      const { orgId, accountId } = ctx.req.valid("query");
 
-    let whereCondition;
-
-    if (orgId) {
-      const isMember = await IsOrganizationMember(orgId, auth.userId);
-
-      whereCondition = eq(accounts.orgId, orgId);
-
-      if (!isMember) {
+      if (orgId && !(await IsOrganizationMember(orgId, auth.userId))) {
         return ctx.json(
           { error: "User does not belong to the organization!" },
           400
         );
       }
-    } else {
-      whereCondition = eq(accounts.userId, auth.userId);
+
+      const data = await db
+        .select({
+          id: transactions.id,
+          amount: transactions.amount,
+          payee: transactions.payee,
+          description: transactions.description,
+          date: transactions.date,
+          account: accounts.name,
+          accountId: transactions.accountId,
+          categoryId: transactions.categoryId,
+          category: categories.name,
+          created_at: transactions.created_at,
+          created_by: transactions.created_by,
+          updated_at: transactions.updated_at,
+          updated_by: transactions.updated_by,
+        })
+        .from(transactions)
+        .innerJoin(accounts, eq(transactions.accountId, accounts.id))
+        .leftJoin(categories, eq(transactions.categoryId, categories.id))
+        .where(
+          and(
+            orgId
+              ? eq(accounts.orgId, orgId)
+              : eq(accounts.userId, auth.userId),
+            accountId ? eq(transactions.accountId, accountId) : undefined
+          )
+        )
+        .orderBy(desc(transactions.date));
+
+      return ctx.json({ data });
     }
-
-    const data = await db
-      .select({
-        id: transactions.id,
-        amount: transactions.amount,
-        payee: transactions.payee,
-        description: transactions.description,
-        date: transactions.date,
-        created_at: transactions.created_at,
-        created_by: transactions.created_by,
-        updated_at: transactions.updated_at,
-        updated_by: transactions.updated_by,
-        accountId: transactions.accountId,
-      })
-      .from(transactions)
-      .innerJoin(accounts, eq(transactions.accountId, accounts.id))
-      .where(whereCondition);
-
-    return ctx.json({ data });
-  })
+  )
   .post(
     "/",
     clerkMiddleware(),
@@ -66,6 +85,7 @@ const app = new Hono()
         payee: true,
         description: true,
         accountId: true,
+        categoryId: true,
       })
     ),
     async (ctx) => {

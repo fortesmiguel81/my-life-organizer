@@ -1,27 +1,21 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import { InferResponseType } from "hono";
 import { ArrowUpDown } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { client } from "@/lib/hono";
 
 import { Category } from "../types/category";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-export type Payment = {
-  id: string;
-  date: Date;
-  amount: number;
-  category: string;
-  payee: string;
-  account: string;
-  shortDescription: string;
-  longDescription: string;
-};
+export type ResponseType = InferResponseType<
+  typeof client.api.transactions.$get,
+  200
+>["data"][0];
 
-export const transactionsColumnsDefinition: ColumnDef<Payment>[] = [
+export const transactionsColumnsDefinition: ColumnDef<ResponseType>[] = [
   {
     accessorKey: "date",
     header: ({ column }) => {
@@ -63,7 +57,7 @@ export const transactionsColumnsDefinition: ColumnDef<Payment>[] = [
     },
   },
   {
-    accessorKey: "shortDescription",
+    accessorKey: "description",
     header: "Description",
     enableGlobalFilter: true,
     filterFn: "includesString",
