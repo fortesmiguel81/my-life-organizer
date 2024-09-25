@@ -16,7 +16,7 @@ import {
 } from "@tanstack/react-table";
 import { File, PlusCircle, X } from "lucide-react";
 
-import { CategoriesResponseType } from "@/app/api/response-types";
+import { CategoriesResponseType } from "@/app/api/types/response-types";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

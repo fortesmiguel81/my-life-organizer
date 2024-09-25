@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction, useState } from "react";
 
 import { PlusCircle } from "lucide-react";
 
-import { CategoriesResponseType } from "@/app/api/response-types";
+import { CategoriesResponseType } from "@/app/api/types/response-types";
 import Icon from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

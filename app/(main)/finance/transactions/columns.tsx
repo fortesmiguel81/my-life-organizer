@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { InferResponseType } from "hono";
 import { ArrowUpDown } from "lucide-react";
 
-import { CategoriesResponseType } from "@/app/api/response-types";
+import { CategoriesResponseType } from "@/app/api/types/response-types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { client } from "@/lib/hono";
