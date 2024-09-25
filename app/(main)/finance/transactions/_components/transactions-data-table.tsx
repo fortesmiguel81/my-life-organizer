@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -14,9 +13,9 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { InferResponseType } from "hono";
 import { File, PlusCircle, X } from "lucide-react";
 
-import { CategoriesResponseType } from "@/app/api/types/response-types";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,8 +27,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useNewTransaction } from "@/features/transactions/hooks/use-new-transaction";
+import { client } from "@/lib/hono";
 
 import { CategoryDropdownFilter } from "./category-dropdown-filter";
+
+type TransactionsResponseType = InferResponseType<
+  typeof client.api.transactions.$get,
+  200
+>["data"][0];
+
+type CategoriesResponseType = InferResponseType<
+  typeof client.api.categories.$get,
+  200
+>["data"][0];
 
 interface DataTableProps<TransactionsResponseType, TValue> {
   columns: ColumnDef<TransactionsResponseType, TValue>[];
@@ -49,50 +60,7 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
     CategoriesResponseType[]
   >([]);
 
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const query = new URLSearchParams({
-      globalFilter,
-      selectedCategories: selectedCategories
-        .map((category) => category.id)
-        .join(","),
-    });
-
-    router.replace(`?${query.toString()}`);
-  }, [globalFilter, selectedCategories, router]);
-
-  useEffect(() => {
-    const globalFilterParam = searchParams.get("globalFilter");
-    const selectedCategoriesParam = searchParams.get("selectedCategories");
-
-    if (globalFilterParam) {
-      setGlobalFilter(globalFilterParam);
-    }
-
-    if (selectedCategoriesParam) {
-      const categoryValues = selectedCategoriesParam.split(",");
-
-      const mappedCategories = categoryValues.map(
-        (value: string) =>
-          categories.find((category) => category.id === value) || {
-            orgId: "",
-            id: "",
-            description: "",
-            name: "",
-            userId: "",
-            created_at: "",
-            created_by: "",
-            updated_at: "",
-            updated_by: "",
-            icon: "",
-          }
-      );
-
-      setSelectedCategories(mappedCategories);
-    }
-  }, [searchParams]);
+  const newTransaction = useNewTransaction();
 
   const table = useReactTable({
     data,
@@ -122,11 +90,6 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
 
   const handleExportTransactions = () => {
     // TODO: Implement export transactions
-    alert("Exporting transactions...");
-  };
-
-  const handleAddNewTransaction = () => {
-    // TODO: implement add new transaction
     alert("Exporting transactions...");
   };
 
@@ -168,7 +131,7 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
             <File className="mr-2 h-4 w-4" />
             <span>Export</span>
           </Button>
-          <Button className="font-md h-9" onClick={handleAddNewTransaction}>
+          <Button className="font-md h-9" onClick={newTransaction.onOpen}>
             <PlusCircle className="mr-2 h-4 w-4" />
             <span>Add Transaction</span>
           </Button>
