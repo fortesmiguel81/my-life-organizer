@@ -17,11 +17,7 @@ export default function TransactionsPage() {
   const categoriesQuery = useGetCategories(org.organization?.id);
   const categories = categoriesQuery.data || [];
 
-  const isLoading =
-    transactionsQuery.isLoading ||
-    categoriesQuery.isLoading ||
-    transactions.length === 0 ||
-    categories.length === 0;
+  const isLoading = transactionsQuery.isLoading || categoriesQuery.isLoading;
 
   return (
     <div className="flex w-full flex-col gap-4 pt-6">

@@ -2,7 +2,12 @@
 
 import { ModeToggle } from "@/components/mode-toggle";
 import { ThemeColorToggle } from "@/components/theme-color-toggle";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useSettings } from "@/hooks/use-settings";
 
@@ -13,7 +18,7 @@ export default function SettingsModal() {
     <Dialog open={settings.isOpen} onOpenChange={settings.OnClose}>
       <DialogContent>
         <DialogHeader className="border-b pb-3">
-          <h2 className="text-xl font-medium">My Settings</h2>
+          <DialogTitle className="text-xl font-medium">My Settings</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col">
           <h3 className="text-lg font-medium mb-3">Appearance</h3>
