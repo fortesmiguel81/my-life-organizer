@@ -73,6 +73,39 @@ body,
   }
 }
 
+@layer components {
+  /* .my-react-select-container {
+    } */
+  .my-react-select-container .my-react-select__control {
+    @apply border-[1px] border-neutral-300 bg-background hover:border-neutral-400 dark:border-neutral-700 dark:hover:border-neutral-500;
+  }
+
+  .my-react-select-container .my-react-select__control--is-focused {
+    @apply border-neutral-500 shadow-none hover:border-neutral-500 dark:border-neutral-400 dark:hover:border-neutral-400;
+  }
+
+  .my-react-select-container .my-react-select__menu {
+    @apply border-[1px] border-neutral-300 bg-background dark:border-neutral-600;
+  }
+
+  .my-react-select-container .my-react-select__option {
+    @apply bg-background text-neutral-600 hover:bg-neutral-200 dark:text-neutral-200 dark:hover:bg-neutral-800;
+  }
+  /* .my-react-select-container .my-react-select__option--is-focused {
+      @apply bg-neutral-200 dark:bg-neutral-800;
+    } */
+
+  .my-react-select-container .my-react-select__indicator-separator {
+    @apply bg-neutral-400;
+  }
+
+  .my-react-select-container .my-react-select__input-container,
+  .my-react-select-container .my-react-select__placeholder,
+  .my-react-select-container .my-react-select__single-value {
+    @apply text-neutral-600 dark:text-neutral-200;
+  }
+}
+
 .cl-userButtonPopoverCard.cl-popoverBox.cl-userButton-popover.cl-internal-1nf23tp,
 .cl-organizationSwitcherPopoverCard.cl-popoverBox.cl-organizationSwitcher-popover.cl-internal-1nf23tp {
   z-index: 99999;

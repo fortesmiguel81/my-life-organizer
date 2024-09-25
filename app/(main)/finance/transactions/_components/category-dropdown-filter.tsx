@@ -2,9 +2,9 @@
 
 import { Dispatch, SetStateAction, useState } from "react";
 
+import { InferResponseType } from "hono";
 import { PlusCircle } from "lucide-react";
 
-import { CategoriesResponseType } from "@/app/api/types/response-types";
 import Icon from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { client } from "@/lib/hono";
+
+type CategoriesResponseType = InferResponseType<
+  typeof client.api.categories.$get,
+  200
+>["data"][0];
 
 interface CategoryDropdownFilterProps {
   categories: CategoriesResponseType[];

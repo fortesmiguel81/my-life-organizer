@@ -15,7 +15,6 @@ import {
 } from "@/db/schema";
 
 import { canUserSeeTransaction } from "../utils/can-user-see-transaction";
-import { IsOrganizationMember } from "../utils/is-organization-member";
 
 const app = new Hono()
   .get(
@@ -23,7 +22,6 @@ const app = new Hono()
     zValidator(
       "query",
       z.object({
-        orgId: z.string().optional(),
         accountId: z.string().optional(),
         from: z.string().optional(),
         to: z.string().optional(),
@@ -37,14 +35,7 @@ const app = new Hono()
         return ctx.json({ error: "Unauthorized" }, 401);
       }
 
-      const { orgId, accountId, from, to } = ctx.req.valid("query");
-
-      if (orgId && !(await IsOrganizationMember(orgId, auth.userId))) {
-        return ctx.json(
-          { error: "User does not belong to the organization!" },
-          400
-        );
-      }
+      const { accountId, from, to } = ctx.req.valid("query");
 
       const defaultTo = new Date();
       const defaultFrom = subDays(defaultTo, 30);
@@ -76,8 +67,8 @@ const app = new Hono()
         .leftJoin(categories, eq(transactions.categoryId, categories.id))
         .where(
           and(
-            orgId
-              ? eq(accounts.orgId, orgId)
+            auth.orgId
+              ? eq(accounts.orgId, auth.orgId)
               : eq(accounts.userId, auth.userId),
             accountId ? eq(transactions.accountId, accountId) : undefined,
             gte(transactions.date, startDate),
