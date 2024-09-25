@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { ThemeProviderProps } from "next-themes/dist/types";
 
+import usePreferredColorScheme from "@/hooks/use-preferred-color-scheme";
 import setGlobalColorTheme from "@/lib/theme-colors";
 
 const ThemeContext = createContext<ThemeColorStateParams>(
@@ -12,6 +13,8 @@ const ThemeContext = createContext<ThemeColorStateParams>(
 );
 
 export default function ThemeColorProvider({ children }: ThemeProviderProps) {
+  const colorScheme = usePreferredColorScheme();
+
   const getSavedThemeColor = () => {
     try {
       return (localStorage.getItem("themeColor") as ThemeColors) || "Zinc";
@@ -28,7 +31,12 @@ export default function ThemeColorProvider({ children }: ThemeProviderProps) {
 
   useEffect(() => {
     localStorage.setItem("themeColor", themeColor);
-    setGlobalColorTheme(theme as "light" | "dark", themeColor);
+
+    if (theme === "system") {
+      setGlobalColorTheme(colorScheme, themeColor);
+    } else {
+      setGlobalColorTheme(theme as "light" | "dark", themeColor);
+    }
 
     if (!isMounted) {
       setIsMounted(true);
