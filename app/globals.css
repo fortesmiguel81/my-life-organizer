@@ -88,6 +88,12 @@ body,
     @apply border-[1px] border-neutral-300 bg-background dark:border-neutral-600;
   }
 
+  .my-react-select-container
+    .my-react-select__control
+    .my-react-select__placeholder {
+    @apply !text-muted-foreground;
+  }
+
   .my-react-select-container .my-react-select__option {
     @apply bg-background text-neutral-600 hover:bg-neutral-200 dark:text-neutral-200 dark:hover:bg-neutral-800;
   }

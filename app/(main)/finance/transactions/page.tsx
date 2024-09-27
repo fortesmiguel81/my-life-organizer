@@ -2,7 +2,7 @@
 
 import { useOrganization } from "@clerk/nextjs";
 
-import PageTitle from "@/app/(main)/_components/page-title";
+import PageTitle from "@/components/page-title";
 import Spinner from "@/components/spinner";
 import { useGetCategories } from "@/features/categories/api/use-get-categories";
 import { useGetTransactions } from "@/features/transactions/api/use-get-transactions";
@@ -26,7 +26,7 @@ export default function TransactionsPage() {
         subTitle="Manage your transactions history"
       />
       {isLoading ? (
-        <div className="w-full flex items-center justify-center">
+        <div className="flex w-full items-center justify-center">
           <Spinner size="icon" />
         </div>
       ) : (

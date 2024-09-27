@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { ThemeProvider, useTheme } from "next-themes";
@@ -31,15 +29,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 function OtherProviders({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme();
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return null;
-  }
 
   return (
     <ClerkProvider

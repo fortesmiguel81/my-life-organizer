@@ -1,9 +1,9 @@
 "use client";
 
-import Navbar from "@/app/(main)/_components/navbar";
+import Navbar from "@/components/navbar";
 import SearchCommand from "@/components/search-command";
 
-import { PageBreadcrumb } from "./_components/breadcrumb";
+import { PageBreadcrumb } from "../../components/breadcrumb";
 
 export default function MainLayout({
   children,

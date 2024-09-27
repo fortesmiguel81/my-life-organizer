@@ -50,7 +50,7 @@ export default function Select({
   return (
     <CreatableSelect
       isMulti={false}
-      className="text-sm h-10 my-react-select-container"
+      className="my-react-select-container h-10 text-sm"
       classNamePrefix="my-react-select"
       placeholder={placeholder}
       value={formatedValue}
