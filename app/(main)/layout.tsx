@@ -11,7 +11,7 @@ export default function MainLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="h-full bg-background">
+    <div className="h-full bg-muted/20">
       <Navbar />
       <main className="flex-1 overflow-y-auto pt-20">
         <SearchCommand />

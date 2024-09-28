@@ -13,7 +13,6 @@ import { useMediaQuery } from "usehooks-ts";
 
 import Spinner from "@/components/spinner";
 import { Button } from "@/components/ui/button";
-import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -21,6 +20,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
@@ -147,9 +147,9 @@ export default function Navbar() {
                     <NavigationMenuTrigger>Finance</NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                        <li className="row-span-3">
+                        <li className="row-span-4">
                           <NavigationMenuLink asChild>
-                            <div className="flex h-full w-full cursor-default select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md">
+                            <div className="flex h-full w-full cursor-default select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md">
                               <Image
                                 src="/finance.svg"
                                 alt="Finance"
@@ -166,6 +166,12 @@ export default function Navbar() {
                             </div>
                           </NavigationMenuLink>
                         </li>
+                        <NavItem href="/finance/accounts" title="Accounts">
+                          Manage your accounts, track your balance.
+                        </NavItem>
+                        <NavItem href="/finance/categories" title="Categories">
+                          Manage your spending categories.
+                        </NavItem>
                         <NavItem
                           href="/finance/transactions"
                           title="Transactions"

@@ -3,9 +3,12 @@ import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
+import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { accounts, insertAccountSchema } from "@/db/schema";
+
+import { canUserSeeAccount } from "../utils/can-user-see-account";
 
 const app = new Hono()
   .get("/", clerkMiddleware(), async (ctx) => {
@@ -19,6 +22,8 @@ const app = new Hono()
       .select({
         id: accounts.id,
         name: accounts.name,
+        userId: accounts.userId,
+        orgId: accounts.orgId,
       })
       .from(accounts)
       .where(
@@ -31,6 +36,37 @@ const app = new Hono()
 
     return ctx.json({ data });
   })
+  .get(
+    "/:id",
+    zValidator(
+      "param",
+      z.object({
+        id: z.string(),
+      })
+    ),
+    clerkMiddleware(),
+    async (ctx) => {
+      const auth = getAuth(ctx);
+
+      if (!auth?.userId) {
+        return ctx.json({ error: "Unauthorized" }, 401);
+      }
+
+      const { id } = ctx.req.valid("param");
+
+      if (!id) {
+        return ctx.json({ error: "Category Id is required!" }, 400);
+      }
+
+      const { canSeeAccount, data } = await canUserSeeAccount(id, auth.userId);
+
+      if (!canSeeAccount) {
+        return ctx.json({ error: `Account with the id: ${id} not found` }, 404);
+      }
+
+      return ctx.json({ data });
+    }
+  )
   .post(
     "/",
     clerkMiddleware(),
@@ -67,6 +103,100 @@ const app = new Hono()
           updated_by: auth.userId,
         })
         .returning();
+
+      return ctx.json({ data });
+    }
+  )
+  .patch(
+    "/:id",
+    clerkMiddleware(),
+    zValidator(
+      "param",
+      z.object({
+        id: z.string(),
+      })
+    ),
+    zValidator(
+      "json",
+      insertAccountSchema.omit({
+        id: true,
+        userId: true,
+        orgId: true,
+        created_at: true,
+        created_by: true,
+        updated_at: true,
+        updated_by: true,
+      })
+    ),
+    async (ctx) => {
+      const auth = getAuth(ctx);
+
+      if (!auth?.userId) {
+        return ctx.json({ error: "Unauthorized" }, 401);
+      }
+
+      const { id } = ctx.req.valid("param");
+
+      if (!id) {
+        return ctx.json({ error: "Account Id is required!" }, 400);
+      }
+
+      const values = ctx.req.valid("json");
+
+      const { canSeeAccount } = await canUserSeeAccount(id, auth.userId);
+
+      if (!canSeeAccount) {
+        return ctx.json({ error: `Account with the id: ${id} not found` }, 404);
+      }
+
+      const [data] = await db
+        .update(accounts)
+        .set({
+          ...values,
+          updated_at: new Date(),
+          updated_by: auth.userId,
+        })
+        .returning();
+
+      return ctx.json({ data });
+    }
+  )
+  .delete(
+    "/:id",
+    clerkMiddleware(),
+    zValidator(
+      "param",
+      z.object({
+        id: z.string(),
+      })
+    ),
+    async (ctx) => {
+      const auth = getAuth(ctx);
+
+      if (!auth?.userId) {
+        return ctx.json({ error: "Unauthorized" }, 401);
+      }
+
+      const { id } = ctx.req.valid("param");
+
+      if (!id) {
+        return ctx.json({ error: "Account Id is required!" }, 400);
+      }
+
+      const { canSeeAccount } = await canUserSeeAccount(id, auth.userId);
+
+      if (!canSeeAccount) {
+        return ctx.json({ error: `Account with the id: ${id} not found` }, 404);
+      }
+
+      const [data] = await db
+        .delete(accounts)
+        .where(eq(accounts.id, id))
+        .returning();
+
+      if (!data) {
+        return ctx.json({ error: `Account with the id: ${id} not found` }, 404);
+      }
 
       return ctx.json({ data });
     }

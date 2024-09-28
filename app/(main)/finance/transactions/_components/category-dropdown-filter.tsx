@@ -50,7 +50,7 @@ export function CategoryDropdownFilter({
           <Button
             variant="outline"
             size="sm"
-            className="flex h-9 items-center justify-start border-dashed leading-none"
+            className="flex h-9 items-center justify-start border-dashed bg-muted/50 leading-none"
           >
             <div className="flex items-center text-sm leading-none">
               <PlusCircle className="mr-2 h-4 w-4 shrink-0" />
@@ -75,7 +75,7 @@ export function CategoryDropdownFilter({
                       <Badge
                         key={category.id}
                         variant="secondary"
-                        className="rounded-sm py-1 text-sm leading-none"
+                        className="rounded-sm bg-muted py-1 text-sm leading-none"
                       >
                         {category.name}
                       </Badge>

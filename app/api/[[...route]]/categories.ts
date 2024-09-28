@@ -146,7 +146,7 @@ const app = new Hono()
       const { id } = ctx.req.valid("param");
 
       if (!id) {
-        return ctx.json({ error: "Transaction Id is required!" }, 400);
+        return ctx.json({ error: "Category Id is required!" }, 400);
       }
 
       const values = ctx.req.valid("json");

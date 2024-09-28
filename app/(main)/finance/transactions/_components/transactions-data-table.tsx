@@ -32,11 +32,6 @@ import { client } from "@/lib/hono";
 
 import { CategoryDropdownFilter } from "./category-dropdown-filter";
 
-type TransactionsResponseType = InferResponseType<
-  typeof client.api.transactions.$get,
-  200
->["data"][0];
-
 type CategoriesResponseType = InferResponseType<
   typeof client.api.categories.$get,
   200
@@ -101,7 +96,7 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
             placeholder="Filter transactions..."
             value={globalFilter}
             onChange={(event) => setGlobalFilter(event.target.value)}
-            className="h-9 max-w-sm"
+            className="h-9 max-w-sm bg-muted/50"
           />
           <CategoryDropdownFilter
             categories={categories}
@@ -125,7 +120,7 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            className="font-md h-9"
+            className="font-md h-9 bg-muted/50"
             onClick={handleExportTransactions}
           >
             <File className="mr-2 h-4 w-4" />

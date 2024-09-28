@@ -95,7 +95,7 @@ export const transactionsColumnsDefinition: ColumnDef<TransactionsResponseType>[
 
         return (
           <Badge
-            variant={amount < 0 ? "destructive" : "primary"}
+            variant={amount < 0 ? "destructive" : "success"}
             className="px-3.5 py-2.5 text-xs font-medium"
           >
             {formatCurrency(amount)}
