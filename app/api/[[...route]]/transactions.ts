@@ -46,6 +46,26 @@ const app = new Hono()
 
       const endDate = to ? parse(to, "yyyy-MM-dd", new Date()) : defaultTo;
 
+      // Construct query conditions
+      const queryConditions = [
+        auth.orgId
+          ? eq(accounts.orgId, auth.orgId)
+          : eq(accounts.userId, auth.userId),
+      ];
+
+      if (accountId) {
+        queryConditions.push(eq(transactions.accountId, accountId));
+      }
+      if (from) {
+        queryConditions.push(gte(transactions.date, startDate));
+      }
+      if (to) {
+        queryConditions.push(lte(transactions.date, endDate));
+      }
+
+      // Filter out any undefined values in the conditions array
+      const finalConditions = queryConditions.filter(Boolean);
+
       const data = await db
         .select({
           id: transactions.id,
@@ -65,16 +85,7 @@ const app = new Hono()
         .from(transactions)
         .innerJoin(accounts, eq(transactions.accountId, accounts.id))
         .leftJoin(categories, eq(transactions.categoryId, categories.id))
-        .where(
-          and(
-            auth.orgId
-              ? eq(accounts.orgId, auth.orgId)
-              : eq(accounts.userId, auth.userId),
-            accountId ? eq(transactions.accountId, accountId) : undefined,
-            gte(transactions.date, startDate),
-            lte(transactions.date, endDate)
-          )
-        )
+        .where(and(...finalConditions))
         .orderBy(desc(transactions.date));
 
       return ctx.json({ data });

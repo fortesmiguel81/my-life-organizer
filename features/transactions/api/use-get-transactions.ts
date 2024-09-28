@@ -9,11 +9,10 @@ export const useGetTransactions = (
   to?: string
 ) => {
   const query = useQuery({
-    queryKey: ["transactions", { orgId, accountId, from, to }],
+    queryKey: ["transactions"],
     queryFn: async () => {
       const response = await client.api.transactions.$get({
         query: {
-          orgId,
           accountId,
           from,
           to,

@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { insertTransactionSchema } from "@/db/schema";
+import { convertAmountToMiliunits } from "@/lib/utils";
 
 const formSchema = z.object({
   amount: z.string(),
@@ -67,8 +68,13 @@ export default function TransactionForm({
   });
 
   const handleSubmit = (values: FormValues) => {
-    console.log("values:", values);
-    //onSubmit(values);
+    const amount = parseFloat(values.amount);
+    const amountInMiliunits = convertAmountToMiliunits(amount);
+
+    onSubmit({
+      ...values,
+      amount: amountInMiliunits,
+    });
   };
 
   const handleDelete = () => {

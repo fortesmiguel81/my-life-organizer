@@ -1,12 +1,14 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 import { InferResponseType } from "hono";
 import { ArrowUpDown } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { client } from "@/lib/hono";
+import { formatCurrency } from "@/lib/utils";
 
 type TransactionsResponseType = InferResponseType<
   typeof client.api.transactions.$get,
@@ -34,10 +36,11 @@ export const transactionsColumnsDefinition: ColumnDef<TransactionsResponseType>[
         );
       },
       cell: ({ row }) => {
-        const amount = new Date(row.getValue("date"));
-        const formatted = new Intl.DateTimeFormat("en-US").format(amount);
+        const date = row.getValue("date") as Date;
 
-        return <div className="font-medium">{formatted}</div>;
+        return (
+          <div className="font-medium">{format(date, "dd MMMM, yyyy")}</div>
+        );
       },
     },
     {
@@ -89,17 +92,13 @@ export const transactionsColumnsDefinition: ColumnDef<TransactionsResponseType>[
       },
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue("amount"));
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format(amount);
 
         return (
           <Badge
             variant={amount < 0 ? "destructive" : "primary"}
             className="px-3.5 py-2.5 text-xs font-medium"
           >
-            {formatted}
+            {formatCurrency(amount)}
           </Badge>
         );
       },

@@ -13,5 +13,10 @@ export default clerkMiddleware((auth, request) => {
 });
 
 export const config = {
-  matcher: ["/((?!.+.[w]+$|_next).*)", "/", "/(api|trcp)(.*)"],
+  matcher: [
+    // Match all routes except for those with a file extension or within /_next/
+    "/((?!.*\\..*|_next|public).*)", // Exclude paths with a file extension (e.g., .svg, .png) and _next and public folders
+    "/",
+    "/(api|trcp)(.*)",
+  ],
 };
