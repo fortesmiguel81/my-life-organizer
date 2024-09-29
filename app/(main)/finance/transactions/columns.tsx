@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 import { client } from "@/lib/hono";
 import { formatCurrency } from "@/lib/utils";
 
+import AccountColumn from "./_components/account-column";
+import CategoryColumn from "./_components/category-column";
+
 type TransactionsResponseType = InferResponseType<
   typeof client.api.transactions.$get,
   200
@@ -55,6 +58,15 @@ export const transactionsColumnsDefinition: ColumnDef<TransactionsResponseType>[
             Category
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <CategoryColumn
+            id={row.original.id}
+            category={row.original.category}
+            categoryId={row.original.categoryId}
+          />
         );
       },
       enableColumnFilter: true,
@@ -106,7 +118,25 @@ export const transactionsColumnsDefinition: ColumnDef<TransactionsResponseType>[
     },
     {
       accessorKey: "account",
-      header: "Account",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Account
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <AccountColumn
+            account={row.original.account}
+            accountId={row.original.accountId}
+          />
+        );
+      },
       enableGlobalFilter: true,
       filterFn: "includesString",
     },

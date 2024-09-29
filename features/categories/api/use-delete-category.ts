@@ -8,7 +8,7 @@ type ResponseType = InferResponseType<
   (typeof client.api.categories)[":id"]["$delete"]
 >;
 
-export const useDeleteCategory = (id: string) => {
+export const useDeleteCategory = (id?: string) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error>({

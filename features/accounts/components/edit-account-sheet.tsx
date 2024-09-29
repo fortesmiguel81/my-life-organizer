@@ -1,4 +1,3 @@
-import * as LucideIcons from "lucide-react";
 import { z } from "zod";
 
 import Spinner from "@/components/spinner";
@@ -9,16 +8,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { insertCategorySchema } from "@/db/schema";
-import { useDeleteCategory } from "@/features/categories/api/use-delete-category";
-import { useEditCategory } from "@/features/categories/api/use-edit-category";
-import { useGetCategory } from "@/features/categories/api/use-get-category";
-import { useOpenCategory } from "@/features/categories/hooks/use-open-category";
+import { insertAccountSchema } from "@/db/schema";
+import { useDeleteAccount } from "@/features/accounts/api/use-delete-account";
+import { useEditAccount } from "@/features/accounts/api/use-edit-account";
+import { useGetAccount } from "@/features/accounts/api/use-get-account";
+import { useOpenAccount } from "@/features/accounts/hooks/use-open-account";
 import { useConfirm } from "@/hooks/use-confirm";
 
-import CategoryForm from "./category-form";
+import AccountForm from "./account-form";
 
-const formSchema = insertCategorySchema.omit({
+const formSchema = insertAccountSchema.omit({
   id: true,
   userId: true,
   orgId: true,
@@ -30,26 +29,24 @@ const formSchema = insertCategorySchema.omit({
 
 type FormValues = z.input<typeof formSchema>;
 
-export default function EditCategorySheet() {
-  const { isOpen, onClose, id } = useOpenCategory();
+export default function EditAccountSheet() {
+  const { isOpen, onClose, id } = useOpenAccount();
 
   const [ConfirmDialog, confirm] = useConfirm(
     "Are you sure?",
-    "This action cannot be undone. This will permanently delete the category."
+    "This action cannot be undone. This will permanently delete the account."
   );
 
-  const iconOptions = Object.keys(LucideIcons);
-
-  const categoryQuery = useGetCategory(id);
-  const editMutation = useEditCategory(id);
-  const deleteMutation = useDeleteCategory(id);
+  const accountQuery = useGetAccount(id);
+  const editMutation = useEditAccount(id);
+  const deleteMutation = useDeleteAccount(id);
 
   const isPending =
     editMutation.isPending ||
     deleteMutation.isPending ||
-    categoryQuery.isPending;
+    accountQuery.isPending;
 
-  const isLoading = categoryQuery.isLoading;
+  const isLoading = accountQuery.isLoading;
 
   const onSubmit = (values: FormValues) => {
     editMutation.mutate(values, {
@@ -71,11 +68,9 @@ export default function EditCategorySheet() {
     }
   };
 
-  const defaultValues = categoryQuery.data
+  const defaultValues = accountQuery.data
     ? {
-        ...categoryQuery.data,
-        icon: categoryQuery.data.icon ?? "",
-        description: categoryQuery.data.description ?? undefined,
+        ...accountQuery.data,
       }
     : undefined;
 
@@ -85,23 +80,20 @@ export default function EditCategorySheet() {
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent className="space-y-4">
           <SheetHeader>
-            <SheetTitle>Edit Category</SheetTitle>
-            <SheetDescription>
-              Edit the details of the category
-            </SheetDescription>
+            <SheetTitle>Edit Account</SheetTitle>
+            <SheetDescription>Edit the details of the account</SheetDescription>
           </SheetHeader>
           {isLoading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <Spinner size="icon" />
             </div>
           ) : (
-            <CategoryForm
+            <AccountForm
               id={id}
               onSubmit={onSubmit}
               disabled={isPending}
               onDelete={onDelete}
               defaultValues={defaultValues}
-              iconOptions={iconOptions}
             />
           )}
         </SheetContent>

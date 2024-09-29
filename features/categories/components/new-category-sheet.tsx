@@ -47,10 +47,8 @@ export default function NewCategorySheet() {
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="space-y-4">
         <SheetHeader>
-          <SheetTitle>New Transaction</SheetTitle>
-          <SheetDescription>
-            Create a new transaction to track your expenses.
-          </SheetDescription>
+          <SheetTitle>New Category</SheetTitle>
+          <SheetDescription>Create a new category</SheetDescription>
         </SheetHeader>
 
         <CategoryForm
