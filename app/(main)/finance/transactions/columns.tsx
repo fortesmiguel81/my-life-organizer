@@ -5,13 +5,13 @@ import { format } from "date-fns";
 import { InferResponseType } from "hono";
 import { ArrowUpDown } from "lucide-react";
 
-import Actions from "@/components/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { client } from "@/lib/hono";
 import { formatCurrency } from "@/lib/utils";
 
 import AccountColumn from "./_components/account-column";
+import Actions from "./_components/actions";
 import CategoryColumn from "./_components/category-column";
 
 type TransactionsResponseType = InferResponseType<

@@ -124,7 +124,7 @@ export default function CategoryForm({
         />
 
         <Button type="submit" className="w-full" disabled={disabled}>
-          {id ? "Save changes" : "Create transaction"}
+          {id ? "Save changes" : "Create category"}
         </Button>
         {!!id && (
           <Button

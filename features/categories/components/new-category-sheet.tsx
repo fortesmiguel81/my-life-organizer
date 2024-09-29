@@ -13,6 +13,7 @@ import { useCreateCategory } from "@/features/categories/api/use-create-category
 import { useNewCategory } from "@/features/categories/hooks/use-new-category";
 
 import CategoryForm from "./category-form";
+import { getFilteredIconDisplayNames } from "@/lib/icons";
 
 const formSchema = insertCategorySchema.omit({
   id: true,
@@ -31,7 +32,7 @@ export default function NewCategorySheet() {
 
   const createMutation = useCreateCategory();
 
-  const iconOptions = Object.keys(LucideIcons);
+  const iconOptions = getFilteredIconDisplayNames(LucideIcons);
 
   const isPending = createMutation.isPending;
 

@@ -9,14 +9,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useOpenTransaction } from "@/features/transactions/hooks/use-open-transaction";
+import { useOpenCategory } from "@/features/categories/hooks/use-open-category";
 
 type Props = {
   id: string;
 };
 
 export default function Actions({ id }: Props) {
-  const { onOpen } = useOpenTransaction();
+  const { onOpen } = useOpenCategory();
   return (
     <>
       <DropdownMenu>
