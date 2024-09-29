@@ -1,8 +1,7 @@
-"use client";
-
-import * as React from "react";
+import React, { useMemo, useState } from "react";
 
 import { Check, ChevronsUpDown } from "lucide-react";
+import { FixedSizeList as List } from "react-window";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +34,47 @@ export function Combobox({
   options,
   disabled,
 }: Props) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter options based on search input
+  const filteredOptions = useMemo(
+    () =>
+      options.filter((option) =>
+        option.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    [options, searchQuery]
+  );
+
+  // Define row renderer for react-window
+  const Row = ({
+    index,
+    style,
+  }: {
+    index: number;
+    style: React.CSSProperties;
+  }) => {
+    const option = filteredOptions[index];
+    return (
+      <CommandItem
+        style={style}
+        key={option}
+        value={option}
+        onSelect={(currentValue) => {
+          onChange(currentValue === value ? "" : currentValue);
+          setOpen(false);
+        }}
+      >
+        <Check
+          className={cn(
+            "mr-2 h-4 w-4",
+            value === option ? "opacity-100" : "opacity-0"
+          )}
+        />
+        {option}
+      </CommandItem>
+    );
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -44,39 +83,33 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-full justify-between"
           disabled={disabled}
         >
           {value
-            ? options.find((option) => option === value)
+            ? filteredOptions.find((option) => option === value)
             : `Select ${searchFor}...`}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
-          <CommandInput placeholder="Search framework..." />
+          <CommandInput
+            placeholder={`Search ${searchFor}...`}
+            value={searchQuery}
+            onValueChange={(newValue) => setSearchQuery(newValue)}
+          />
           <CommandList>
             <CommandEmpty>No {searchFor} found.</CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option}
-                  value={option}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue === value ? "" : currentValue);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {option}
-                </CommandItem>
-              ))}
+              <List
+                height={200} // Set the height of the list container
+                itemCount={filteredOptions.length} // Total items
+                itemSize={35} // Height of each row
+                width="100%" // Width of the list container
+              >
+                {Row}
+              </List>
             </CommandGroup>
           </CommandList>
         </Command>

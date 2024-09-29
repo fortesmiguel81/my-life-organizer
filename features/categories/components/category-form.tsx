@@ -115,7 +115,7 @@ export default function CategoryForm({
                   value={field.value}
                   onChange={field.onChange}
                   options={iconOptions}
-                  searchFor="Icon"
+                  searchFor="icon"
                   disabled={disabled}
                 />
               </FormControl>
