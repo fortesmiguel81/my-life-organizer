@@ -3,6 +3,8 @@ import { Trash } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { AccountNumberInput } from "@/components/account-number-input";
+import BalanceInput from "@/components/balance-input";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,9 +15,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { insertAccountSchema } from "@/db/schema";
+import { convertAmountToMiliunits } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string(),
+  holder: z.string(),
+  number: z.string().refine((val) => {
+    const cleanedVal = val.replace(/\s+/g, "");
+    return /^[A-Z]{2}\d{2}[A-Z0-9]{4}\d{6}\d{11}$/.test(cleanedVal);
+  }, "Invalid IBAN format. Please ensure the correct format: GB00 0000 0000 0000 0000 0000 0"),
+  balance: z.string(),
 });
 
 const apiSchema = insertAccountSchema.omit({
@@ -52,7 +61,13 @@ export default function AccountForm({
   });
 
   const handleSubmit = (values: FormValues) => {
-    onSubmit(values);
+    const balance = parseFloat(values.balance);
+    const balanceInMiliunits = convertAmountToMiliunits(balance);
+
+    onSubmit({
+      ...values,
+      balance: balanceInMiliunits,
+    });
   };
 
   const handleDelete = () => {
@@ -76,6 +91,54 @@ export default function AccountForm({
                   disabled={disabled}
                   placeholder="Add a name"
                   {...field}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          name="holder"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Holder</FormLabel>
+              <FormControl>
+                <Input
+                  disabled={disabled}
+                  placeholder="Add a holder"
+                  {...field}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          name="number"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Number</FormLabel>
+              <FormControl>
+                <AccountNumberInput
+                  {...field}
+                  placeholder="xxxx xxxx xxxx xxxx xxxx xxxx x"
+                  disabled={disabled}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          name="balance"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Balance</FormLabel>
+              <FormControl>
+                <BalanceInput
+                  {...field}
+                  disabled={disabled}
+                  placeholder="0.00"
                 />
               </FormControl>
             </FormItem>

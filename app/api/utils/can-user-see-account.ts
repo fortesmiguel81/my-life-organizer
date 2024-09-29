@@ -8,6 +8,9 @@ export async function canUserSeeAccount(accountId: string, userId: string) {
     .select({
       id: accounts.id,
       name: accounts.name,
+      holder: accounts.holder,
+      balance: accounts.balance,
+      number: accounts.number,
       userId: accounts.userId,
       orgId: accounts.orgId,
     })

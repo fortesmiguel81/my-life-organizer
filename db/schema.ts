@@ -13,6 +13,9 @@ export const memberships = pgTable("memberships", {
 export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
+  holder: text("holder").notNull(),
+  balance: integer("balance").notNull(),
+  number: text("number").notNull(),
   userId: text("user_id"),
   orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),

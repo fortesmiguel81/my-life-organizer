@@ -90,7 +90,7 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
 
   return (
     <div className="flex flex-col">
-      <div className="mt-3 flex h-9 justify-between">
+      <div className="mt-3 flex flex-col justify-between gap-4 md:h-9 md:flex-row lg:h-9 lg:flex-row">
         <div className="flex flex-1 items-center space-x-2">
           <Input
             placeholder="Filter transactions..."
@@ -120,13 +120,16 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            className="font-md h-9 bg-muted/50"
+            className="font-md h-9 w-full bg-muted/50 md:w-auto lg:w-auto"
             onClick={handleExportTransactions}
           >
             <File className="mr-2 h-4 w-4" />
             <span>Export</span>
           </Button>
-          <Button className="font-md h-9" onClick={newTransaction.onOpen}>
+          <Button
+            className="font-md h-9 w-full md:w-auto lg:w-auto"
+            onClick={newTransaction.onOpen}
+          >
             <PlusCircle className="mr-2 h-4 w-4" />
             <span>Add Transaction</span>
           </Button>

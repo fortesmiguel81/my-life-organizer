@@ -13,7 +13,7 @@ export default function MainLayout({
   return (
     <div className="h-full bg-muted/20">
       <Navbar />
-      <main className="flex-1 overflow-y-auto pt-20">
+      <main className="h-screen flex-1 overflow-y-auto pt-20">
         <SearchCommand />
         <div className="flex flex-col px-14 py-6">
           <PageBreadcrumb />

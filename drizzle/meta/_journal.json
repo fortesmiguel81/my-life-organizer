@@ -22,6 +22,20 @@
       "when": 1727216723514,
       "tag": "0002_silky_quicksilver",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1727632984255,
+      "tag": "0003_mute_slapstick",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1727637659966,
+      "tag": "0004_slow_lake",
+      "breakpoints": true
     }
   ]
 }

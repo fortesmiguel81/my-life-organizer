@@ -1,0 +1,1 @@
+ALTER TABLE "accounts" RENAME COLUMN "account_number" TO "number";
