@@ -17,7 +17,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  camelCaseWithSpacesToKebabCase,
+  iconNameToCamelCaseWithSpaces,
+} from "@/lib/icons";
 import { cn } from "@/lib/utils";
+
+import Icon from "./icon";
 
 type Props = {
   value?: string | null | undefined;
@@ -37,16 +43,17 @@ export function Combobox({
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter options based on search input
   const filteredOptions = useMemo(
     () =>
-      options.filter((option) =>
-        option.toLowerCase().includes(searchQuery.toLowerCase())
-      ),
+      options.filter((option) => {
+        const normalizedSearchQuery =
+          camelCaseWithSpacesToKebabCase(searchQuery);
+
+        return option.includes(normalizedSearchQuery);
+      }),
     [options, searchQuery]
   );
 
-  // Define row renderer for react-window
   const Row = ({
     index,
     style,
@@ -71,7 +78,8 @@ export function Combobox({
             value === option ? "opacity-100" : "opacity-0"
           )}
         />
-        {option}
+        <Icon name={option} className="mr-2 size-5" />
+        {iconNameToCamelCaseWithSpaces(option)}
       </CommandItem>
     );
   };
@@ -86,13 +94,18 @@ export function Combobox({
           className="w-full justify-between"
           disabled={disabled}
         >
-          {value
-            ? filteredOptions.find((option) => option === value)
-            : `Select ${searchFor}...`}
+          {value ? (
+            <div className="flex items-center">
+              <Icon name={value} className="mr-2 size-5" />
+              {iconNameToCamelCaseWithSpaces(value)}
+            </div>
+          ) : (
+            `Select ${searchFor}...`
+          )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-[300px] p-0">
         <Command>
           <CommandInput
             placeholder={`Search ${searchFor}...`}

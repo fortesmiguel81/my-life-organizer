@@ -76,6 +76,7 @@ const app = new Hono()
           account: accounts.name,
           accountId: transactions.accountId,
           category: categories.name,
+          categoryIcon: categories.icon,
           categoryId: transactions.categoryId,
           created_at: transactions.created_at,
           created_by: transactions.created_by,

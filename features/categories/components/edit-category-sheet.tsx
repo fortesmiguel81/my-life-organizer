@@ -15,6 +15,7 @@ import { useEditCategory } from "@/features/categories/api/use-edit-category";
 import { useGetCategory } from "@/features/categories/api/use-get-category";
 import { useOpenCategory } from "@/features/categories/hooks/use-open-category";
 import { useConfirm } from "@/hooks/use-confirm";
+import { getFilteredIconDisplayNames } from "@/lib/icons";
 
 import CategoryForm from "./category-form";
 
@@ -38,7 +39,7 @@ export default function EditCategorySheet() {
     "This action cannot be undone. This will permanently delete the category."
   );
 
-  const iconOptions = Object.keys(LucideIcons);
+  const iconOptions = getFilteredIconDisplayNames(LucideIcons);
 
   const categoryQuery = useGetCategory(id);
   const editMutation = useEditCategory(id);

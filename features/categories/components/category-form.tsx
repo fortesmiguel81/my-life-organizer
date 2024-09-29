@@ -136,7 +136,7 @@ export default function CategoryForm({
             variant="outline"
           >
             <Trash className="mr-2 size-4" />
-            Delete transaction
+            Delete category
           </Button>
         )}
       </form>

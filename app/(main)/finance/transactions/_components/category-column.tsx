@@ -1,5 +1,6 @@
 import { TriangleAlert } from "lucide-react";
 
+import Icon from "@/components/icon";
 import { useOpenCategory } from "@/features/categories/hooks/use-open-category";
 import { useOpenTransaction } from "@/features/transactions/hooks/use-open-transaction";
 import { cn } from "@/lib/utils";
@@ -8,9 +9,15 @@ type Props = {
   id: string;
   category: string | null;
   categoryId: string | null;
+  categoryIcon: string | null;
 };
 
-export default function CategoryColumn({ id, category, categoryId }: Props) {
+export default function CategoryColumn({
+  id,
+  category,
+  categoryId,
+  categoryIcon,
+}: Props) {
   const { onOpen: onOpenCategory } = useOpenCategory();
   const { onOpen: onOpenTransaction } = useOpenTransaction();
 
@@ -29,6 +36,7 @@ export default function CategoryColumn({ id, category, categoryId }: Props) {
         !category && "text-rose-500"
       )}
     >
+      {categoryIcon && <Icon name={categoryIcon} className="mr-2 size-5" />}
       {!category && <TriangleAlert className="mr-2 size-4 shrink-0" />}
       {category || "Uncategorized"}
     </div>

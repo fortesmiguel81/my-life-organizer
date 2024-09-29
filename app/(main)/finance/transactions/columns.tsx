@@ -66,6 +66,7 @@ export const transactionsColumnsDefinition: ColumnDef<TransactionsResponseType>[
             id={row.original.id}
             category={row.original.category}
             categoryId={row.original.categoryId}
+            categoryIcon={row.original.categoryIcon}
           />
         );
       },
