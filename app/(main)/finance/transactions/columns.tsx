@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { InferResponseType } from "hono";
 import { ArrowUpDown } from "lucide-react";
 
+import Actions from "@/components/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { client } from "@/lib/hono";
@@ -108,5 +109,11 @@ export const transactionsColumnsDefinition: ColumnDef<TransactionsResponseType>[
       header: "Account",
       enableGlobalFilter: true,
       filterFn: "includesString",
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        return <Actions id={row.original.id} />;
+      },
     },
   ];

@@ -12,7 +12,7 @@ type RequestType = InferRequestType<
   (typeof client.api.transactions)[":id"]["$patch"]
 >["json"];
 
-export const useEditTransaction = (id: string) => {
+export const useEditTransaction = (id?: string) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error, RequestType>({

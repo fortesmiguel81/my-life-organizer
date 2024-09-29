@@ -1,7 +1,5 @@
 "use client";
 
-import { useOrganization } from "@clerk/nextjs";
-
 import PageTitle from "@/components/page-title";
 import Spinner from "@/components/spinner";
 import { useGetCategories } from "@/features/categories/api/use-get-categories";
@@ -11,10 +9,9 @@ import { TransactionsDataTable } from "./_components/transactions-data-table";
 import { transactionsColumnsDefinition } from "./columns";
 
 export default function TransactionsPage() {
-  const org = useOrganization();
-  const transactionsQuery = useGetTransactions(org.organization?.id);
+  const transactionsQuery = useGetTransactions();
   const transactions = transactionsQuery.data || [];
-  const categoriesQuery = useGetCategories(org.organization?.id);
+  const categoriesQuery = useGetCategories();
   const categories = categoriesQuery.data || [];
 
   const isLoading = transactionsQuery.isLoading && categoriesQuery.isLoading;

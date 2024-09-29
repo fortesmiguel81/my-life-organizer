@@ -4,7 +4,6 @@ import { client } from "@/lib/hono";
 import { convertAmountFromMiliunits } from "@/lib/utils";
 
 export const useGetTransactions = (
-  orgId?: string,
   accountId?: string,
   from?: string,
   to?: string

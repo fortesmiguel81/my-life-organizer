@@ -96,7 +96,7 @@ const app = new Hono()
     zValidator(
       "param",
       z.object({
-        id: z.string(),
+        id: z.string().optional(),
       })
     ),
     clerkMiddleware(),
@@ -170,7 +170,7 @@ const app = new Hono()
     zValidator(
       "param",
       z.object({
-        id: z.string(),
+        id: z.string().optional(),
       })
     ),
     zValidator(
@@ -217,6 +217,7 @@ const app = new Hono()
           updated_at: new Date(),
           updated_by: auth.userId,
         })
+        .where(eq(transactions.id, id))
         .returning();
 
       return ctx.json({ data });
@@ -228,7 +229,7 @@ const app = new Hono()
     zValidator(
       "param",
       z.object({
-        id: z.string(),
+        id: z.string().optional(),
       })
     ),
     async (ctx) => {
