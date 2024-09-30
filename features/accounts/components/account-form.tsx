@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { AccountNumberInput } from "@/components/account-number-input";
 import BalanceInput from "@/components/balance-input";
+import { SvgCombobox } from "@/components/svg-combo-box";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -25,6 +26,7 @@ const formSchema = z.object({
     return /^[A-Z]{2}\d{2}[A-Z0-9]{4}\d{6}\d{11}$/.test(cleanedVal);
   }, "Invalid IBAN format. Please ensure the correct format: GB00 0000 0000 0000 0000 0000 0"),
   balance: z.string(),
+  bankIcon: z.string().nullable().optional(),
 });
 
 const apiSchema = insertAccountSchema.omit({
@@ -122,6 +124,23 @@ export default function AccountForm({
                 <AccountNumberInput
                   {...field}
                   placeholder="xxxx xxxx xxxx xxxx xxxx xxxx x"
+                  disabled={disabled}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          name="bankIcon"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Bank Account Provider</FormLabel>
+              <FormControl>
+                <SvgCombobox
+                  value={field.value}
+                  onChange={field.onChange}
+                  searchFor="bank account provider"
                   disabled={disabled}
                 />
               </FormControl>

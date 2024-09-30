@@ -3,7 +3,7 @@ import { Trash } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { Combobox } from "@/components/combobox";
+import { IconCombobox } from "@/components/icon-combo-box";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -111,7 +111,7 @@ export default function CategoryForm({
             <FormItem>
               <FormLabel>Icon</FormLabel>
               <FormControl>
-                <Combobox
+                <IconCombobox
                   value={field.value}
                   onChange={field.onChange}
                   options={iconOptions}

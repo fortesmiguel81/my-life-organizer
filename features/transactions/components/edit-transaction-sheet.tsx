@@ -19,6 +19,7 @@ import { useGetTransaction } from "@/features/transactions/api/use-get-transacti
 import TransactionForm from "@/features/transactions/components/transaction-form";
 import { useOpenTransaction } from "@/features/transactions/hooks/use-open-transaction";
 import { useConfirm } from "@/hooks/use-confirm";
+import React from "react";
 
 const formSchema = insertTransactionSchema.omit({
   id: true,
@@ -45,7 +46,12 @@ export default function EditTransactionSheet() {
   const accountQuery = useGetAccounts();
   const accountMutation = useCreateAccount();
   const onCreateAccount = (name: string) => {
-    accountMutation.mutate({ name });
+    accountMutation.mutate({
+      name,
+      number: "",
+      holder: "",
+      balance: 0,
+    });
   };
 
   const accountOptions = (accountQuery.data ?? []).map((account) => ({

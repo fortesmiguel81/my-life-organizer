@@ -25,6 +25,7 @@ const app = new Hono()
         holder: accounts.holder,
         balance: accounts.balance,
         number: accounts.number,
+        bankIcon: accounts.bankIcon,
         userId: accounts.userId,
         orgId: accounts.orgId,
       })

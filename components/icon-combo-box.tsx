@@ -33,7 +33,7 @@ type Props = {
   disabled?: boolean;
 };
 
-export function Combobox({
+export function IconCombobox({
   value,
   onChange,
   searchFor,

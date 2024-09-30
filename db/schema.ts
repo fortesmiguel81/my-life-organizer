@@ -16,6 +16,7 @@ export const accounts = pgTable("accounts", {
   holder: text("holder").notNull(),
   balance: integer("balance").notNull(),
   number: text("number").notNull(),
+  bankIcon: text("bank_icon"),
   userId: text("user_id"),
   orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),

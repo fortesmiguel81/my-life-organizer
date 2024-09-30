@@ -16,6 +16,7 @@ import { useOpenAccount } from "@/features/accounts/hooks/use-open-account";
 import { useConfirm } from "@/hooks/use-confirm";
 
 import AccountForm from "./account-form";
+import React from "react";
 
 const formSchema = insertAccountSchema.omit({
   id: true,
@@ -71,6 +72,7 @@ export default function EditAccountSheet() {
   const defaultValues = accountQuery.data
     ? {
         ...accountQuery.data,
+        balance: accountQuery.data.balance.toString(),
       }
     : undefined;
 

@@ -11,6 +11,7 @@ export async function canUserSeeAccount(accountId: string, userId: string) {
       holder: accounts.holder,
       balance: accounts.balance,
       number: accounts.number,
+      bankIcon: accounts.bankIcon,
       userId: accounts.userId,
       orgId: accounts.orgId,
     })

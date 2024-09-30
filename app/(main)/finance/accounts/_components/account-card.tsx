@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { InferResponseType } from "hono";
 import { Building2, CreditCard } from "lucide-react";
 
@@ -30,7 +32,17 @@ export default function AccountCard({ account }: Props) {
     >
       <CardHeader className="relative pb-2">
         <div className="absolute right-4 top-4">
-          <Building2 className="h-6 w-6 text-primary" />
+          {account.bankIcon ? (
+            <Image
+              src={account.bankIcon}
+              alt="Bank Icon"
+              width={24}
+              height={24}
+              className="h-6 w-6"
+            />
+          ) : (
+            <Building2 className="h-6 w-6 text-primary" />
+          )}
         </div>
         <CardTitle className="text-xl">{account.holder}</CardTitle>
         <CardDescription>{account.name}</CardDescription>
