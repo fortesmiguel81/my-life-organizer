@@ -43,6 +43,13 @@
       "when": 1727734726746,
       "tag": "0005_bumpy_ultimatum",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1727738466554,
+      "tag": "0006_redundant_avengers",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -31,6 +31,37 @@ export const accountsRelations = relations(accounts, ({ many }) => ({
 
 export const insertAccountSchema = createInsertSchema(accounts);
 
+export const budgetFrequencyEnum = pgEnum("budgetFrequency", [
+  "monthly",
+  "yearly",
+]);
+
+export const budgets = pgTable("budgets", {
+  id: text("id").primaryKey(),
+  amount: integer("amount").notNull(),
+  categoryId: text("category_id")
+    .notNull()
+    .references(() => categories.id, {
+      onDelete: "cascade",
+    }),
+  type: budgetFrequencyEnum("type").notNull(),
+  userId: text("user_id"),
+  orgId: text("org_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const budgetsRelations = relations(budgets, ({ one }) => ({
+  category: one(categories, {
+    fields: [budgets.categoryId],
+    references: [categories.id],
+  }),
+}));
+
+export const insertBudgetSchema = createInsertSchema(budgets);
+
 export const categories = pgTable("categories", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -46,6 +77,7 @@ export const categories = pgTable("categories", {
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
   transactions: many(transactions),
+  budgets: many(budgets),
 }));
 
 export const insertCategorySchema = createInsertSchema(categories);
