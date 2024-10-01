@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  Label,
-  PolarGrid,
-  PolarRadiusAxis,
-  RadialBar,
-  RadialBarChart,
+    Label,
+    PolarGrid,
+    PolarRadiusAxis,
+    RadialBar,
+    RadialBarChart,
 } from "recharts";
 
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
@@ -34,8 +34,8 @@ export function BudgetChart() {
     >
       <RadialBarChart
         data={chartData}
-        startAngle={0}
-        endAngle={250}
+        startAngle={180}
+        endAngle={360}
         innerRadius={80}
         outerRadius={110}
       >

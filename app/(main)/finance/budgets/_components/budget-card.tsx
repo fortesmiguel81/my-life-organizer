@@ -2,16 +2,17 @@ import { InferResponseType } from "hono";
 import { TrendingUp } from "lucide-react";
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import { useOpenBudget } from "@/features/budgets/hooks/use-open-budget";
 import { client } from "@/lib/hono";
 
+import Icon from "@/components/icon";
 import { BudgetChart } from "./budget-chart";
 
 type BudgetsResponseType = InferResponseType<
@@ -31,8 +32,11 @@ export default function BudgetCard({ budget }: Props) {
       onClick={() => onOpen(budget.id)}
     >
       <CardHeader className="relative pb-2">
-        <CardTitle className="text-xl">{budget.category}</CardTitle>
-        <CardDescription>{budget.category}</CardDescription>
+        <CardTitle className="text-xl flex items center">
+            <Icon name={budget.categoryIcon || ""} className="h-6 w-6 mr-2" />
+            {budget.category}
+            </CardTitle>
+        <CardDescription>{budget.categoryDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <BudgetChart />

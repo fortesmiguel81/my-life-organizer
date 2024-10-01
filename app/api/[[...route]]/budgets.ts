@@ -24,6 +24,7 @@ const app = new Hono()
         amount: budgets.amount,
         category: categories.name,
         categoryIcon: categories.icon,
+        categoryDescription: categories.description,
         categoryId: budgets.categoryId,
         type: budgets.type,
         userId: budgets.userId,
