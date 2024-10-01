@@ -1,18 +1,19 @@
 import { InferResponseType } from "hono";
 import { TrendingUp } from "lucide-react";
 
+import Icon from "@/components/icon";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { useOpenBudget } from "@/features/budgets/hooks/use-open-budget";
+import { useGetBudgetSummary } from "@/features/summaries/api/use-get-budget-summary";
 import { client } from "@/lib/hono";
 
-import Icon from "@/components/icon";
 import { BudgetChart } from "./budget-chart";
 
 type BudgetsResponseType = InferResponseType<
@@ -26,16 +27,24 @@ type Props = {
 
 export default function BudgetCard({ budget }: Props) {
   const { onOpen } = useOpenBudget();
+
+  const budgetSummaryQuery = useGetBudgetSummary(
+    budget.categoryId,
+    budget.type
+  );
+
+  console.log("budgetSummaryQuery:", budgetSummaryQuery.data);
+
   return (
     <Card
       className="hover:cursor-pointer hover:bg-muted/50"
       onClick={() => onOpen(budget.id)}
     >
       <CardHeader className="relative pb-2">
-        <CardTitle className="text-xl flex items center">
-            <Icon name={budget.categoryIcon || ""} className="h-6 w-6 mr-2" />
-            {budget.category}
-            </CardTitle>
+        <CardTitle className="items center flex text-xl">
+          <Icon name={budget.categoryIcon || ""} className="mr-2 h-6 w-6" />
+          {budget.category}
+        </CardTitle>
         <CardDescription>{budget.categoryDescription}</CardDescription>
       </CardHeader>
       <CardContent>

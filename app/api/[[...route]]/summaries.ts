@@ -9,9 +9,7 @@ import { z } from "zod";
 import { db } from "@/db/drizzle";
 import { accounts, categories, transactions } from "@/db/schema";
 
-const app = new Hono();
-
-app.get(
+const app = new Hono().get(
   "/budget",
   zValidator(
     "query",
@@ -27,6 +25,8 @@ app.get(
     if (!auth?.userId) {
       return ctx.json({ error: "Unauthorized" }, 401);
     }
+
+    console.log("here");
 
     const { period, categoryId } = ctx.req.valid("query");
 
@@ -71,5 +71,4 @@ app.get(
   }
 );
 
-// Start your Hono server
 export default app;
