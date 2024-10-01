@@ -27,6 +27,7 @@ import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
 
 import NavItem from "./nav-item";
+import React from "react";
 
 export default function Navbar() {
   const isMobile = useMediaQuery("(max-width: 768px)");

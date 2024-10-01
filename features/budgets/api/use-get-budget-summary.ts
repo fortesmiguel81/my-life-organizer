@@ -3,13 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import { client } from "@/lib/hono";
 
 export const useGetBudgetSummary = (
+  id: string,
   categoryId: string,
-  period: "monthly" | "yearly"
+  period: string
 ) => {
   const query = useQuery({
-    queryKey: ["budget", categoryId, period],
+    queryKey: ["budgets-summary", categoryId, period],
     queryFn: async () => {
-      const response = await client.api.summaries["budget"]["$get"]({
+      const response = await client.api.budgets[":id"]["summary"].$get({
+        param: {
+          id,
+        },
         query: {
           categoryId,
           period,
@@ -17,7 +21,7 @@ export const useGetBudgetSummary = (
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch accounts");
+        throw new Error("Failed to fetch budget summary");
       }
 
       const { data } = await response.json();

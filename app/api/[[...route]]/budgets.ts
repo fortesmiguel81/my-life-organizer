@@ -1,12 +1,18 @@
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
 import { db } from "@/db/drizzle";
-import { budgets, categories, insertBudgetSchema } from "@/db/schema";
+import {
+  accounts,
+  budgets,
+  categories,
+  insertBudgetSchema,
+  transactions,
+} from "@/db/schema";
 
 import { canUserSeeBudget } from "../utils/can-user-see-budget";
 
@@ -69,6 +75,74 @@ const app = new Hono()
       if (!canSeeBudget) {
         return ctx.json({ error: `Budget with the id: ${id} not found` }, 404);
       }
+
+      return ctx.json({ data });
+    }
+  )
+  .get(
+    "/:id/summary",
+    zValidator(
+      "param",
+      z.object({
+        id: z.string().optional(),
+      })
+    ),
+    zValidator(
+      "query",
+      z.object({
+        categoryId: z.string(),
+        period: z.enum(["monthly", "yearly"]),
+      })
+    ),
+    clerkMiddleware(),
+    async (ctx) => {
+      const auth = getAuth(ctx);
+
+      if (!auth?.userId) {
+        return ctx.json({ error: "Unauthorized" }, 401);
+      }
+
+      console.log("here");
+
+      const { id } = ctx.req.valid("param");
+
+      if (!id) {
+        return ctx.json({ error: "Budget Id is required!" }, 400);
+      }
+
+      const { period, categoryId } = ctx.req.valid("query");
+
+      if (!period || !["monthly", "yearly"].includes(period)) {
+        return ctx.json({ error: "Invalid period parameter" }, 400);
+      }
+      if (!categoryId) {
+        return ctx.json({ error: "Category Id is required" }, 400);
+      }
+
+      const dateFilter =
+        period === "monthly"
+          ? sql`date_trunc('month', transactions.date) = date_trunc('month', CURRENT_DATE)`
+          : sql`date_trunc('year', transactions.date) = date_trunc('year', CURRENT_DATE)`;
+
+      const queryConditions = [
+        auth.orgId
+          ? eq(accounts.orgId, auth.orgId)
+          : eq(accounts.userId, auth.userId),
+        eq(transactions.categoryId, categoryId),
+        dateFilter,
+      ];
+
+      const data = await db
+        .select({
+          categoryId: transactions.categoryId,
+          amount: sql`SUM(transactions.amount)`.mapWith(Number),
+          numberOfTransactions: sql`COUNT(transactions.id)`.mapWith(Number),
+        })
+        .from(transactions)
+        .innerJoin(accounts, eq(transactions.accountId, accounts.id))
+        .innerJoin(categories, eq(transactions.categoryId, categories.id))
+        .where(and(...queryConditions))
+        .groupBy(transactions.categoryId);
 
       return ctx.json({ data });
     }

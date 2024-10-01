@@ -4,7 +4,6 @@ import { handle } from "hono/vercel";
 import accounts from "./accounts";
 import budgets from "./budgets";
 import categories from "./categories";
-import summaries from "./summaries";
 import transactions from "./transactions";
 import webhooks from "./webhooks";
 
@@ -17,8 +16,7 @@ const routes = app
   .route("/accounts", accounts)
   .route("/transactions", transactions)
   .route("/categories", categories)
-  .route("/budgets", budgets)
-  .route("/summaries", summaries);
+  .route("/budgets", budgets);
 
 export const GET = handle(app);
 export const POST = handle(app);

@@ -2,6 +2,7 @@ import { InferResponseType } from "hono";
 import { TrendingUp } from "lucide-react";
 
 import Icon from "@/components/icon";
+import Spinner from "@/components/spinner";
 import {
   Card,
   CardContent,
@@ -10,8 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useGetBudgetSummary } from "@/features/budgets/api/use-get-budget-summary";
 import { useOpenBudget } from "@/features/budgets/hooks/use-open-budget";
-import { useGetBudgetSummary } from "@/features/summaries/api/use-get-budget-summary";
 import { client } from "@/lib/hono";
 
 import { BudgetChart } from "./budget-chart";
@@ -29,6 +30,7 @@ export default function BudgetCard({ budget }: Props) {
   const { onOpen } = useOpenBudget();
 
   const budgetSummaryQuery = useGetBudgetSummary(
+    budget.id,
     budget.categoryId,
     budget.type
   );
@@ -48,7 +50,11 @@ export default function BudgetCard({ budget }: Props) {
         <CardDescription>{budget.categoryDescription}</CardDescription>
       </CardHeader>
       <CardContent>
-        <BudgetChart />
+        {budgetSummaryQuery.isLoading ? (
+          <Spinner size="icon" />
+        ) : (
+          <BudgetChart data={budgetSummaryQuery.data!} />
+        )}
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 font-medium leading-none">

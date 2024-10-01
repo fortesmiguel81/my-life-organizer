@@ -1,20 +1,16 @@
 "use client";
 
+import { InferResponseType } from "hono";
 import {
-    Label,
-    PolarGrid,
-    PolarRadiusAxis,
-    RadialBar,
-    RadialBarChart,
+  Label,
+  PolarGrid,
+  PolarRadiusAxis,
+  RadialBar,
+  RadialBarChart,
 } from "recharts";
 
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
-
-export const description = "A radial chart with text";
-
-const chartData = [
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-];
+import { client } from "@/lib/hono";
 
 const chartConfig = {
   visitors: {
@@ -26,7 +22,22 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function BudgetChart() {
+type ResponseType = InferResponseType<
+  (typeof client.api.budgets)[":id"]["summary"]["$get"],
+  200
+>["data"][0];
+
+type Props = {
+  data: ResponseType[];
+};
+
+export function BudgetChart({ data }: Props) {
+  const chartData = data.map((item) => ({
+    ...item,
+    fill: "var(--color-safari)",
+  }));
+  console.log("chartData:", chartData);
+
   return (
     <ChartContainer
       config={chartConfig}
@@ -46,7 +57,7 @@ export function BudgetChart() {
           className="first:fill-muted last:fill-background"
           polarRadius={[86, 74]}
         />
-        <RadialBar dataKey="visitors" background cornerRadius={10} />
+        <RadialBar dataKey="amount" background cornerRadius={10} />
         <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
           <Label
             content={({ viewBox }) => {
@@ -63,7 +74,7 @@ export function BudgetChart() {
                       y={viewBox.cy}
                       className="fill-foreground text-4xl font-bold"
                     >
-                      {chartData[0].visitors.toLocaleString()}
+                      {chartData[0]?.categoryId?.toLocaleString() ?? ""}
                     </tspan>
                     <tspan
                       x={viewBox.cx}
