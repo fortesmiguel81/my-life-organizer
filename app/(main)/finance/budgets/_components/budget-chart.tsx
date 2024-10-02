@@ -25,17 +25,21 @@ const chartConfig = {
 type ResponseType = InferResponseType<
   (typeof client.api.budgets)[":id"]["summary"]["$get"],
   200
->["data"][0];
+>["data"];
 
 type Props = {
-  data: ResponseType[];
+  data: ResponseType;
 };
 
 export function BudgetChart({ data }: Props) {
-  const chartData = data.map((item) => ({
-    ...item,
-    fill: "var(--color-safari)",
-  }));
+  const chartData = [
+    {
+      ...data,
+      percentage: (data.amount / data.budgetAmount) * 100,
+      fill: "var(--color-safari)",
+    },
+  ];
+
   console.log("chartData:", chartData);
 
   return (
@@ -45,7 +49,7 @@ export function BudgetChart({ data }: Props) {
     >
       <RadialBarChart
         data={chartData}
-        startAngle={180}
+        startAngle={0}
         endAngle={360}
         innerRadius={80}
         outerRadius={110}
@@ -57,7 +61,7 @@ export function BudgetChart({ data }: Props) {
           className="first:fill-muted last:fill-background"
           polarRadius={[86, 74]}
         />
-        <RadialBar dataKey="amount" background cornerRadius={10} />
+        <RadialBar dataKey="percentage" background cornerRadius={10} />
         <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
           <Label
             content={({ viewBox }) => {
@@ -74,14 +78,14 @@ export function BudgetChart({ data }: Props) {
                       y={viewBox.cy}
                       className="fill-foreground text-4xl font-bold"
                     >
-                      {chartData[0]?.categoryId?.toLocaleString() ?? ""}
+                      {chartData[0]?.amount?.toLocaleString() ?? ""}
                     </tspan>
                     <tspan
                       x={viewBox.cx}
                       y={(viewBox.cy || 0) + 24}
                       className="fill-muted-foreground"
                     >
-                      Visitors
+                      {chartData[0]?.category}
                     </tspan>
                   </text>
                 );

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/hono";
+import { convertAmountFromMiliunits } from "@/lib/utils";
 
 export const useGetBudgetSummary = (
   id: string,
@@ -26,7 +27,11 @@ export const useGetBudgetSummary = (
 
       const { data } = await response.json();
 
-      return data;
+      return {
+        ...data!,
+        amount: convertAmountFromMiliunits(data!.amount),
+        budgetAmount: convertAmountFromMiliunits(data!.budgetAmount),
+      };
     },
   });
 

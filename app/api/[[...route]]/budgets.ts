@@ -132,17 +132,20 @@ const app = new Hono()
         dateFilter,
       ];
 
-      const data = await db
+      const [data] = await db
         .select({
+          category: categories.name,
           categoryId: transactions.categoryId,
           amount: sql`SUM(transactions.amount)`.mapWith(Number),
+          budgetAmount: budgets.amount,
           numberOfTransactions: sql`COUNT(transactions.id)`.mapWith(Number),
         })
         .from(transactions)
         .innerJoin(accounts, eq(transactions.accountId, accounts.id))
         .innerJoin(categories, eq(transactions.categoryId, categories.id))
+        .innerJoin(budgets, eq(transactions.categoryId, budgets.categoryId))
         .where(and(...queryConditions))
-        .groupBy(transactions.categoryId);
+        .groupBy(transactions.categoryId, categories.name, budgets.amount);
 
       return ctx.json({ data });
     }
