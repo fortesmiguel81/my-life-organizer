@@ -16,6 +16,7 @@ import BudgetCard from "./_components/budget-card";
 export default function BudgetsPage() {
   const budgetsQuery = useGetBudgets();
   const budgets = budgetsQuery.data || [];
+  console.log("budgets:", budgets);
 
   const [globalFilter, setGlobalFilter] = useState("");
   const newBudget = useNewBudget();

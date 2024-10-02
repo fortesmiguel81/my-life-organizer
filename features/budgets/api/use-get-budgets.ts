@@ -18,6 +18,7 @@ export const useGetBudgets = () => {
       return data.map((budget) => ({
         ...budget,
         amount: convertAmountFromMiliunits(budget.amount),
+        amountSpent: convertAmountFromMiliunits(budget.amountSpent),
       }));
     },
   });

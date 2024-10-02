@@ -1,6 +1,5 @@
 "use client";
 
-import { InferResponseType } from "hono";
 import {
   Label,
   PolarGrid,
@@ -10,11 +9,11 @@ import {
 } from "recharts";
 
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
-import { client } from "@/lib/hono";
+import { formatCurrency, getRandomHexColor } from "@/lib/utils";
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
+  percentage: {
+    label: "Percentage",
   },
   safari: {
     label: "Safari",
@@ -22,21 +21,16 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-type ResponseType = InferResponseType<
-  (typeof client.api.budgets)[":id"]["summary"]["$get"],
-  200
->["data"];
-
 type Props = {
-  data: ResponseType;
+  data: { amount: number; amountSpent: number; category: string };
 };
 
 export function BudgetChart({ data }: Props) {
   const chartData = [
     {
       ...data,
-      percentage: (data.amount / data.budgetAmount) * 100,
-      fill: "var(--color-safari)",
+      amountSpentProgress: (data.amountSpent / data.amount) * 100,
+      fill: getRandomHexColor(),
     },
   ];
 
@@ -46,11 +40,12 @@ export function BudgetChart({ data }: Props) {
     <ChartContainer
       config={chartConfig}
       className="mx-auto aspect-square max-h-[250px]"
+      style={{ width: 200, height: 200 }} // Set chart container size
     >
       <RadialBarChart
         data={chartData}
-        startAngle={0}
-        endAngle={360}
+        startAngle={90}
+        endAngle={90 + 360 * (chartData[0].amountSpentProgress / 100)}
         innerRadius={80}
         outerRadius={110}
       >
@@ -61,7 +56,7 @@ export function BudgetChart({ data }: Props) {
           className="first:fill-muted last:fill-background"
           polarRadius={[86, 74]}
         />
-        <RadialBar dataKey="percentage" background cornerRadius={10} />
+        <RadialBar dataKey="amountSpentProgress" background cornerRadius={10} />
         <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
           <Label
             content={({ viewBox }) => {
@@ -76,16 +71,9 @@ export function BudgetChart({ data }: Props) {
                     <tspan
                       x={viewBox.cx}
                       y={viewBox.cy}
-                      className="fill-foreground text-4xl font-bold"
+                      className="fill-foreground text-2xl font-bold"
                     >
-                      {chartData[0]?.amount?.toLocaleString() ?? ""}
-                    </tspan>
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 24}
-                      className="fill-muted-foreground"
-                    >
-                      {chartData[0]?.category}
+                      {formatCurrency(chartData[0]?.amountSpent)}
                     </tspan>
                   </text>
                 );

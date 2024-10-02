@@ -1,8 +1,7 @@
 import { InferResponseType } from "hono";
-import { TrendingUp } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 
 import Icon from "@/components/icon";
-import Spinner from "@/components/spinner";
 import {
   Card,
   CardContent,
@@ -11,9 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useGetBudgetSummary } from "@/features/budgets/api/use-get-budget-summary";
 import { useOpenBudget } from "@/features/budgets/hooks/use-open-budget";
 import { client } from "@/lib/hono";
+import { formatCurrency } from "@/lib/utils";
 
 import { BudgetChart } from "./budget-chart";
 
@@ -29,13 +28,11 @@ type Props = {
 export default function BudgetCard({ budget }: Props) {
   const { onOpen } = useOpenBudget();
 
-  const budgetSummaryQuery = useGetBudgetSummary(
-    budget.id,
-    budget.categoryId,
-    budget.type
-  );
-
-  console.log("budgetSummaryQuery:", budgetSummaryQuery.data);
+  const chartData = {
+    amount: budget.amount,
+    amountSpent: budget.amountSpent,
+    category: budget.category,
+  };
 
   return (
     <Card
@@ -43,26 +40,31 @@ export default function BudgetCard({ budget }: Props) {
       onClick={() => onOpen(budget.id)}
     >
       <CardHeader className="relative pb-2">
-        <CardTitle className="items center flex text-xl">
+        <CardTitle className="flex items-center text-2xl">
           <Icon name={budget.categoryIcon || ""} className="mr-2 h-6 w-6" />
           {budget.category}
         </CardTitle>
         <CardDescription>{budget.categoryDescription}</CardDescription>
       </CardHeader>
-      <CardContent>
-        {budgetSummaryQuery.isLoading ? (
-          <Spinner size="icon" />
-        ) : (
-          <BudgetChart data={budgetSummaryQuery.data!} />
-        )}
+      <CardContent className="p-3">
+        <BudgetChart data={chartData} />
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+      <CardFooter className="flex flex-col gap-2 text-sm">
+        <div className="flex items-center gap-2 text-center font-medium leading-none">
+          {formatCurrency(budget.amountSpent)} spent out of{" "}
+          {formatCurrency(budget.amount)} in {budget.numberOfTransactions}{" "}
+          transactions
         </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
+
+        {budget.amountSpent > budget.amount && (
+          <div className="mt-2 flex items-center rounded-sm bg-[#fca5a524] px-2 py-3 text-sm font-medium text-red-500">
+            <TriangleAlert className="mr-2 size-4 shrink-0" />
+            <span className="text-center">
+              You have exceeded your budget by{" "}
+              {formatCurrency(budget.amountSpent - budget.amount)}!
+            </span>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );
