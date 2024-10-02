@@ -41,11 +41,7 @@ export default function ThemeColorProvider({ children }: ThemeProviderProps) {
     if (!isMounted) {
       setIsMounted(true);
     }
-  }, [themeColor, theme]);
-
-  if (!isMounted) {
-    return null;
-  }
+  }, [themeColor, theme, colorScheme, isMounted]);
 
   return (
     <ThemeContext.Provider value={{ themeColor, setThemeColor }}>

@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 type SettingsStore = {
   isOpen: boolean;
@@ -6,7 +6,7 @@ type SettingsStore = {
   OnClose: () => void;
 };
 
-export const useSettings = create<SettingsStore>((set, get) => ({
+export const useSettings = create<SettingsStore>((set) => ({
   isOpen: false,
   OnOpen: () => set({ isOpen: true }),
   OnClose: () => set({ isOpen: false }),

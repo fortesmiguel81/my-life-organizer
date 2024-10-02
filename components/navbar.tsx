@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
+import { ElementRef, useCallback, useRef, useState } from "react";
 
 import {
   OrganizationSwitcher,
@@ -37,33 +37,23 @@ export default function Navbar() {
   const { user, isLoaded: isLoadedUser } = useUser();
   const settings = useSettings();
 
-  const [isResetting, setIsResetting] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const handleResetWidth = useCallback(() => {
-    if (sidebarRef.current && isMobile) {
+    if (sidebarRef.current && isMobile && !isSidebarOpen) {
       setIsResetting(true);
       setIsSidebarOpen(true);
-      sidebarRef.current.style.width = "260px";
-
+      // Use transition timing to reset the animation state
       setTimeout(() => setIsResetting(false), 300);
     }
-  }, [sidebarRef, isMobile]);
-
-  useEffect(() => {
-    if (isMobile) {
-      handleCollapse();
-    } else {
-      handleResetWidth();
-    }
-  }, [isMobile, handleResetWidth]);
+  }, [isMobile, isSidebarOpen]);
 
   const handleCollapse = () => {
     if (sidebarRef.current) {
       setIsResetting(true);
       setIsSidebarOpen(false);
-      sidebarRef.current.style.width = "0";
-
+      // Use transition timing to reset the animation state
       setTimeout(() => setIsResetting(false), 300);
     }
   };
@@ -73,18 +63,19 @@ export default function Navbar() {
       <aside
         ref={sidebarRef}
         className={cn(
-          "group/sidebar fixed z-[99999] flex h-full w-60 flex-col overflow-y-auto bg-secondary lg:hidden",
+          "group/sidebar fixed z-[99999] flex h-full flex-col overflow-y-auto bg-secondary lg:hidden",
+          // Apply transition classes when resetting the sidebar
           isResetting && "transition-all duration-300 ease-in-out",
-          isMobile && "w-0",
-          isSidebarOpen && "p-3"
+          isSidebarOpen ? "w-60" : "w-0", // Toggle width based on state
+          isSidebarOpen && "p-3" // Add padding when open
         )}
       >
         <div
           onClick={handleCollapse}
           role="button"
           className={cn(
-            "absolute right-2 top-5 h-6 w-6 rounded-sm text-muted-foreground opacity-0 transition hover:bg-neutral-300 group-hover/sidebar:opacity-100 dark:hover:bg-neutral-600",
-            isMobile && "opacity-100"
+            "absolute right-2 top-5 h-6 w-6 rounded-sm text-muted-foreground transition-opacity hover:bg-neutral-300 dark:hover:bg-neutral-600",
+            isSidebarOpen ? "opacity-100" : "opacity-0"
           )}
         >
           <ChevronLeft className="h-6 w-6" />
@@ -98,7 +89,7 @@ export default function Navbar() {
           </div>
         </div>
         <div className="absolute bottom-2 p-2">
-          {isLoadedOrganization ? (
+          {isLoadedOrganization && isLoadedUser ? (
             <OrganizationSwitcher />
           ) : (
             <Spinner size="lg" />
@@ -109,7 +100,7 @@ export default function Navbar() {
         onClick={handleCollapse}
         className={cn(
           "absolute z-[99998] hidden h-full w-full bg-black/50 blur-sm",
-          isSidebarOpen && "block"
+          isSidebarOpen && "block" // Show the overlay when sidebar is open
         )}
       />
 
@@ -119,7 +110,7 @@ export default function Navbar() {
             <div
               className="flex items-center justify-between"
               role={isMobile ? "button" : undefined}
-              onClick={handleResetWidth}
+              onClick={isSidebarOpen ? handleCollapse : handleResetWidth} // Toggle sidebar open/close on click
             >
               <Image src="/logo.svg" alt="logo" width={50} height={50} />
               {!isMobile && (
@@ -127,7 +118,7 @@ export default function Navbar() {
               )}
             </div>
             {!isMobile &&
-              (isLoadedOrganization ? (
+              (isLoadedOrganization && isLoadedUser ? (
                 <OrganizationSwitcher />
               ) : (
                 <Spinner size="lg" />

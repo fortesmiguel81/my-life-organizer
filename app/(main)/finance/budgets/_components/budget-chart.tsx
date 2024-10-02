@@ -34,8 +34,6 @@ export function BudgetChart({ data }: Props) {
     },
   ];
 
-  console.log("chartData:", chartData);
-
   return (
     <ChartContainer
       config={chartConfig}

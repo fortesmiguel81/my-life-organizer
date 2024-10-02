@@ -1,7 +1,9 @@
 "use client";
 
+import LoadingIndicator from "@/components/loading-indicator";
 import Navbar from "@/components/navbar";
 import SearchCommand from "@/components/search-command";
+import { useOrganizationQueryInvalidation } from "@/hooks/use-organization-query-invalidation";
 
 import { PageBreadcrumb } from "../../components/breadcrumb";
 
@@ -10,8 +12,10 @@ export default function MainLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  useOrganizationQueryInvalidation();
   return (
     <div className="h-full bg-muted/20">
+      <LoadingIndicator />
       <Navbar />
       <main className="h-screen flex-1 overflow-y-auto pt-20">
         <SearchCommand />
