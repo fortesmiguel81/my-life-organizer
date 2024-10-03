@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ElementRef, useCallback, useRef, useState } from "react";
 
 import {
@@ -36,6 +37,7 @@ export default function Navbar() {
   const { isLoaded: isLoadedOrganization } = useOrganization();
   const { user, isLoaded: isLoadedUser } = useUser();
   const settings = useSettings();
+  const pathname = usePathname();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
@@ -44,7 +46,6 @@ export default function Navbar() {
     if (sidebarRef.current && isMobile && !isSidebarOpen) {
       setIsResetting(true);
       setIsSidebarOpen(true);
-      // Use transition timing to reset the animation state
       setTimeout(() => setIsResetting(false), 300);
     }
   }, [isMobile, isSidebarOpen]);
@@ -53,7 +54,6 @@ export default function Navbar() {
     if (sidebarRef.current) {
       setIsResetting(true);
       setIsSidebarOpen(false);
-      // Use transition timing to reset the animation state
       setTimeout(() => setIsResetting(false), 300);
     }
   };
@@ -64,10 +64,9 @@ export default function Navbar() {
         ref={sidebarRef}
         className={cn(
           "group/sidebar fixed z-[99999] flex h-full flex-col overflow-y-auto bg-secondary lg:hidden",
-          // Apply transition classes when resetting the sidebar
           isResetting && "transition-all duration-300 ease-in-out",
-          isSidebarOpen ? "w-60" : "w-0", // Toggle width based on state
-          isSidebarOpen && "p-3" // Add padding when open
+          isSidebarOpen ? "w-60" : "w-0",
+          isSidebarOpen && "p-3"
         )}
       >
         <div
@@ -100,7 +99,7 @@ export default function Navbar() {
         onClick={handleCollapse}
         className={cn(
           "absolute z-[99998] hidden h-full w-full bg-black/50 blur-sm",
-          isSidebarOpen && "block" // Show the overlay when sidebar is open
+          isSidebarOpen && "block"
         )}
       />
 
@@ -110,7 +109,7 @@ export default function Navbar() {
             <div
               className="flex items-center justify-between"
               role={isMobile ? "button" : undefined}
-              onClick={isSidebarOpen ? handleCollapse : handleResetWidth} // Toggle sidebar open/close on click
+              onClick={isSidebarOpen ? handleCollapse : handleResetWidth}
             >
               <Image src="/logo.svg" alt="logo" width={50} height={50} />
               {!isMobile && (
@@ -129,6 +128,7 @@ export default function Navbar() {
                   <NavigationMenuItem>
                     <Link href="/dashboard" legacyBehavior passHref>
                       <NavigationMenuLink
+                        active={pathname.startsWith("/dashboard")}
                         className={navigationMenuTriggerStyle()}
                       >
                         Dashboard
@@ -136,7 +136,13 @@ export default function Navbar() {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger>Finance</NavigationMenuTrigger>
+                    <NavigationMenuTrigger
+                      className={cn(
+                        pathname.startsWith("/finance") && "bg-accent/50"
+                      )}
+                    >
+                      Finance
+                    </NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                         <li className="row-span-4">
