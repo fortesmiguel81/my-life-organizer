@@ -146,23 +146,25 @@ export default function Navbar() {
                     <NavigationMenuContent>
                       <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                         <li className="row-span-4">
-                          <NavigationMenuLink asChild>
-                            <div className="flex h-full w-full cursor-default select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md">
-                              <Image
-                                src="/finance.svg"
-                                alt="Finance"
-                                width={50}
-                                height={50}
-                              />
-                              <div className="mb-2 mt-4 text-lg font-medium">
-                                Finance Management
+                          <Link href="/finance">
+                            <NavigationMenuLink>
+                              <div className="flex h-full w-full cursor-default select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none hover:cursor-pointer focus:shadow-md">
+                                <Image
+                                  src="/finance.svg"
+                                  alt="Finance"
+                                  width={50}
+                                  height={50}
+                                />
+                                <div className="mb-2 mt-4 text-lg font-medium">
+                                  Finance Management
+                                </div>
+                                <p className="text-sm leading-tight text-muted-foreground">
+                                  Manage your finance, track your expenses and
+                                  income.
+                                </p>
                               </div>
-                              <p className="text-sm leading-tight text-muted-foreground">
-                                Manage your finance, track your expenses and
-                                income.
-                              </p>
-                            </div>
-                          </NavigationMenuLink>
+                            </NavigationMenuLink>
+                          </Link>
                         </li>
                         <Link href="/finance/accounts">
                           <NavItem title="Accounts">
