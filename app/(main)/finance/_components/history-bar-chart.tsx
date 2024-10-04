@@ -1,9 +1,13 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import * as React from "react";
 
+import { subDays } from "date-fns";
+import { DateRange } from "react-day-picker";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
+import Spinner from "@/components/spinner";
 import {
   Card,
   CardContent,
@@ -17,10 +21,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { formatCurrency } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency, formatDateRange } from "@/lib/utils";
 
 type Props = {
-  dateRange: string;
   data?: {
     date: string;
     income: number;
@@ -42,7 +46,19 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function TransactionsHistoryByDayChart({ dateRange, data = [] }: Props) {
+export function HistoryBarChart({ data = [] }: Props) {
+  const params = useSearchParams();
+  const from = params.get("from") || "";
+  const to = params.get("to") || "";
+
+  const defaultTo = new Date();
+  const defaultFrom = subDays(defaultTo, 30);
+
+  const paramState = {
+    from: from ? new Date(from) : defaultFrom,
+    to: to ? new Date(to) : defaultTo,
+  } as DateRange;
+
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("income");
 
@@ -55,11 +71,11 @@ export function TransactionsHistoryByDayChart({ dateRange, data = [] }: Props) {
   );
 
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
           <CardTitle>Transactions History</CardTitle>
-          <CardDescription>{dateRange}</CardDescription>
+          <CardDescription>{formatDateRange(paramState)}</CardDescription>
         </div>
         <div className="flex">
           {["income", "expenses"].map((key) => {
@@ -132,3 +148,19 @@ export function TransactionsHistoryByDayChart({ dateRange, data = [] }: Props) {
     </Card>
   );
 }
+
+export const HistoryBarChartLoading = () => {
+  return (
+    <Card>
+      <CardHeader className="flex items-center justify-between space-y-2 lg:flex-row lg:items-center lg:space-y-0">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-8 w-full lg:w-[120px]" />
+      </CardHeader>
+      <CardContent>
+        <div className="flex h-[350px] w-full flex-col items-center justify-center gap-y-4">
+          <Spinner size="giant" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

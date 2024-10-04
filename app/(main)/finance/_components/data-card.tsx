@@ -1,4 +1,8 @@
+import { useSearchParams } from "next/navigation";
+
 import { VariantProps, cva } from "class-variance-authority";
+import { subDays } from "date-fns";
+import { DateRange } from "react-day-picker";
 import { IconType } from "react-icons";
 
 import { CountUp } from "@/components/count-up";
@@ -10,7 +14,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, formatCurrency, formatPercentage } from "@/lib/utils";
+import {
+  cn,
+  formatCurrency,
+  formatDateRange,
+  formatPercentage,
+} from "@/lib/utils";
 
 const boxVariant = cva("rounded-md p-3", {
   variants: {
@@ -48,7 +57,6 @@ interface DataCardProps extends BoxVariants, IconVariants {
   title: string;
   value?: number;
   percentageChange?: number;
-  dateRange: string;
 }
 
 export default function DataCard({
@@ -56,17 +64,27 @@ export default function DataCard({
   title,
   value = 0,
   percentageChange = 0,
-  dateRange,
   variant,
 }: DataCardProps) {
-  console.log("percentageChange:", percentageChange);
+  const params = useSearchParams();
+  const from = params.get("from") || "";
+  const to = params.get("to") || "";
+
+  const defaultTo = new Date();
+  const defaultFrom = subDays(defaultTo, 30);
+
+  const paramState = {
+    from: from ? new Date(from) : defaultFrom,
+    to: to ? new Date(to) : defaultTo,
+  } as DateRange;
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-x-4">
         <div className="space-y-2">
           <CardTitle className="line-clamp-1 text-2xl">{title}</CardTitle>
           <CardDescription className="line-clamp-1">
-            {dateRange}
+            {formatDateRange(paramState)}
           </CardDescription>
         </div>
         <div className={cn("shrink-0", boxVariant({ variant }))}>

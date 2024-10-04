@@ -1,20 +1,12 @@
-import { DateRange } from "react-day-picker";
 import { FaPiggyBank } from "react-icons/fa";
 import { FaArrowTrendDown, FaArrowTrendUp } from "react-icons/fa6";
 
 import { useGetFinanceSummary } from "@/features/summary/api/use-get-finance-summary";
-import { formatDateRange } from "@/lib/utils";
 
 import DataCard, { DataCardLoading } from "./data-card";
 
-type Props = {
-  dateRange?: DateRange;
-};
-
-export default function DataCardGrid({ dateRange }: Props) {
+export default function DataCardGrid() {
   const { data, isLoading } = useGetFinanceSummary();
-
-  const dateRangeLabel = formatDateRange(dateRange);
 
   if (isLoading) {
     return (
@@ -34,7 +26,6 @@ export default function DataCardGrid({ dateRange }: Props) {
         percentageChange={data?.remainingChange}
         icon={FaPiggyBank}
         variant="default"
-        dateRange={dateRangeLabel}
       />
       <DataCard
         title="Income"
@@ -42,7 +33,6 @@ export default function DataCardGrid({ dateRange }: Props) {
         percentageChange={data?.incomeChange}
         icon={FaArrowTrendUp}
         variant="success"
-        dateRange={dateRangeLabel}
       />
       <DataCard
         title="Expenses"
@@ -50,7 +40,6 @@ export default function DataCardGrid({ dateRange }: Props) {
         percentageChange={data?.expensesChange}
         icon={FaArrowTrendDown}
         variant="danger"
-        dateRange={dateRangeLabel}
       />
     </div>
   );

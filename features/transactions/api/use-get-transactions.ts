@@ -1,15 +1,18 @@
+import { useSearchParams } from "next/navigation";
+
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/hono";
 import { convertAmountFromMiliunits } from "@/lib/utils";
 
-export const useGetTransactions = (
-  accountId?: string,
-  from?: string,
-  to?: string
-) => {
+export const useGetTransactions = () => {
+  const params = useSearchParams();
+  const accountId = params.get("accountId") || "";
+  const from = params.get("from") || "";
+  const to = params.get("to") || "";
+
   const query = useQuery({
-    queryKey: ["transactions"],
+    queryKey: ["transactions", accountId, from, to],
     queryFn: async () => {
       const response = await client.api.transactions.$get({
         query: {
