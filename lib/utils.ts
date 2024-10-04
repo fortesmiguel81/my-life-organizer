@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
-import { eachDayOfInterval, isSameDay } from "date-fns";
+import { eachDayOfInterval, format, isSameDay } from "date-fns";
+import { DateRange } from "react-day-picker";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -20,6 +21,17 @@ export function formatCurrency(value: number) {
     currency: "USD",
     minimumFractionDigits: 2,
   }).format(value);
+}
+
+export function formatPercentage(
+  value: number,
+  options: { addPrefix?: boolean } = { addPrefix: false }
+) {
+  const result = new Intl.NumberFormat("en-US", {
+    style: "percent",
+  }).format(value / 100);
+
+  return options.addPrefix && value > 0 ? `+${result}` : result;
 }
 
 export function getRandomHexColor(): string {
@@ -61,4 +73,14 @@ export function fillMissingDays(
   });
 
   return transactionsByDay;
+}
+
+export function formatDateRange(dateRange?: DateRange) {
+  if (!dateRange) {
+    return "";
+  }
+  if (!dateRange.from || !dateRange.to) {
+    return "";
+  }
+  return `${format(dateRange.from, "LLL dd")} - ${format(dateRange.to, "LLL dd")}`;
 }

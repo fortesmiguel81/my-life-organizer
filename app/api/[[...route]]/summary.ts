@@ -36,17 +36,12 @@ const app = new Hono().get(
     const startDate = from
       ? parse(from, "yyyy-MM-dd", new Date())
       : defaultFrom;
-    console.log("startDate:", startDate);
 
     const endDate = to ? parse(to, "yyyy-MM-dd", new Date()) : defaultTo;
-    console.log("endDate:", endDate);
 
     const periodLength = differenceInDays(endDate, startDate) + 1;
-    console.log("periodLength:", periodLength);
     const lastPeriodStart = subDays(startDate, periodLength);
-    console.log("lastPeriodStart:", lastPeriodStart);
     const lastPeriodEnd = subDays(endDate, periodLength);
-    console.log("lastPeriodEnd:", lastPeriodEnd);
 
     const currentPeriod = await fetchFinancialData(
       auth.userId,
@@ -63,14 +58,6 @@ const app = new Hono().get(
       auth.orgId,
       accountId
     );
-
-    console.log("currentPeriod.income", currentPeriod.income);
-    console.log("currentPeriod.expenses", currentPeriod.expenses);
-    console.log("currentPeriod.remaining", currentPeriod.remaining);
-
-    console.log("lastPeriod.income", lastPeriod.income);
-    console.log("lastPeriod.expenses", lastPeriod.expenses);
-    console.log("lastPeriod.remaining", lastPeriod.remaining);
 
     const incomeChange = calculatePercentageChange(
       currentPeriod.income,
