@@ -47,6 +47,7 @@ export function PieVariant({ data = [] }: Props) {
     ...item,
     fill: COLORS[index % COLORS.length],
   }));
+
   return (
     <ChartContainer
       config={chartConfig}

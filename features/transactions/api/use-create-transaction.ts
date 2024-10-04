@@ -23,6 +23,7 @@ export const useCreateTransaction = () => {
       toast.success("Transaction created successfully.");
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["budgets"] });
+      queryClient.invalidateQueries({ queryKey: ["finance-summary"] });
     },
     onError: () => {
       toast.error(`Failed to create transaction.`);

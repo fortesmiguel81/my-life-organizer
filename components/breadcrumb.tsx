@@ -7,30 +7,30 @@ import { useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 
 import {
-    Breadcrumb,
-    BreadcrumbEllipsis,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
 } from "@/components/ui/drawer";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import React from "react";
 
@@ -51,21 +51,28 @@ export function PageBreadcrumb() {
           href: `/${item}`,
         };
       });
-      
+
     items[items.length - 1].href = "";
 
     return items;
   }
 
   const items = generateBreadcrumbItems(pathname);
+  console.log("items:", items);
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        <BreadcrumbItem key={items[0].href}>
-          <BreadcrumbLink href={items[0].href}>{items[0].label}</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
+        {items.length !== 1 && (
+          <>
+            <BreadcrumbItem key={items[0].href}>
+              <BreadcrumbLink href={items[0].href}>
+                {items[0].label}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+          </>
+        )}
         {items.length > ITEMS_TO_DISPLAY ? (
           <>
             <BreadcrumbItem>
