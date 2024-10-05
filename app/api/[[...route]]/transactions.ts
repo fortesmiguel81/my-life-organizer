@@ -14,7 +14,9 @@ import {
   transactions,
 } from "@/db/schema";
 
+import { canUserSeeAccount } from "../utils/can-user-see-account";
 import { canUserSeeTransaction } from "../utils/can-user-see-transaction";
+import { updateAccountBalance } from "../utils/update-account-balance";
 
 const app = new Hono()
   .get(
@@ -63,7 +65,6 @@ const app = new Hono()
         queryConditions.push(lte(transactions.date, endDate));
       }
 
-      // Filter out any undefined values in the conditions array
       const finalConditions = queryConditions.filter(Boolean);
 
       const data = await db
@@ -143,26 +144,59 @@ const app = new Hono()
       })
     ),
     async (ctx) => {
-      const auth = getAuth(ctx);
-      const values = ctx.req.valid("json");
+      try {
+        const auth = getAuth(ctx);
+        if (!auth?.userId) {
+          return ctx.json({ error: "Unauthorized" }, 401);
+        }
 
-      if (!auth?.userId) {
-        return ctx.json({ error: "Unauthorized" }, 401);
+        const values = ctx.req.valid("json");
+
+        const { data: account, canSeeAccount } = await canUserSeeAccount(
+          values.accountId,
+          auth.userId
+        );
+
+        if (!canSeeAccount || !account) {
+          throw new Error(`Account with the id: ${values.accountId} not found`);
+        }
+
+        const updatedBalance = account.balance + values.amount;
+
+        const [updatedAccount] = await db
+          .update(accounts)
+          .set({
+            balance: updatedBalance,
+            updated_at: new Date(),
+            updated_by: auth.userId,
+          })
+          .where(eq(accounts.id, values.accountId))
+          .returning();
+
+        if (!updatedAccount) {
+          throw new Error(
+            `Failed to update account with the id: ${values.accountId}`
+          );
+        }
+
+        const [data] = await db
+          .insert(transactions)
+          .values({
+            id: createId(),
+            ...values,
+            created_at: new Date(),
+            created_by: auth.userId,
+            updated_at: new Date(),
+            updated_by: auth.userId,
+          })
+          .returning();
+
+        return ctx.json({ data }, 201);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "An unknown error occurred";
+        return ctx.json({ error: errorMessage }, 400);
       }
-
-      const [data] = await db
-        .insert(transactions)
-        .values({
-          id: createId(),
-          ...values,
-          created_at: new Date(),
-          created_by: auth.userId,
-          updated_at: new Date(),
-          updated_by: auth.userId,
-        })
-        .returning();
-
-      return ctx.json({ data });
     }
   )
   .patch(
@@ -185,43 +219,105 @@ const app = new Hono()
       })
     ),
     async (ctx) => {
-      const auth = getAuth(ctx);
+      try {
+        const auth = getAuth(ctx);
 
-      if (!auth?.userId) {
-        return ctx.json({ error: "Unauthorized" }, 401);
+        if (!auth?.userId) {
+          return ctx.json({ error: "Unauthorized" }, 401);
+        }
+
+        const { id } = ctx.req.valid("param");
+        if (!id) {
+          return ctx.json({ error: "Transaction ID is required!" }, 400);
+        }
+
+        const values = ctx.req.valid("json");
+
+        const { data: originalTransaction, canSeeTransaction } =
+          await canUserSeeTransaction(id, auth.userId);
+
+        if (!canSeeTransaction || !originalTransaction) {
+          return ctx.json(
+            { error: `Transaction with the Id: ${id} not found` },
+            404
+          );
+        }
+
+        const { data: currentAccount, canSeeAccount: canSeeCurrentAccount } =
+          await canUserSeeAccount(originalTransaction.accountId, auth.userId);
+
+        if (!canSeeCurrentAccount || !currentAccount) {
+          throw new Error(
+            `Account with the Id: ${originalTransaction.accountId} not found`
+          );
+        }
+
+        const { data: newAccount, canSeeAccount: canSeeNewAccount } =
+          await canUserSeeAccount(values.accountId, auth.userId);
+
+        if (!canSeeNewAccount || !newAccount) {
+          throw new Error(
+            `Account with the Id: ${originalTransaction.accountId} not found`
+          );
+        }
+
+        if (currentAccount.id !== newAccount.id) {
+          const updatedCurrentAccount = await updateAccountBalance(
+            currentAccount.id,
+            currentAccount.balance,
+            Math.abs(originalTransaction.amount),
+            auth.userId
+          );
+
+          if (!updatedCurrentAccount) {
+            throw new Error(
+              `Failed to update new account with the Id: ${values.accountId}`
+            );
+          }
+
+          const updatedNewAccount = await updateAccountBalance(
+            newAccount.id,
+            newAccount.balance,
+            values.amount,
+            auth.userId
+          );
+
+          if (!updatedNewAccount) {
+            throw new Error(
+              `Failed to update new account with the Id: ${values.accountId}`
+            );
+          }
+        } else {
+          const updatedAccount = await updateAccountBalance(
+            currentAccount.id,
+            currentAccount.balance,
+            originalTransaction.amount,
+            auth.userId
+          );
+
+          if (!updatedAccount) {
+            throw new Error(
+              `Failed to update new account with the Id: ${values.accountId}`
+            );
+          }
+        }
+
+        const [data] = await db
+          .update(transactions)
+          .set({
+            ...values,
+            updated_at: new Date(),
+            updated_by: auth.userId,
+          })
+          .where(eq(transactions.id, id))
+          .returning();
+
+        return ctx.json({ data }, 200);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "An unknown error occurred";
+        return ctx.json({ error: errorMessage }, 400);
       }
-
-      const { id } = ctx.req.valid("param");
-
-      if (!id) {
-        return ctx.json({ error: "Transaction Id is required!" }, 400);
-      }
-
-      const values = ctx.req.valid("json");
-
-      const { canSeeTransaction } = await canUserSeeTransaction(
-        id,
-        auth.userId
-      );
-
-      if (!canSeeTransaction) {
-        return ctx.json(
-          { error: `Transaction with the id: ${id} not found` },
-          404
-        );
-      }
-
-      const [data] = await db
-        .update(transactions)
-        .set({
-          ...values,
-          updated_at: new Date(),
-          updated_by: auth.userId,
-        })
-        .where(eq(transactions.id, id))
-        .returning();
-
-      return ctx.json({ data });
     }
   )
   .delete(
@@ -246,15 +342,35 @@ const app = new Hono()
         return ctx.json({ error: "Transaction Id is required!" }, 400);
       }
 
-      const { canSeeTransaction } = await canUserSeeTransaction(
-        id,
-        auth.userId
-      );
+      const { data: transaction, canSeeTransaction } =
+        await canUserSeeTransaction(id, auth.userId);
 
-      if (!canSeeTransaction) {
+      if (!canSeeTransaction || !transaction) {
         return ctx.json(
           { error: `Transaction with the id: ${id} not found` },
           404
+        );
+      }
+
+      const { data: currentAccount, canSeeAccount: canSeeCurrentAccount } =
+        await canUserSeeAccount(transaction.accountId, auth.userId);
+
+      if (!canSeeCurrentAccount || !currentAccount) {
+        throw new Error(
+          `Account with the Id: ${transaction.accountId} not found`
+        );
+      }
+
+      const updatedNewAccount = await updateAccountBalance(
+        transaction.accountId,
+        currentAccount.balance,
+        Math.abs(transaction.amount),
+        auth.userId
+      );
+
+      if (!updatedNewAccount) {
+        throw new Error(
+          `Failed to update new account with the Id: ${transaction.accountId}`
         );
       }
 
