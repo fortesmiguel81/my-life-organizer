@@ -23,10 +23,10 @@ export default function DataCharts() {
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-6">
-      <div className="col-span-1 lg:col-span-3 xl:col-span-4">
+      <div className="col-span-1 lg:col-span-4 xl:col-span-4">
         <HistoryBarChart data={data?.days} />
       </div>
-      <div className="col-span-1 lg:col-span-3 xl:col-span-2">
+      <div className="col-span-1 lg:col-span-2 xl:col-span-2">
         <SpendingPieChart data={data?.categories} />
       </div>
     </div>

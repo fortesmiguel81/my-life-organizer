@@ -9,7 +9,9 @@ import {
 } from "recharts";
 
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
-import { formatCurrency, getRandomHexColor } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+
+const COLORS = ["#0062FF", "#12C6FF", "#FF647F", "##FF9354"];
 
 const chartConfig = {
   percentage: {
@@ -30,7 +32,7 @@ export function BudgetChart({ data }: Props) {
     {
       ...data,
       amountSpentProgress: (data.amountSpent / data.amount) * 100,
-      fill: getRandomHexColor(),
+      fill: COLORS[Math.floor(Math.random() * COLORS.length)],
     },
   ];
 

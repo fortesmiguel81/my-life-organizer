@@ -54,13 +54,13 @@ export function SpendingPieChart({ data = [] }: Props) {
 
   return (
     <Card className="flex h-full flex-col">
-      <CardHeader className="flex items-center justify-between space-y-2 lg:flex-row lg:items-center lg:space-y-0">
+      <CardHeader className="flex flex-row items-center justify-between space-y-2 lg:items-center lg:space-y-0">
         <div className="flex flex-col space-y-2">
           <CardTitle className="line-clamp-1 text-xl">Categories</CardTitle>
           <CardDescription>{formatDateRange(paramState)}</CardDescription>
         </div>
         <Select defaultValue={chartType} onValueChange={setChartType}>
-          <SelectTrigger className="h-9 rounded-md px-3 lg:w-auto">
+          <SelectTrigger className="h-9 w-auto rounded-md px-3">
             <SelectValue placeholder="Chart Type" />
           </SelectTrigger>
           <SelectContent>

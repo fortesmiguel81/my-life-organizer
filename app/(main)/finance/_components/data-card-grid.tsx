@@ -1,5 +1,4 @@
-import { FaPiggyBank } from "react-icons/fa";
-import { FaArrowTrendDown, FaArrowTrendUp } from "react-icons/fa6";
+import { FaArrowTrendDown, FaArrowTrendUp, FaCoins } from "react-icons/fa6";
 
 import { useGetFinanceSummary } from "@/features/summary/api/use-get-finance-summary";
 
@@ -24,7 +23,7 @@ export default function DataCardGrid() {
         title="Remaining"
         value={data?.remainingAmount}
         percentageChange={data?.remainingChange}
-        icon={FaPiggyBank}
+        icon={FaCoins}
         variant="default"
       />
       <DataCard

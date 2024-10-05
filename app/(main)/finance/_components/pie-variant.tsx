@@ -33,7 +33,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const COLORS = ["#0062FF", "#12C6FF", "#FF647F", "##FF9354"];
+const COLORS = ["#0062FF", "#12C6FF", "#FF647F", "#FF9354"];
 
 type Props = {
   data?: {
@@ -47,6 +47,7 @@ export function PieVariant({ data = [] }: Props) {
     ...item,
     fill: COLORS[index % COLORS.length],
   }));
+  console.log("chartData:", chartData);
 
   return (
     <ChartContainer
