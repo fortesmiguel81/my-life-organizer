@@ -20,10 +20,18 @@ import {
   insertTransactionSchema,
   transactions,
 } from "@/db/schema";
+import { decryptFields, encryptFields } from "@/lib/encryption";
 
 import { canUserSeeAccount } from "../utils/can-user-see-account";
 import { canUserSeeTransaction } from "../utils/can-user-see-transaction";
 import { updateAccountBalance } from "../utils/update-account-balance";
+
+async function decryptTransaction<T extends { payee: string; description: string | null }>(
+  row: T
+): Promise<T> {
+  const decrypted = await decryptFields({ payee: row.payee, description: row.description ?? "" });
+  return { ...row, payee: decrypted.payee ?? row.payee, description: decrypted.description };
+}
 
 export function getNextDueDate(
   from: Date,
@@ -131,7 +139,9 @@ const app = new Hono()
         .where(and(...queryConditions))
         .orderBy(desc(transactions.date));
 
-      return ctx.json({ data });
+      const decrypted = await Promise.all(data.map(decryptTransaction));
+
+      return ctx.json({ data: decrypted });
     }
   )
   .get(
@@ -156,14 +166,16 @@ const app = new Hono()
         auth.userId
       );
 
-      if (!canSeeTransaction) {
+      if (!canSeeTransaction || !data) {
         return ctx.json(
           { error: `Transaction with the id: ${id} not found` },
           404
         );
       }
 
-      return ctx.json({ data });
+      const decrypted = await decryptTransaction(data);
+
+      return ctx.json({ data: decrypted });
     }
   )
   .post(
@@ -207,12 +219,17 @@ const app = new Hono()
           const sourceId = createId();
           const destId = createId();
           const now = new Date();
+          const encryptedTransfer = await encryptFields({ payee: values.payee, description: values.description ?? "" });
+          const encPayee = encryptedTransfer.payee ?? values.payee;
+          const encDesc = encryptedTransfer.description ?? values.description ?? "";
 
           const [source] = await db
             .insert(transactions)
             .values({
               id: sourceId,
               ...values,
+              payee: encPayee,
+              description: encDesc,
               amount: -transferAmount,
               type: "transfer",
               recurrence: "none",
@@ -229,6 +246,8 @@ const app = new Hono()
           await db.insert(transactions).values({
             id: destId,
             ...values,
+            payee: encPayee,
+            description: encDesc,
             accountId: toAccountId,
             amount: transferAmount,
             type: "transfer",
@@ -269,11 +288,15 @@ const app = new Hono()
             ? (getNextDueDate(values.date, values.recurrence) ?? null)
             : null;
 
+        const encrypted = await encryptFields({ payee: values.payee, description: values.description ?? "" });
+
         const [data] = await db
           .insert(transactions)
           .values({
             id: createId(),
             ...values,
+            payee: encrypted.payee ?? values.payee,
+            description: encrypted.description ?? values.description ?? "",
             nextDueDate,
             linkedTransactionId: null,
             created_at: new Date(),
@@ -390,10 +413,14 @@ const app = new Hono()
             ? (getNextDueDate(values.date, values.recurrence) ?? null)
             : null;
 
+        const encryptedPatch = await encryptFields({ payee: values.payee, description: values.description ?? "" });
+
         const [data] = await db
           .update(transactions)
           .set({
             ...values,
+            payee: encryptedPatch.payee ?? values.payee,
+            description: encryptedPatch.description ?? values.description ?? "",
             nextDueDate,
             updated_at: new Date(),
             updated_by: auth.userId,
