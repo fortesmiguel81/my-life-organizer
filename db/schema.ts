@@ -172,3 +172,66 @@ export const googleTokens = pgTable("google_tokens", {
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
 });
+
+export const taskStatusEnum = pgEnum("taskStatus", [
+  "todo",
+  "in_progress",
+  "done",
+]);
+
+export const taskPriorityEnum = pgEnum("taskPriority", [
+  "low",
+  "medium",
+  "high",
+  "urgent",
+]);
+
+export const taskLists = pgTable("task_lists", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  icon: text("icon"),
+  color: text("color"),
+  userId: text("user_id"),
+  orgId: text("org_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const insertTaskListSchema = createInsertSchema(taskLists);
+
+export const tasks = pgTable("tasks", {
+  id: text("id").primaryKey(),
+  listId: text("list_id")
+    .notNull()
+    .references(() => taskLists.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: taskStatusEnum("status").notNull().default("todo"),
+  priority: taskPriorityEnum("priority").notNull().default("medium"),
+  dueDate: timestamp("due_date", { mode: "date" }),
+  assignedTo: text("assigned_to"),
+  parentId: text("parent_id"),
+  calendarEventId: text("calendar_event_id"),
+  userId: text("user_id"),
+  orgId: text("org_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const tasksRelations = relations(tasks, ({ one, many }) => ({
+  list: one(taskLists, { fields: [tasks.listId], references: [taskLists.id] }),
+  subtasks: many(tasks, { relationName: "subtasks" }),
+  parent: one(tasks, {
+    fields: [tasks.parentId],
+    references: [tasks.id],
+    relationName: "subtasks",
+  }),
+}));
+
+export const insertTaskSchema = createInsertSchema(tasks, {
+  dueDate: z.coerce.date().optional().nullable(),
+});
