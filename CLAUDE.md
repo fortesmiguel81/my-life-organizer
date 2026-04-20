@@ -46,6 +46,21 @@ Clerk handles auth at the middleware level (`middleware.ts`). Public routes are 
 
 `providers/providers.tsx` composes all root providers: Clerk, React Query, next-themes, sheet modals, and custom theme colors. Add new global providers here.
 
+## Field-level Encryption
+
+Sensitive columns (`accounts.holder`, `accounts.number`, `transactions.payee`, `transactions.description`) are encrypted at rest using AES-256-GCM via the Web Crypto API (`lib/encryption.ts`).
+
+**Required env var:**
+```
+ENCRYPTION_KEY=<64 hex characters>
+```
+Generate one:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Values are stored with an `enc:` prefix. Rows written before encryption was enabled are returned as-is (plaintext fallback), so the migration is rolling and non-breaking.
+
 ## Key Conventions
 
 - **Path alias**: `@/*` maps to the repo root. Always use this for imports.

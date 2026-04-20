@@ -13,19 +13,20 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { insertAccountSchema } from "@/db/schema";
 import { convertAmountToMiliunits } from "@/lib/utils";
 
 const formSchema = z.object({
-  name: z.string(),
-  holder: z.string(),
+  name: z.string().min(1, "Name is required"),
+  holder: z.string().min(1, "Holder is required"),
   number: z.string().refine((val) => {
     const cleanedVal = val.replace(/\s+/g, "");
-    return /^[A-Z]{2}\d{2}[A-Z0-9]{4}\d{6}\d{11}$/.test(cleanedVal);
-  }, "Invalid IBAN format. Please ensure the correct format: GB00 0000 0000 0000 0000 0000 0"),
-  balance: z.string(),
+    return /^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/.test(cleanedVal);
+  }, "Invalid IBAN format. Example: GB29 NWBK 6016 1331 9268 19"),
+  balance: z.string().refine((val) => !isNaN(parseFloat(val)), "Balance must be a number"),
   bankIcon: z.string().nullable().optional(),
 });
 
@@ -95,6 +96,7 @@ export default function AccountForm({
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -111,6 +113,7 @@ export default function AccountForm({
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -127,6 +130,7 @@ export default function AccountForm({
                   disabled={disabled}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -160,6 +164,7 @@ export default function AccountForm({
                   placeholder="0.00"
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />

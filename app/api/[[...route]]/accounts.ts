@@ -7,8 +7,17 @@ import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { accounts, insertAccountSchema } from "@/db/schema";
+import { decryptField, decryptFields, encryptFields } from "@/lib/encryption";
 
 import { canUserSeeAccount } from "../utils/can-user-see-account";
+
+/** Encrypted fields stored on the accounts table. */
+const ACCOUNT_SENSITIVE = ["holder", "number"] as const;
+
+async function decryptAccount<T extends { holder: string; number: string }>(row: T): Promise<T> {
+  const decrypted = await decryptFields({ holder: row.holder, number: row.number });
+  return { ...row, ...decrypted };
+}
 
 const app = new Hono()
   .get("/", clerkMiddleware(), async (ctx) => {
@@ -18,7 +27,7 @@ const app = new Hono()
       return ctx.json({ error: "Unauthorized" }, 401);
     }
 
-    const data = await db
+    const rows = await db
       .select({
         id: accounts.id,
         name: accounts.name,
@@ -38,16 +47,13 @@ const app = new Hono()
         )
       );
 
+    const data = await Promise.all(rows.map(decryptAccount));
+
     return ctx.json({ data });
   })
   .get(
     "/:id",
-    zValidator(
-      "param",
-      z.object({
-        id: z.string().optional(),
-      })
-    ),
+    zValidator("param", z.object({ id: z.string().optional() })),
     clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
@@ -59,14 +65,16 @@ const app = new Hono()
       const { id } = ctx.req.valid("param");
 
       if (!id) {
-        return ctx.json({ error: "Category Id is required!" }, 400);
+        return ctx.json({ error: "Account Id is required!" }, 400);
       }
 
-      const { canSeeAccount, data } = await canUserSeeAccount(id, auth.userId);
+      const { canSeeAccount, data: raw } = await canUserSeeAccount(id, auth.userId);
 
-      if (!canSeeAccount) {
+      if (!canSeeAccount || !raw) {
         return ctx.json({ error: `Account with the id: ${id} not found` }, 404);
       }
+
+      const data = await decryptAccount(raw);
 
       return ctx.json({ data });
     }
@@ -94,11 +102,15 @@ const app = new Hono()
         return ctx.json({ error: "Unauthorized" }, 401);
       }
 
-      const [data] = await db
+      const encrypted = await encryptFields({ holder: values.holder, number: values.number });
+
+      const [raw] = await db
         .insert(accounts)
         .values({
           id: createId(),
           ...values,
+          holder: encrypted.holder ?? values.holder,
+          number: encrypted.number ?? values.number,
           orgId: auth?.orgId,
           userId: auth?.orgId ? null : auth.userId,
           created_at: new Date(),
@@ -108,18 +120,15 @@ const app = new Hono()
         })
         .returning();
 
+      const data = await decryptAccount(raw);
+
       return ctx.json({ data });
     }
   )
   .patch(
     "/:id",
     clerkMiddleware(),
-    zValidator(
-      "param",
-      z.object({
-        id: z.string().optional(),
-      })
-    ),
+    zValidator("param", z.object({ id: z.string().optional() })),
     zValidator(
       "json",
       insertAccountSchema.omit({
@@ -153,28 +162,29 @@ const app = new Hono()
         return ctx.json({ error: `Account with the id: ${id} not found` }, 404);
       }
 
-      const [data] = await db
+      const encrypted = await encryptFields({ holder: values.holder, number: values.number });
+
+      const [raw] = await db
         .update(accounts)
         .set({
           ...values,
+          holder: encrypted.holder ?? values.holder,
+          number: encrypted.number ?? values.number,
           updated_at: new Date(),
           updated_by: auth.userId,
         })
         .where(eq(accounts.id, id))
         .returning();
 
+      const data = await decryptAccount(raw);
+
       return ctx.json({ data });
     }
   )
   .delete(
     "/:id",
+    zValidator("param", z.object({ id: z.string().optional() })),
     clerkMiddleware(),
-    zValidator(
-      "param",
-      z.object({
-        id: z.string().optional(),
-      })
-    ),
     async (ctx) => {
       const auth = getAuth(ctx);
 

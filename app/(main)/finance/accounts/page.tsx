@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGetAccounts } from "@/features/accounts/api/use-get-accounts";
 import { useNewAccount } from "@/features/accounts/hooks/use-new-account";
+import { exportAccountsToCSV } from "@/lib/export";
 
 import AccountCard from "./_components/account-card";
 
@@ -21,7 +22,7 @@ export default function AccountsPage() {
   const newAccount = useNewAccount();
 
   const handleExportAccounts = () => {
-    console.log("Export accounts");
+    exportAccountsToCSV(accounts);
   };
 
   const isLoading = accountsQuery.isLoading;

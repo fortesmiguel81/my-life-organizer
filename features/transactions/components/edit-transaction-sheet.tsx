@@ -1,4 +1,4 @@
-import { z } from "zod";
+import React from "react";
 
 import Spinner from "@/components/spinner";
 import {
@@ -8,7 +8,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { insertTransactionSchema } from "@/db/schema";
 import { useCreateAccount } from "@/features/accounts/api/use-create-account";
 import { useGetAccounts } from "@/features/accounts/api/use-get-accounts";
 import { useCreateCategory } from "@/features/categories/api/use-create-category";
@@ -16,20 +15,12 @@ import { useGetCategories } from "@/features/categories/api/use-get-categories";
 import { useDeleteTransaction } from "@/features/transactions/api/use-delete-transaction";
 import { useEditTransaction } from "@/features/transactions/api/use-edit-transaction";
 import { useGetTransaction } from "@/features/transactions/api/use-get-transaction";
-import TransactionForm from "@/features/transactions/components/transaction-form";
 import { useOpenTransaction } from "@/features/transactions/hooks/use-open-transaction";
 import { useConfirm } from "@/hooks/use-confirm";
-import React from "react";
 
-const formSchema = insertTransactionSchema.omit({
-  id: true,
-  created_at: true,
-  created_by: true,
-  updated_at: true,
-  updated_by: true,
-});
-
-type FormValues = z.input<typeof formSchema>;
+import TransactionForm, {
+  TransactionFormSubmitValues,
+} from "./transaction-form";
 
 export default function EditTransactionSheet() {
   const { isOpen, onClose, id } = useOpenTransaction();
@@ -46,12 +37,7 @@ export default function EditTransactionSheet() {
   const accountQuery = useGetAccounts();
   const accountMutation = useCreateAccount();
   const onCreateAccount = (name: string) => {
-    accountMutation.mutate({
-      name,
-      number: "",
-      holder: "",
-      balance: 0,
-    });
+    accountMutation.mutate({ name, number: "", holder: "", balance: 0 });
   };
 
   const accountOptions = (accountQuery.data ?? []).map((account) => ({
@@ -84,31 +70,41 @@ export default function EditTransactionSheet() {
     accountQuery.isLoading ||
     categoryQuery.isLoading;
 
-  const onSubmit = (values: FormValues) => {
-    editMutation.mutate(values, {
-      onSuccess: () => {
-        onClose();
+  const onSubmit = (values: TransactionFormSubmitValues) => {
+    editMutation.mutate(
+      {
+        ...values,
+        description: values.description ?? "",
+        nextDueDate: values.nextDueDate ?? null,
       },
-    });
+      { onSuccess: onClose }
+    );
   };
 
   const onDelete = async () => {
     const ok = await confirm();
-
     if (ok) {
-      deleteMutation.mutate(undefined, {
-        onSuccess: () => {
-          onClose();
-        },
-      });
+      deleteMutation.mutate(undefined, { onSuccess: onClose });
     }
   };
 
-  const defaultValues = transactionQuery.data
+  const raw = transactionQuery.data;
+  const defaultValues = raw
     ? {
-        ...transactionQuery.data,
-        date: new Date(transactionQuery.data.date),
-        amount: transactionQuery.data.amount.toString(),
+        type: (raw.type ?? "expense") as "income" | "expense" | "transfer",
+        amount: String(Math.abs(raw.amount)),
+        payee: raw.payee,
+        description: raw.description ?? "",
+        date: new Date(raw.date),
+        accountId: raw.accountId,
+        categoryId: raw.categoryId ?? null,
+        recurrence: (raw.recurrence ?? "none") as
+          | "none"
+          | "daily"
+          | "weekly"
+          | "biweekly"
+          | "monthly"
+          | "yearly",
       }
     : undefined;
 

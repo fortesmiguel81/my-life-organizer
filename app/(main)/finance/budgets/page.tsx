@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { File, PlusCircle, X } from "lucide-react";
+import { toast } from "sonner";
 
 import PageTitle from "@/components/page-title";
 import Spinner from "@/components/spinner";
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGetBudgets } from "@/features/budgets/api/use-get-budgets";
 import { useNewBudget } from "@/features/budgets/hooks/use-new-budget";
+import { exportBudgetsToCSV } from "@/lib/export";
 
 import BudgetCard from "./_components/budget-card";
 
@@ -19,18 +21,33 @@ export default function BudgetsPage() {
 
   const [globalFilter, setGlobalFilter] = useState("");
   const newBudget = useNewBudget();
+  const notifiedRef = useRef(false);
 
-  const handleExportBudgets = () => {
-    console.log("Export budgets");
-  };
+  // Show toast alerts when budgets are at or near their limit
+  useEffect(() => {
+    if (!budgetsQuery.isSuccess || notifiedRef.current) return;
+    notifiedRef.current = true;
+
+    budgets.forEach((budget) => {
+      if (budget.amount <= 0) return;
+      const pct = (budget.amountSpent / budget.amount) * 100;
+      if (pct >= 100) {
+        toast.error(
+          `"${budget.category}" budget exceeded — ${pct.toFixed(0)}% used`
+        );
+      } else if (pct >= 80) {
+        toast.warning(
+          `"${budget.category}" budget at ${pct.toFixed(0)}% — running low`
+        );
+      }
+    });
+  }, [budgetsQuery.isSuccess, budgets]);
 
   const isLoading = budgetsQuery.isLoading;
 
-  const filteredBudgets = budgets.filter((budget) => {
-    const searchTerm = globalFilter.toLowerCase();
-
-    return budget.category.toLowerCase().includes(searchTerm);
-  });
+  const filteredBudgets = budgets.filter((budget) =>
+    budget.category.toLowerCase().includes(globalFilter.toLowerCase())
+  );
 
   return (
     <div className="flex w-full flex-col gap-4 pt-6">
@@ -53,9 +70,7 @@ export default function BudgetsPage() {
                 <Button
                   variant="ghost"
                   className="font-md h-9 px-3 py-0"
-                  onClick={() => {
-                    setGlobalFilter("");
-                  }}
+                  onClick={() => setGlobalFilter("")}
                 >
                   Reset
                   <X className="ml-2 h-4 w-4" />
@@ -66,7 +81,8 @@ export default function BudgetsPage() {
               <Button
                 variant="outline"
                 className="font-md h-9 w-full bg-muted/50 md:w-auto lg:w-auto"
-                onClick={handleExportBudgets}
+                onClick={() => exportBudgetsToCSV(budgets)}
+                disabled={budgets.length === 0}
               >
                 <File className="mr-2 h-4 w-4" />
                 <span>Export</span>

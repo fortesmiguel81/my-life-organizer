@@ -13,14 +13,18 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { insertBudgetSchema } from "@/db/schema";
 import { convertAmountToMiliunits } from "@/lib/utils";
 
 const formSchema = z.object({
-  categoryId: z.string(),
-  amount: z.string(),
+  categoryId: z.string().min(1, "Category is required"),
+  amount: z.string().refine((val) => {
+    const n = parseFloat(val);
+    return !isNaN(n) && n > 0;
+  }, "Budget amount must be greater than 0"),
   type: z.enum(["monthly", "yearly"]),
 });
 
@@ -97,6 +101,7 @@ export default function BudgetForm({
                   disabled={disabled}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -113,6 +118,7 @@ export default function BudgetForm({
                   placeholder="0.00"
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />

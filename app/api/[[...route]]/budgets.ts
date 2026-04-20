@@ -47,45 +47,43 @@ const app = new Hono()
         )
       );
 
-    // Aggregate data for each budget
-    const aggregatedData = await Promise.all(
-      budgetsData.map(async (budget) => {
-        const dateFilter =
-          budget.type === "monthly"
-            ? sql`date_trunc('month', transactions.date) = date_trunc('month', CURRENT_DATE)`
-            : sql`date_trunc('year', transactions.date) = date_trunc('year', CURRENT_DATE)`;
-
-        const result = await db
-          .select({
-            budgetId: budgets.id,
-            amount: sql`SUM(transactions.amount)`.mapWith(Number),
-            numberOfTransactions: sql`COUNT(transactions.id)`.mapWith(Number),
-          })
-          .from(transactions)
-          .innerJoin(accounts, eq(transactions.accountId, accounts.id))
-          .innerJoin(budgets, eq(transactions.categoryId, budgets.categoryId))
-          .where(
-            and(
-              auth.orgId
-                ? eq(accounts.orgId, auth.orgId)
-                : eq(accounts.userId, auth.userId),
-              eq(budgets.id, budget.id),
-              lt(transactions.amount, 0),
-              dateFilter
-            )
-          )
-          .groupBy(budgets.id, budgets.amount);
-
-        // Return the aggregated data for the current budget
-        return (
-          result[0] || {
-            budgetId: budget.id,
-            amount: 0,
-            numberOfTransactions: 0,
-          }
-        );
+    // Single aggregated query for all budgets instead of one query per budget
+    const aggregatedData = await db
+      .select({
+        budgetId: budgets.id,
+        amount: sql`SUM(${transactions.amount})`.mapWith(Number),
+        numberOfTransactions: sql`COUNT(${transactions.id})`.mapWith(Number),
       })
-    );
+      .from(transactions)
+      .innerJoin(
+        accounts,
+        and(
+          eq(transactions.accountId, accounts.id),
+          auth.orgId
+            ? eq(accounts.orgId, auth.orgId)
+            : eq(accounts.userId, auth.userId)
+        )
+      )
+      .innerJoin(
+        budgets,
+        and(
+          eq(transactions.categoryId, budgets.categoryId),
+          auth.orgId
+            ? eq(budgets.orgId, auth.orgId)
+            : eq(budgets.userId, auth.userId)
+        )
+      )
+      .where(
+        and(
+          lt(transactions.amount, 0),
+          sql`(
+            (${budgets.type} = 'monthly' AND date_trunc('month', ${transactions.date}) = date_trunc('month', CURRENT_DATE))
+            OR
+            (${budgets.type} = 'yearly' AND date_trunc('year', ${transactions.date}) = date_trunc('year', CURRENT_DATE))
+          )`
+        )
+      )
+      .groupBy(budgets.id);
 
     // Merge aggregated data with budgets
     const mergedData = budgetsData.map((budget) => {

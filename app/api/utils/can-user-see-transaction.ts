@@ -16,6 +16,10 @@ export async function canUserSeeTransaction(
       date: transactions.date,
       accountId: transactions.accountId,
       categoryId: transactions.categoryId,
+      type: transactions.type,
+      recurrence: transactions.recurrence,
+      nextDueDate: transactions.nextDueDate,
+      linkedTransactionId: transactions.linkedTransactionId,
     })
     .from(transactions)
     .where(eq(transactions.id, transactionId));
@@ -39,7 +43,7 @@ export async function canUserSeeTransaction(
   }
 
   if (account.userId === userId) {
-    return { canSeeTransaction: false, data: data, error: null };
+    return { canSeeTransaction: true, data: data, error: null };
   }
 
   const [hasOrganizationAccess] = await db

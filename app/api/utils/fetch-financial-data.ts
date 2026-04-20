@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, sql, sum } from "drizzle-orm";
+import { and, eq, gte, lte, ne, sql, sum } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
 import { accounts, transactions } from "@/db/schema";
@@ -14,6 +14,7 @@ export async function fetchFinancialData(
     orgId ? eq(accounts.orgId, orgId) : eq(accounts.userId, userId),
     gte(transactions.date, startDate),
     lte(transactions.date, endDate),
+    ne(transactions.type, "transfer"),
   ];
 
   if (accountId) {

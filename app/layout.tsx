@@ -9,7 +9,13 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Life Organizer",
-  description: "Organize your life with this app",
+  description: "Track your household finances",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Life Organizer",
+  },
   icons: {
     icon: [
       {
@@ -23,6 +29,7 @@ export const metadata: Metadata = {
         href: "/logo.svg",
       },
     ],
+    apple: "/logo.svg",
   },
 };
 
