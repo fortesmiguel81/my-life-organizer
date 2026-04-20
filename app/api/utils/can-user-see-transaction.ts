@@ -39,7 +39,7 @@ export async function canUserSeeTransaction(
   }
 
   if (account.userId === userId) {
-    return { canSeeTransaction: false, data: data, error: null };
+    return { canSeeTransaction: true, data: data, error: null };
   }
 
   const [hasOrganizationAccess] = await db

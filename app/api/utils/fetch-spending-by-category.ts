@@ -23,14 +23,14 @@ export async function fetchSpendingByCategory(
 
   const category = await db
     .select({
-      name: categories.name,
+      name: sql<string>`COALESCE(${categories.name}, 'Uncategorized')`,
       value: sql`SUM(ABS(${transactions.amount}))`.mapWith(Number),
     })
     .from(transactions)
     .innerJoin(accounts, eq(transactions.accountId, accounts.id))
-    .innerJoin(categories, eq(transactions.categoryId, categories.id))
+    .leftJoin(categories, eq(transactions.categoryId, categories.id))
     .where(and(...queryConditions))
-    .groupBy(categories.name)
+    .groupBy(sql`COALESCE(${categories.name}, 'Uncategorized')`)
     .orderBy(desc(sql`SUM(ABS(${transactions.amount}))`.mapWith(Number)));
 
   const topCategories = category.slice(0, 3);

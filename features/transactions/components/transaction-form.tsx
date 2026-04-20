@@ -13,6 +13,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,11 +21,14 @@ import { insertTransactionSchema } from "@/db/schema";
 import { convertAmountToMiliunits } from "@/lib/utils";
 
 const formSchema = z.object({
-  amount: z.string(),
-  payee: z.string(),
+  amount: z.string().refine((val) => {
+    const n = parseFloat(val);
+    return !isNaN(n) && n !== 0;
+  }, "Amount must be a non-zero number"),
+  payee: z.string().min(1, "Payee is required"),
   description: z.string(),
   date: z.coerce.date(),
-  accountId: z.string(),
+  accountId: z.string().min(1, "Account is required"),
   categoryId: z.string().nullable().optional(),
 });
 
@@ -119,6 +123,7 @@ export default function TransactionForm({
                   disabled={disabled}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -154,6 +159,7 @@ export default function TransactionForm({
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -187,6 +193,7 @@ export default function TransactionForm({
                   placeholder="0.00"
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 import { useTheme } from "next-themes";
-import { ThemeProviderProps } from "next-themes/dist/types";
+import { ThemeProviderProps } from "next-themes";
 
 import usePreferredColorScheme from "@/hooks/use-preferred-color-scheme";
 import setGlobalColorTheme from "@/lib/theme-colors";
