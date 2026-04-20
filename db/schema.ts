@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -134,4 +134,41 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 
 export const insertTransactionSchema = createInsertSchema(transactions, {
   date: z.coerce.date(),
+});
+
+export const events = pgTable("events", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  startDate: timestamp("start_date", { mode: "date" }).notNull(),
+  endDate: timestamp("end_date", { mode: "date" }).notNull(),
+  allDay: boolean("all_day").notNull().default(false),
+  location: text("location"),
+  color: text("color"),
+  googleEventId: text("google_event_id"),
+  googleCalendarId: text("google_calendar_id"),
+  notifyBefore: integer("notify_before").default(30),
+  notified: boolean("notified").notNull().default(false),
+  userId: text("user_id"),
+  orgId: text("org_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const insertEventSchema = createInsertSchema(events, {
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+});
+
+export const googleTokens = pgTable("google_tokens", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  expiresAt: timestamp("expires_at", { mode: "date" }),
+  scope: text("scope"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
 });

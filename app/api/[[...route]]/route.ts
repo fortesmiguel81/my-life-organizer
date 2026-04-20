@@ -4,6 +4,8 @@ import { handle } from "hono/vercel";
 import accounts from "./accounts";
 import budgets from "./budgets";
 import categories from "./categories";
+import events from "./events";
+import googleCalendar from "./google-calendar";
 import recurring from "./recurring";
 import summary from "./summary";
 import transactions from "./transactions";
@@ -20,7 +22,9 @@ const routes = app
   .route("/categories", categories)
   .route("/budgets", budgets)
   .route("/summary", summary)
-  .route("/recurring", recurring);
+  .route("/recurring", recurring)
+  .route("/events", events)
+  .route("/google-calendar", googleCalendar);
 
 export const GET = handle(app);
 export const POST = handle(app);
