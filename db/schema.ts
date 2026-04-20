@@ -82,6 +82,21 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
 
 export const insertCategorySchema = createInsertSchema(categories);
 
+export const transactionTypeEnum = pgEnum("transactionType", [
+  "income",
+  "expense",
+  "transfer",
+]);
+
+export const recurrenceFrequencyEnum = pgEnum("recurrenceFrequency", [
+  "none",
+  "daily",
+  "weekly",
+  "biweekly",
+  "monthly",
+  "yearly",
+]);
+
 export const transactions = pgTable("transactions", {
   id: text("id").primaryKey(),
   amount: integer("amount").notNull(),
@@ -96,6 +111,10 @@ export const transactions = pgTable("transactions", {
   categoryId: text("category_id").references(() => categories.id, {
     onDelete: "set null",
   }),
+  type: transactionTypeEnum("type").notNull().default("expense"),
+  recurrence: recurrenceFrequencyEnum("recurrence").notNull().default("none"),
+  nextDueDate: timestamp("next_due_date", { mode: "date" }),
+  linkedTransactionId: text("linked_transaction_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),

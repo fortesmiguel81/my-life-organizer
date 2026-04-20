@@ -9,17 +9,10 @@ export async function updateAccountBalance(
   amount: number,
   userId: string
 ) {
-  console.log("accountId", accountId);
-  console.log("balance", balance);
-  console.log("amount", amount);
-
-  const newBalance = balance + amount;
-  console.log("newBalance:", newBalance);
-
   const [updatedAccount] = await db
     .update(accounts)
     .set({
-      balance: newBalance,
+      balance: balance + amount,
       updated_at: new Date(),
       updated_by: userId,
     })

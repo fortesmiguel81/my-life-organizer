@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import Spinner from "@/components/spinner";
 import {
   Sheet,
@@ -8,25 +6,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { insertTransactionSchema } from "@/db/schema";
 import { useCreateAccount } from "@/features/accounts/api/use-create-account";
 import { useGetAccounts } from "@/features/accounts/api/use-get-accounts";
 import { useCreateCategory } from "@/features/categories/api/use-create-category";
 import { useGetCategories } from "@/features/categories/api/use-get-categories";
-import TransactionForm from "@/features/transactions/components/transaction-form";
 
 import { useCreateTransaction } from "../api/use-create-transaction";
 import { useNewTransaction } from "../hooks/use-new-transaction";
-
-const formSchema = insertTransactionSchema.omit({
-  id: true,
-  created_at: true,
-  created_by: true,
-  updated_at: true,
-  updated_by: true,
-});
-
-type FormValues = z.input<typeof formSchema>;
+import TransactionForm, {
+  TransactionFormSubmitValues,
+} from "./transaction-form";
 
 export default function NewTransactionSheet() {
   const { isOpen, onClose } = useNewTransaction();
@@ -36,12 +25,7 @@ export default function NewTransactionSheet() {
   const accountQuery = useGetAccounts();
   const accountMutation = useCreateAccount();
   const onCreateAccount = (name: string) => {
-    accountMutation.mutate({
-      name,
-      number: "",
-      holder: "",
-      balance: 0,
-    });
+    accountMutation.mutate({ name, number: "", holder: "", balance: 0 });
   };
 
   const accountOptions = (accountQuery.data ?? []).map((account) => ({
@@ -69,12 +53,15 @@ export default function NewTransactionSheet() {
 
   const isLoading = accountQuery.isLoading || categoryQuery.isLoading;
 
-  const onSubmit = (values: FormValues) => {
-    createMutation.mutate(values, {
-      onSuccess: () => {
-        onClose();
+  const onSubmit = (values: TransactionFormSubmitValues) => {
+    createMutation.mutate(
+      {
+        ...values,
+        description: values.description ?? "",
+        nextDueDate: values.nextDueDate ?? null,
       },
-    });
+      { onSuccess: onClose }
+    );
   };
 
   return (
@@ -83,7 +70,7 @@ export default function NewTransactionSheet() {
         <SheetHeader>
           <SheetTitle>New Transaction</SheetTitle>
           <SheetDescription>
-            Create a new transaction to track your expenses.
+            Create a new transaction to track your finances.
           </SheetDescription>
         </SheetHeader>
         {isLoading ? (

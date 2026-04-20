@@ -19,6 +19,7 @@ import { File, PlusCircle, X } from "lucide-react";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { exportTransactionsToCSV } from "@/lib/export";
 import {
   Table,
   TableBody,
@@ -84,8 +85,7 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
   }, [selectedCategories, table]);
 
   const handleExportTransactions = () => {
-    // TODO: Implement export transactions
-    alert("Exporting transactions...");
+    exportTransactionsToCSV(data as Parameters<typeof exportTransactionsToCSV>[0]);
   };
 
   return (

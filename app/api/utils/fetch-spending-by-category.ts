@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lt, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lt, lte, ne, sql } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
 import { accounts, categories, transactions } from "@/db/schema";
@@ -13,6 +13,7 @@ export async function fetchSpendingByCategory(
   const queryConditions = [
     orgId ? eq(accounts.orgId, orgId) : eq(accounts.userId, userId),
     lt(transactions.amount, 0),
+    ne(transactions.type, "transfer"),
     gte(transactions.date, startDate),
     lte(transactions.date, endDate),
   ];

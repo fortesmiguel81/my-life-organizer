@@ -16,6 +16,10 @@ export async function canUserSeeTransaction(
       date: transactions.date,
       accountId: transactions.accountId,
       categoryId: transactions.categoryId,
+      type: transactions.type,
+      recurrence: transactions.recurrence,
+      nextDueDate: transactions.nextDueDate,
+      linkedTransactionId: transactions.linkedTransactionId,
     })
     .from(transactions)
     .where(eq(transactions.id, transactionId));
