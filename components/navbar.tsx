@@ -136,6 +136,16 @@ export default function Navbar() {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
+                    <Link href="/calendar" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        active={pathname.startsWith("/calendar")}
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Calendar
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
                     <NavigationMenuTrigger
                       className={cn(
                         pathname.startsWith("/finance") && "bg-accent/50"

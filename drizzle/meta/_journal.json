@@ -57,6 +57,13 @@
       "when": 1776683178216,
       "tag": "0007_public_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1776695059023,
+      "tag": "0008_great_raza",
+      "breakpoints": true
     }
   ]
 }
