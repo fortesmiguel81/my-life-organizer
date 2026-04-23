@@ -9,15 +9,11 @@ type RequestType = InferRequestType<(typeof client.api.tasks)[":id"]["$patch"]>[
 
 export const useEditTask = (id?: string) => {
   const queryClient = useQueryClient();
-
   return useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (json) => {
-      const response = await client.api.tasks[":id"].$patch({
-        param: { id: id! },
-        json,
-      });
-      if (!response.ok) throw new Error("Failed to update task");
-      return response.json();
+      const res = await client.api.tasks[":id"].$patch({ param: { id: id! }, json });
+      if (!res.ok) throw new Error("Failed to update task");
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });

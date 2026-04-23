@@ -35,7 +35,7 @@ const formSchema = z
       const n = parseFloat(val);
       return !isNaN(n) && n !== 0;
     }, "Amount must be a non-zero number"),
-    payee: z.string().min(1, "Payee is required"),
+    payee: z.string(),
     description: z.string(),
     date: z.coerce.date(),
     accountId: z.string().min(1, "Account is required"),
@@ -49,6 +49,13 @@ const formSchema = z
         code: z.ZodIssueCode.custom,
         message: "Destination account is required for transfers",
         path: ["toAccountId"],
+      });
+    }
+    if (data.type !== "transfer" && !data.payee) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Payee is required",
+        path: ["payee"],
       });
     }
   });
@@ -161,7 +168,7 @@ export default function TransactionForm({
       date: values.date,
       accountId: values.accountId,
       toAccountId: values.toAccountId,
-      categoryId: values.type === "transfer" ? null : (values.categoryId ?? null),
+      categoryId: values.categoryId ?? null,
       type: values.type,
       recurrence: values.recurrence,
     });
@@ -259,21 +266,39 @@ export default function TransactionForm({
           />
         )}
 
+        <FormField
+          name="categoryId"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <FormControl>
+                <Select
+                  placeholder="Select a category (optional)"
+                  options={categoryOptions}
+                  onCreate={onCreateCategory}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  disabled={disabled}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {transactionType !== "transfer" && (
           <FormField
-            name="categoryId"
+            name="payee"
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Category</FormLabel>
+                <FormLabel>Payee</FormLabel>
                 <FormControl>
-                  <Select
-                    placeholder="Select a category (optional)"
-                    options={categoryOptions}
-                    onCreate={onCreateCategory}
-                    value={field.value ?? ""}
-                    onChange={field.onChange}
+                  <Input
                     disabled={disabled}
+                    placeholder="Add a payee"
+                    {...field}
                   />
                 </FormControl>
                 <FormMessage />
@@ -281,24 +306,6 @@ export default function TransactionForm({
             )}
           />
         )}
-
-        <FormField
-          name="payee"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Payee</FormLabel>
-              <FormControl>
-                <Input
-                  disabled={disabled}
-                  placeholder="Add a payee"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <FormField
           name="description"
@@ -330,6 +337,7 @@ export default function TransactionForm({
                   {...field}
                   disabled={disabled}
                   placeholder="0.00"
+                  hideToggle={transactionType === "transfer"}
                 />
               </FormControl>
               <FormMessage />

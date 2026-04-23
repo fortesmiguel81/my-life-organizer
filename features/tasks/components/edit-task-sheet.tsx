@@ -1,11 +1,5 @@
 import Spinner from "@/components/spinner";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDeleteTask } from "@/features/tasks/api/use-delete-task";
 import { useEditTask } from "@/features/tasks/api/use-edit-task";
 import { useGetTask } from "@/features/tasks/api/use-get-task";
@@ -21,22 +15,11 @@ export default function EditTaskSheet() {
   const editMutation = useEditTask(id);
   const deleteMutation = useDeleteTask(id);
   const { data: taskLists = [] } = useGetTaskLists();
-
-  const [ConfirmDialog, confirm] = useConfirm(
-    "Delete task?",
-    "This cannot be undone."
-  );
-
-  const isPending = editMutation.isPending || deleteMutation.isPending;
+  const [ConfirmDialog, confirm] = useConfirm("Delete task?", "This cannot be undone.");
 
   const onSubmit = (values: TaskFormValues) => {
     editMutation.mutate(
-      {
-        ...values,
-        description: values.description ?? null,
-        dueDate: values.dueDate ?? null,
-        assignedTo: values.assignedTo ?? null,
-      },
+      { ...values, description: values.description ?? null, dueDate: values.dueDate ?? null },
       { onSuccess: onClose }
     );
   };
@@ -55,7 +38,6 @@ export default function EditTaskSheet() {
         status: raw.status,
         priority: raw.priority,
         dueDate: raw.dueDate ? new Date(raw.dueDate) : null,
-        assignedTo: raw.assignedTo ?? "",
       }
     : undefined;
 
@@ -79,7 +61,7 @@ export default function EditTaskSheet() {
               defaultValues={defaultValues}
               onSubmit={onSubmit}
               onDelete={onDelete}
-              disabled={isPending}
+              disabled={editMutation.isPending || deleteMutation.isPending}
             />
           )}
         </SheetContent>

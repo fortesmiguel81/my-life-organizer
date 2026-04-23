@@ -39,7 +39,6 @@ const formSchema = z.object({
   status: z.enum(["todo", "in_progress", "done"]).default("todo"),
   priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
   dueDate: z.date().nullable().optional(),
-  assignedTo: z.string().optional(),
 });
 
 export type TaskFormValues = z.infer<typeof formSchema>;
@@ -55,26 +54,15 @@ type Props = {
   disabled?: boolean;
 };
 
-const PRIORITY_LABELS = { low: "Low", medium: "Medium", high: "High", urgent: "Urgent" };
-const STATUS_LABELS = { todo: "To Do", in_progress: "In Progress", done: "Done" };
-
 export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDelete, disabled }: Props) {
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      status: "todo",
-      priority: "medium",
-      dueDate: null,
-      description: "",
-      assignedTo: "",
-      ...defaultValues,
-    },
+    defaultValues: { status: "todo", priority: "medium", dueDate: null, description: "", ...defaultValues },
   });
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {/* List */}
         <FormField
           control={form.control}
           name="listId"
@@ -100,7 +88,6 @@ export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDel
           )}
         />
 
-        {/* Title */}
         <FormField
           control={form.control}
           name="title"
@@ -115,7 +102,6 @@ export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDel
           )}
         />
 
-        {/* Priority + Status row */}
         <div className="grid grid-cols-2 gap-3">
           <FormField
             control={form.control}
@@ -125,20 +111,18 @@ export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDel
                 <FormLabel>Priority</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange} disabled={disabled}>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.entries(PRIORITY_LABELS).map(([v, l]) => (
-                      <SelectItem key={v} value={v}>{l}</SelectItem>
-                    ))}
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
                   </SelectContent>
                 </Select>
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="status"
@@ -147,14 +131,12 @@ export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDel
                 <FormLabel>Status</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange} disabled={disabled}>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.entries(STATUS_LABELS).map(([v, l]) => (
-                      <SelectItem key={v} value={v}>{l}</SelectItem>
-                    ))}
+                    <SelectItem value="todo">To Do</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="done">Done</SelectItem>
                   </SelectContent>
                 </Select>
               </FormItem>
@@ -162,7 +144,6 @@ export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDel
           />
         </div>
 
-        {/* Due date */}
         <FormField
           control={form.control}
           name="dueDate"
@@ -174,10 +155,7 @@ export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDel
                   <FormControl>
                     <Button
                       variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
+                      className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")}
                       disabled={disabled}
                     >
                       <CalendarIcon className="mr-2 size-4" />
@@ -199,7 +177,6 @@ export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDel
           )}
         />
 
-        {/* Description */}
         <FormField
           control={form.control}
           name="description"
@@ -219,13 +196,7 @@ export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDel
         </Button>
 
         {id && onDelete && (
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            disabled={disabled}
-            onClick={onDelete}
-          >
+          <Button type="button" variant="outline" className="w-full" disabled={disabled} onClick={onDelete}>
             <Trash2 className="mr-2 size-4" />
             Delete task
           </Button>

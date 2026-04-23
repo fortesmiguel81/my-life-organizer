@@ -175,7 +175,16 @@ const app = new Hono()
 
       const decrypted = await decryptTransaction(data);
 
-      return ctx.json({ data: decrypted });
+      let toAccountId: string | null = null;
+      if (data.type === "transfer" && data.linkedTransactionId) {
+        const [linked] = await db
+          .select({ accountId: transactions.accountId })
+          .from(transactions)
+          .where(eq(transactions.id, data.linkedTransactionId));
+        if (linked) toAccountId = linked.accountId;
+      }
+
+      return ctx.json({ data: { ...decrypted, toAccountId } });
     }
   )
   .post(
@@ -235,7 +244,7 @@ const app = new Hono()
               recurrence: "none",
               nextDueDate: null,
               linkedTransactionId: destId,
-              categoryId: null,
+              categoryId: values.categoryId ?? null,
               created_at: now,
               created_by: auth.userId,
               updated_at: now,
@@ -254,7 +263,7 @@ const app = new Hono()
             recurrence: "none",
             nextDueDate: null,
             linkedTransactionId: sourceId,
-            categoryId: null,
+            categoryId: values.categoryId ?? null,
             created_at: now,
             created_by: auth.userId,
             updated_at: now,

@@ -1,9 +1,15 @@
+"use client";
+
+import { useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { EmojiClickData, Theme } from "emoji-picker-react";
 import { Trash } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { IconCombobox } from "@/components/icon-combo-box";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,8 +19,15 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { insertCategorySchema } from "@/db/schema";
+
+const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
 const formSchema = z.object({
   name: z.string(),
@@ -41,7 +54,6 @@ type Props = {
   onSubmit: (values: ApiFormValues) => void;
   onDelete?: () => void;
   disabled?: boolean;
-  iconOptions: string[];
 };
 
 export default function CategoryForm({
@@ -50,27 +62,20 @@ export default function CategoryForm({
   onSubmit,
   onDelete,
   disabled,
-  iconOptions,
 }: Props) {
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
 
-  const handleSubmit = (values: FormValues) => {
-    onSubmit(values);
-  };
-
-  const handleDelete = () => {
-    onDelete?.();
-  };
+  const selectedIcon = form.watch("icon");
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-4 pt-4"
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
         <FormField
           name="name"
           control={form.control}
@@ -78,15 +83,12 @@ export default function CategoryForm({
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input
-                  disabled={disabled}
-                  placeholder="Add a name"
-                  {...field}
-                />
+                <Input disabled={disabled} placeholder="Add a name" {...field} />
               </FormControl>
             </FormItem>
           )}
         />
+
         <FormField
           name="description"
           control={form.control}
@@ -104,21 +106,40 @@ export default function CategoryForm({
             </FormItem>
           )}
         />
+
         <FormField
           name="icon"
           control={form.control}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Icon</FormLabel>
-              <FormControl>
-                <IconCombobox
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={iconOptions}
-                  searchFor="icon"
-                  disabled={disabled}
-                />
-              </FormControl>
+              <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={disabled}
+                    className="h-10 w-full justify-start gap-2 font-normal"
+                  >
+                    {selectedIcon ? (
+                      <span className="text-xl">{selectedIcon}</span>
+                    ) : (
+                      <span className="text-muted-foreground">Pick an emoji…</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <EmojiPicker
+                    theme={resolvedTheme === "dark" ? Theme.DARK : Theme.LIGHT}
+                    onEmojiClick={(data: EmojiClickData) => {
+                      field.onChange(data.emoji);
+                      setEmojiOpen(false);
+                    }}
+                    searchPlaceholder="Search emoji…"
+                    lazyLoadEmojis
+                  />
+                </PopoverContent>
+              </Popover>
             </FormItem>
           )}
         />
@@ -126,13 +147,13 @@ export default function CategoryForm({
         <Button type="submit" className="w-full" disabled={disabled}>
           {id ? "Save changes" : "Create category"}
         </Button>
+
         {!!id && (
           <Button
             type="button"
             disabled={disabled}
-            onClick={handleDelete}
+            onClick={onDelete}
             className="w-full"
-            size="icon"
             variant="outline"
           >
             <Trash className="mr-2 size-4" />

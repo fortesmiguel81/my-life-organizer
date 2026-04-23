@@ -16,6 +16,7 @@ type Props = {
   onChange: (value: string | undefined) => void;
   placeholder?: string;
   disabled?: boolean;
+  hideToggle?: boolean;
 };
 
 export default function AmountInput({
@@ -23,6 +24,7 @@ export default function AmountInput({
   onChange,
   placeholder,
   disabled,
+  hideToggle,
 }: Props) {
   const parsedValue = parseFloat(value);
   const isIncome = parsedValue > 0;
@@ -43,11 +45,12 @@ export default function AmountInput({
             <Button
               type="button"
               variant="ghost"
-              onClick={onReverseValue}
+              onClick={hideToggle ? undefined : onReverseValue}
               className={cn(
                 "absolute left-1.5 top-1.5 flex h-min items-center justify-center rounded-md p-1.5 transition",
                 isIncome && "bg-emerald-500 hover:bg-emerald-600",
-                isExpense && "bg-rose-500 hover:bg-rose-600"
+                isExpense && "bg-rose-500 hover:bg-rose-600",
+                hideToggle && "pointer-events-none"
               )}
             >
               {!parsedValue && <Info className="size-4 text-white" />}
@@ -55,9 +58,11 @@ export default function AmountInput({
               {isExpense && <MinusCircle className="size-4 text-white" />}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            Use [+] to add income or [-] to add expenses.
-          </TooltipContent>
+          {!hideToggle && (
+            <TooltipContent>
+              Use [+] to add income or [-] to add expenses.
+            </TooltipContent>
+          )}
         </Tooltip>
       </TooltipProvider>
       <CurrencyInput

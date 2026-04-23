@@ -1,25 +1,28 @@
 "use client";
 
+import dynamic from "next/dynamic";
+import { useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { EmojiClickData, Theme } from "emoji-picker-react";
 import { Trash2 } from "lucide-react";
+import { useTheme } from "next-themes";
+import { ColorPicker, IColor, useColor } from "react-color-palette";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
-const COLORS = [
-  "#ef4444", "#f97316", "#eab308", "#22c55e",
-  "#3b82f6", "#8b5cf6", "#ec4899", "#6b7280",
-];
+const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
+
+const DEFAULT_COLOR = "#3b82f6";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -37,13 +40,28 @@ type Props = {
   disabled?: boolean;
 };
 
-export default function TaskListForm({ id, defaultValues, onSubmit, onDelete, disabled }: Props) {
+export default function TaskListForm({
+  id,
+  defaultValues,
+  onSubmit,
+  onDelete,
+  disabled,
+}: Props) {
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+
   const form = useForm<TaskListFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: "", icon: "", color: COLORS[4], ...defaultValues },
+    defaultValues: {
+      name: "",
+      icon: "",
+      color: DEFAULT_COLOR,
+      ...defaultValues,
+    },
   });
 
-  const selectedColor = form.watch("color");
+  const selectedIcon = form.watch("icon");
+  const [color, setColor] = useColor(defaultValues?.color ?? DEFAULT_COLOR);
 
   return (
     <Form {...form}>
@@ -54,10 +72,7 @@ export default function TaskListForm({ id, defaultValues, onSubmit, onDelete, di
           render={({ field }) => (
             <FormItem>
               <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Home tasks" disabled={disabled} {...field} />
-              </FormControl>
-              <FormMessage />
+              <Input placeholder="Home tasks" disabled={disabled} {...field} />
             </FormItem>
           )}
         />
@@ -67,11 +82,36 @@ export default function TaskListForm({ id, defaultValues, onSubmit, onDelete, di
           name="icon"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Icon (emoji)</FormLabel>
-              <FormControl>
-                <Input placeholder="🏠" maxLength={2} disabled={disabled} {...field} />
-              </FormControl>
-              <FormMessage />
+              <FormLabel>Icon</FormLabel>
+              <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={disabled}
+                    className="h-10 w-full justify-start gap-2 font-normal"
+                  >
+                    {selectedIcon ? (
+                      <span className="text-xl">{selectedIcon}</span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        Pick an emoji…
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <EmojiPicker
+                    theme={resolvedTheme === "dark" ? Theme.DARK : Theme.LIGHT}
+                    onEmojiClick={(data: EmojiClickData) => {
+                      field.onChange(data.emoji);
+                      setEmojiOpen(false);
+                    }}
+                    searchPlaceholder="Search emoji…"
+                    lazyLoadEmojis
+                  />
+                </PopoverContent>
+              </Popover>
             </FormItem>
           )}
         />
@@ -82,22 +122,13 @@ export default function TaskListForm({ id, defaultValues, onSubmit, onDelete, di
           render={({ field }) => (
             <FormItem>
               <FormLabel>Color</FormLabel>
-              <FormControl>
-                <div className="flex gap-2 flex-wrap">
-                  {COLORS.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => field.onChange(c)}
-                      className="size-7 rounded-full border-2 transition-transform hover:scale-110"
-                      style={{
-                        backgroundColor: c,
-                        borderColor: selectedColor === c ? "black" : "transparent",
-                      }}
-                    />
-                  ))}
-                </div>
-              </FormControl>
+              <ColorPicker
+                color={color}
+                onChange={(newColor: IColor) => {
+                  setColor(newColor);
+                  field.onChange(newColor.hex);
+                }}
+              />
             </FormItem>
           )}
         />

@@ -8,14 +8,11 @@ type ResponseType = InferResponseType<(typeof client.api)["task-lists"][":id"]["
 
 export const useDeleteTaskList = (id?: string) => {
   const queryClient = useQueryClient();
-
   return useMutation<ResponseType, Error>({
     mutationFn: async () => {
-      const response = await client.api["task-lists"][":id"].$delete({
-        param: { id: id! },
-      });
-      if (!response.ok) throw new Error("Failed to delete list");
-      return response.json();
+      const res = await client.api["task-lists"][":id"].$delete({ param: { id: id! } });
+      if (!res.ok) throw new Error("Failed to delete list");
+      return res.json();
     },
     onSuccess: () => {
       toast.success("List deleted");

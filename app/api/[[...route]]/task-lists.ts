@@ -77,15 +77,17 @@ const app = new Hono()
     zValidator("param", z.object({ id: z.string() })),
     zValidator(
       "json",
-      insertTaskListSchema.omit({
-        id: true,
-        userId: true,
-        orgId: true,
-        created_at: true,
-        created_by: true,
-        updated_at: true,
-        updated_by: true,
-      })
+      insertTaskListSchema
+        .omit({
+          id: true,
+          userId: true,
+          orgId: true,
+          created_at: true,
+          created_by: true,
+          updated_at: true,
+          updated_by: true,
+        })
+        .partial()
     ),
     async (ctx) => {
       const auth = getAuth(ctx);
@@ -93,7 +95,6 @@ const app = new Hono()
 
       const { id } = ctx.req.valid("param");
       const values = ctx.req.valid("json");
-
       const userFilter = auth.orgId
         ? eq(taskLists.orgId, auth.orgId)
         : eq(taskLists.userId, auth.userId);
@@ -105,7 +106,6 @@ const app = new Hono()
         .returning();
 
       if (!data) return ctx.json({ error: "List not found" }, 404);
-
       return ctx.json({ data });
     }
   )
@@ -118,7 +118,6 @@ const app = new Hono()
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
-
       const userFilter = auth.orgId
         ? eq(taskLists.orgId, auth.orgId)
         : eq(taskLists.userId, auth.userId);
@@ -129,7 +128,6 @@ const app = new Hono()
         .returning();
 
       if (!data) return ctx.json({ error: "List not found" }, 404);
-
       return ctx.json({ data });
     }
   );

@@ -10,8 +10,6 @@ type State = {
 
 export const useNewTask = create<State>((set) => ({
   isOpen: false,
-  defaultListId: undefined,
-  defaultStatus: undefined,
   onOpen: (defaultListId, defaultStatus) =>
     set({ isOpen: true, defaultListId, defaultStatus }),
   onClose: () =>

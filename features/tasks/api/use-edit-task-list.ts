@@ -9,15 +9,11 @@ type RequestType = InferRequestType<(typeof client.api)["task-lists"][":id"]["$p
 
 export const useEditTaskList = (id?: string) => {
   const queryClient = useQueryClient();
-
   return useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (json) => {
-      const response = await client.api["task-lists"][":id"].$patch({
-        param: { id: id! },
-        json,
-      });
-      if (!response.ok) throw new Error("Failed to update list");
-      return response.json();
+      const res = await client.api["task-lists"][":id"].$patch({ param: { id: id! }, json });
+      if (!res.ok) throw new Error("Failed to update list");
+      return res.json();
     },
     onSuccess: () => {
       toast.success("List updated");

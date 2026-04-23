@@ -1,4 +1,3 @@
-import * as LucideIcons from "lucide-react";
 import { z } from "zod";
 
 import {
@@ -13,7 +12,6 @@ import { useCreateCategory } from "@/features/categories/api/use-create-category
 import { useNewCategory } from "@/features/categories/hooks/use-new-category";
 
 import CategoryForm from "./category-form";
-import { getFilteredIconDisplayNames } from "@/lib/icons";
 
 const formSchema = insertCategorySchema.omit({
   id: true,
@@ -29,19 +27,10 @@ type FormValues = z.input<typeof formSchema>;
 
 export default function NewCategorySheet() {
   const { isOpen, onClose } = useNewCategory();
-
   const createMutation = useCreateCategory();
 
-  const iconOptions = getFilteredIconDisplayNames(LucideIcons);
-
-  const isPending = createMutation.isPending;
-
   const onSubmit = (values: FormValues) => {
-    createMutation.mutate(values, {
-      onSuccess: () => {
-        onClose();
-      },
-    });
+    createMutation.mutate(values, { onSuccess: onClose });
   };
 
   return (
@@ -51,12 +40,7 @@ export default function NewCategorySheet() {
           <SheetTitle>New Category</SheetTitle>
           <SheetDescription>Create a new category</SheetDescription>
         </SheetHeader>
-
-        <CategoryForm
-          onSubmit={onSubmit}
-          disabled={isPending}
-          iconOptions={iconOptions}
-        />
+        <CategoryForm onSubmit={onSubmit} disabled={createMutation.isPending} />
       </SheetContent>
     </Sheet>
   );

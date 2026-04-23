@@ -1,6 +1,6 @@
 {
-  "id": "05ecb107-10e9-40b6-93cc-8c221ac7902b",
-  "prevId": "19c404c1-d199-496a-8253-fcb3d4529652",
+  "id": "5732ef12-6d17-40b2-881a-b0f5d33be5a5",
+  "prevId": "05ecb107-10e9-40b6-93cc-8c221ac7902b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -573,6 +573,13 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
+        },
+        "order": {
+          "name": "order",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         },
         "assigned_to": {
           "name": "assigned_to",

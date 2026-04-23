@@ -1,22 +1,12 @@
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { insertTaskSchema, taskLists, tasks } from "@/db/schema";
-
-const patchSchema = insertTaskSchema.omit({
-  id: true,
-  userId: true,
-  orgId: true,
-  created_at: true,
-  created_by: true,
-  updated_at: true,
-  updated_by: true,
-}).partial();
 
 const app = new Hono()
   .get(
@@ -27,7 +17,6 @@ const app = new Hono()
         listId: z.string().optional(),
         status: z.enum(["todo", "in_progress", "done"]).optional(),
         priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
-        assignedTo: z.string().optional(),
       })
     ),
     clerkMiddleware(),
@@ -35,22 +24,20 @@ const app = new Hono()
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
-      const { listId, status, priority, assignedTo } = ctx.req.valid("query");
-
+      const { listId, status, priority } = ctx.req.valid("query");
       const userFilter = auth.orgId
         ? eq(taskLists.orgId, auth.orgId)
         : eq(taskLists.userId, auth.userId);
 
       const conditions: Parameters<typeof and>[0][] = [
         userFilter,
-        isNull(tasks.parentId), // top-level tasks only in list view
+        isNull(tasks.parentId),
       ];
       if (listId) conditions.push(eq(tasks.listId, listId));
       if (status) conditions.push(eq(tasks.status, status));
       if (priority) conditions.push(eq(tasks.priority, priority));
-      if (assignedTo) conditions.push(eq(tasks.assignedTo, assignedTo));
 
-      const data = await db
+      const rows = await db
         .select({
           id: tasks.id,
           listId: tasks.listId,
@@ -58,6 +45,7 @@ const app = new Hono()
           description: tasks.description,
           status: tasks.status,
           priority: tasks.priority,
+          order: tasks.order,
           dueDate: tasks.dueDate,
           assignedTo: tasks.assignedTo,
           parentId: tasks.parentId,
@@ -67,28 +55,23 @@ const app = new Hono()
         })
         .from(tasks)
         .innerJoin(taskLists, eq(tasks.listId, taskLists.id))
-        .where(and(...conditions));
+        .where(and(...conditions))
+        .orderBy(asc(tasks.order), asc(tasks.created_at));
 
-      // Fetch subtask counts per parent
-      const subtasksMap: Record<string, number> = {};
-      const allSubtasks = await db
+      // Attach subtask counts in a single extra query
+      const subtaskRows = await db
         .select({ parentId: tasks.parentId })
         .from(tasks)
         .innerJoin(taskLists, eq(tasks.listId, taskLists.id))
         .where(and(userFilter));
 
-      for (const row of allSubtasks) {
-        if (row.parentId) {
-          subtasksMap[row.parentId] = (subtasksMap[row.parentId] ?? 0) + 1;
-        }
+      const subtasksMap: Record<string, number> = {};
+      for (const r of subtaskRows) {
+        if (r.parentId) subtasksMap[r.parentId] = (subtasksMap[r.parentId] ?? 0) + 1;
       }
 
-      const result = data.map((t) => ({
-        ...t,
-        subtaskCount: subtasksMap[t.id] ?? 0,
-      }));
-
-      return ctx.json({ data: result });
+      const data = rows.map((t) => ({ ...t, subtaskCount: subtasksMap[t.id] ?? 0 }));
+      return ctx.json({ data });
     }
   )
   .get(
@@ -100,25 +83,24 @@ const app = new Hono()
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
-
       const userFilter = auth.orgId
         ? eq(taskLists.orgId, auth.orgId)
         : eq(taskLists.userId, auth.userId);
 
-      const [task] = await db
-        .select()
+      const [row] = await db
+        .select({ tasks })
         .from(tasks)
         .innerJoin(taskLists, eq(tasks.listId, taskLists.id))
         .where(and(eq(tasks.id, id), userFilter));
 
-      if (!task) return ctx.json({ error: "Task not found" }, 404);
+      if (!row) return ctx.json({ error: "Task not found" }, 404);
 
       const subtasks = await db
         .select()
         .from(tasks)
         .where(eq(tasks.parentId, id));
 
-      return ctx.json({ data: { ...task.tasks, subtasks } });
+      return ctx.json({ data: { ...row.tasks, subtasks } });
     }
   )
   .post(
@@ -164,19 +146,30 @@ const app = new Hono()
     "/:id",
     clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
-    zValidator("json", patchSchema),
+    zValidator(
+      "json",
+      insertTaskSchema
+        .omit({
+          id: true,
+          userId: true,
+          orgId: true,
+          created_at: true,
+          created_by: true,
+          updated_at: true,
+          updated_by: true,
+        })
+        .partial()
+    ),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
       const values = ctx.req.valid("json");
-
       const userFilter = auth.orgId
         ? eq(taskLists.orgId, auth.orgId)
         : eq(taskLists.userId, auth.userId);
 
-      // Verify ownership via the joined list
       const [existing] = await db
         .select({ id: tasks.id })
         .from(tasks)
@@ -203,7 +196,6 @@ const app = new Hono()
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
-
       const userFilter = auth.orgId
         ? eq(taskLists.orgId, auth.orgId)
         : eq(taskLists.userId, auth.userId);

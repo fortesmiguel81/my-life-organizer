@@ -1,10 +1,4 @@
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCreateTask } from "@/features/tasks/api/use-create-task";
 import { useGetTaskLists } from "@/features/tasks/api/use-get-task-lists";
 import { useNewTask } from "@/features/tasks/hooks/use-new-task";
@@ -22,9 +16,9 @@ export default function NewTaskSheet() {
         ...values,
         description: values.description ?? null,
         dueDate: values.dueDate ?? null,
-        assignedTo: values.assignedTo ?? null,
         parentId: null,
         calendarEventId: null,
+        assignedTo: null,
       },
       { onSuccess: onClose }
     );
@@ -39,10 +33,7 @@ export default function NewTaskSheet() {
         </SheetHeader>
         <TaskForm
           taskLists={taskLists}
-          defaultValues={{
-            listId: defaultListId ?? taskLists[0]?.id ?? "",
-            status: defaultStatus ?? "todo",
-          }}
+          defaultValues={{ listId: defaultListId ?? taskLists[0]?.id ?? "", status: defaultStatus ?? "todo" }}
           onSubmit={onSubmit}
           disabled={mutation.isPending}
         />

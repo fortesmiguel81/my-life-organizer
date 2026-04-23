@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useOpenTask } from "@/features/tasks/hooks/use-open-task";
 
-const PRIORITY_COLORS: Record<string, string> = {
+const PRIORITY_BORDER: Record<string, string> = {
   low: "border-l-slate-400",
   medium: "border-l-blue-400",
   high: "border-l-orange-400",
@@ -16,7 +16,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 const PRIORITY_BADGE: Record<string, string> = {
-  low: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  low: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
   medium: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
   high: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
   urgent: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
@@ -27,16 +27,12 @@ type Task = {
   title: string;
   priority: "low" | "medium" | "high" | "urgent";
   status: "todo" | "in_progress" | "done";
-  dueDate: string | null;
+  dueDate: string | Date | null;
   subtaskCount: number;
-  assignedTo: string | null;
 };
 
-type Props = { task: Task; index: number };
-
-export default function TaskCard({ task, index }: Props) {
+export default function TaskCard({ task, index }: { task: Task; index: number }) {
   const { onOpen } = useOpenTask();
-
   const dueDateObj = task.dueDate ? new Date(task.dueDate) : null;
   const isOverdue = dueDateObj && isPast(dueDateObj) && task.status !== "done";
   const isDueToday = dueDateObj && isToday(dueDateObj);
@@ -51,7 +47,7 @@ export default function TaskCard({ task, index }: Props) {
           onClick={() => onOpen(task.id)}
           className={cn(
             "group cursor-pointer rounded-md border-l-4 bg-background p-3 shadow-sm transition-shadow hover:shadow-md",
-            PRIORITY_COLORS[task.priority],
+            PRIORITY_BORDER[task.priority],
             snapshot.isDragging && "shadow-lg ring-2 ring-primary/30"
           )}
         >
@@ -68,7 +64,10 @@ export default function TaskCard({ task, index }: Props) {
             </Badge>
 
             {dueDateObj && (
-              <span className={cn("flex items-center gap-0.5 text-[10px]", isOverdue ? "text-red-500 font-semibold" : isDueToday ? "text-orange-500 font-medium" : "text-muted-foreground")}>
+              <span className={cn(
+                "flex items-center gap-0.5 text-[10px]",
+                isOverdue ? "font-semibold text-red-500" : isDueToday ? "font-medium text-orange-500" : "text-muted-foreground"
+              )}>
                 <CalendarDays className="size-3" />
                 {isOverdue ? "Overdue · " : isDueToday ? "Today · " : ""}
                 {format(dueDateObj, "MMM d")}

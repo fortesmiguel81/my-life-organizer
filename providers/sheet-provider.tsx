@@ -9,8 +9,10 @@ import EditCategorySheet from "@/features/categories/components/edit-category-sh
 import NewCategorySheet from "@/features/categories/components/new-category-sheet";
 import EditEventSheet from "@/features/events/components/edit-event-sheet";
 import NewEventSheet from "@/features/events/components/new-event-sheet";
-import NewTaskSheet from "@/features/tasks/components/new-task-sheet";
+import EditTaskListSheet from "@/features/tasks/components/edit-task-list-sheet";
 import EditTaskSheet from "@/features/tasks/components/edit-task-sheet";
+import NewTaskListSheet from "@/features/tasks/components/new-task-list-sheet";
+import NewTaskSheet from "@/features/tasks/components/new-task-sheet";
 import EditTransactionSheet from "@/features/transactions/components/edit-transaction-sheet";
 import NewTransactionSheet from "@/features/transactions/components/new-transaction-sheet";
 
@@ -38,6 +40,8 @@ export default function SheetProvider() {
       <NewEventSheet />
       <EditEventSheet />
 
+      <NewTaskListSheet />
+      <EditTaskListSheet />
       <NewTaskSheet />
       <EditTaskSheet />
     </>

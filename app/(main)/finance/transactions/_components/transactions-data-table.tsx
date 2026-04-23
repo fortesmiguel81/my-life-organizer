@@ -31,6 +31,7 @@ import {
 import { useNewTransaction } from "@/features/transactions/hooks/use-new-transaction";
 import { client } from "@/lib/hono";
 
+import { AccountDropdownFilter } from "./account-dropdown-filter";
 import { CategoryDropdownFilter } from "./category-dropdown-filter";
 
 type CategoriesResponseType = InferResponseType<
@@ -38,22 +39,32 @@ type CategoriesResponseType = InferResponseType<
   200
 >["data"][0];
 
+type AccountsResponseType = InferResponseType<
+  typeof client.api.accounts.$get,
+  200
+>["data"][0];
+
 interface DataTableProps<TransactionsResponseType, TValue> {
   columns: ColumnDef<TransactionsResponseType, TValue>[];
   data: TransactionsResponseType[];
   categories: CategoriesResponseType[];
+  accounts: AccountsResponseType[];
 }
 
 export function TransactionsDataTable<TransactionsResponseType, TValue>({
   columns,
   data,
   categories,
+  accounts,
 }: DataTableProps<TransactionsResponseType, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [selectedCategories, setSelectedCategories] = useState<
     CategoriesResponseType[]
+  >([]);
+  const [selectedAccounts, setSelectedAccounts] = useState<
+    AccountsResponseType[]
   >([]);
 
   const newTransaction = useNewTransaction();
@@ -84,6 +95,10 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
     table.getColumn("category")?.setFilterValue(selectedCategories);
   }, [selectedCategories, table]);
 
+  useEffect(() => {
+    table.getColumn("account")?.setFilterValue(selectedAccounts);
+  }, [selectedAccounts, table]);
+
   const handleExportTransactions = () => {
     exportTransactionsToCSV(data as Parameters<typeof exportTransactionsToCSV>[0]);
   };
@@ -103,13 +118,19 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
             selectedCategories={selectedCategories}
             setSelectedCategories={setSelectedCategories}
           />
-          {(globalFilter || selectedCategories.length > 0) && (
+          <AccountDropdownFilter
+            accounts={accounts}
+            selectedAccounts={selectedAccounts}
+            setSelectedAccounts={setSelectedAccounts}
+          />
+          {(globalFilter || selectedCategories.length > 0 || selectedAccounts.length > 0) && (
             <Button
               variant="ghost"
               className="font-md h-9 px-3 py-0"
               onClick={() => {
                 setGlobalFilter("");
                 setSelectedCategories([]);
+                setSelectedAccounts([]);
               }}
             >
               Reset
