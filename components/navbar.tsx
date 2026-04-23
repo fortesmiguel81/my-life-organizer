@@ -28,7 +28,6 @@ import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
 
 import NavItem from "./nav-item";
-import React from "react";
 
 export default function Navbar() {
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -136,24 +135,72 @@ export default function Navbar() {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
-                    <Link href="/tasks" legacyBehavior passHref>
-                      <NavigationMenuLink
-                        active={pathname.startsWith("/tasks")}
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        Tasks
-                      </NavigationMenuLink>
-                    </Link>
+                    <NavigationMenuTrigger
+                      className={cn(
+                        pathname.startsWith("/finance") && "bg-accent/50"
+                      )}
+                    >
+                      Calendar
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px]">
+                        <li className="row-span-4">
+                          <Link href="/calendar">
+                            <NavigationMenuLink>
+                              <div className="flex h-full w-full cursor-default select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none hover:cursor-pointer focus:shadow-md">
+                                <Image
+                                  src="/calendar.svg"
+                                  alt="Calendar"
+                                  width={50}
+                                  height={50}
+                                />
+                                <div className="mb-2 mt-4 text-lg font-medium">
+                                  Calendar Management
+                                </div>
+                                <p className="text-sm leading-tight text-muted-foreground">
+                                  Manage your appointments, events, and
+                                  important dates.
+                                </p>
+                              </div>
+                            </NavigationMenuLink>
+                          </Link>
+                        </li>
+                      </ul>
+                    </NavigationMenuContent>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
-                    <Link href="/calendar" legacyBehavior passHref>
-                      <NavigationMenuLink
-                        active={pathname.startsWith("/calendar")}
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        Calendar
-                      </NavigationMenuLink>
-                    </Link>
+                    <NavigationMenuTrigger
+                      className={cn(
+                        pathname.startsWith("/finance") && "bg-accent/50"
+                      )}
+                    >
+                      Tasks
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px]">
+                        <li className="row-span-4">
+                          <Link href="/tasks">
+                            <NavigationMenuLink>
+                              <div className="flex h-full w-full cursor-default select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none hover:cursor-pointer focus:shadow-md">
+                                <Image
+                                  src="/to-do.svg"
+                                  alt="ToDo"
+                                  width={50}
+                                  height={50}
+                                />
+                                <div className="mb-2 mt-4 text-lg font-medium">
+                                  Task Management
+                                </div>
+                                <p className="text-sm leading-tight text-muted-foreground">
+                                  Manage your tasks, track your progress, and
+                                  stay organized.
+                                </p>
+                              </div>
+                            </NavigationMenuLink>
+                          </Link>
+                        </li>
+                      </ul>
+                    </NavigationMenuContent>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger
