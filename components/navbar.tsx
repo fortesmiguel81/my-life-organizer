@@ -136,6 +136,16 @@ export default function Navbar() {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
+                    <Link href="/tasks" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        active={pathname.startsWith("/tasks")}
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Tasks
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
                     <Link href="/calendar" legacyBehavior passHref>
                       <NavigationMenuLink
                         active={pathname.startsWith("/calendar")}

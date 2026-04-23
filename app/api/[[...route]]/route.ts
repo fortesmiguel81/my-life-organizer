@@ -6,6 +6,8 @@ import budgets from "./budgets";
 import categories from "./categories";
 import events from "./events";
 import googleCalendar from "./google-calendar";
+import taskListsRoute from "./task-lists";
+import tasksRoute from "./tasks";
 import recurring from "./recurring";
 import summary from "./summary";
 import transactions from "./transactions";
@@ -24,7 +26,9 @@ const routes = app
   .route("/summary", summary)
   .route("/recurring", recurring)
   .route("/events", events)
-  .route("/google-calendar", googleCalendar);
+  .route("/google-calendar", googleCalendar)
+  .route("/task-lists", taskListsRoute)
+  .route("/tasks", tasksRoute);
 
 export const GET = handle(app);
 export const POST = handle(app);

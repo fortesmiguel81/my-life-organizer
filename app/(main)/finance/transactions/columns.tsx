@@ -24,6 +24,11 @@ type CategoriesResponseType = InferResponseType<
   200
 >["data"][0];
 
+type AccountsResponseType = InferResponseType<
+  typeof client.api.accounts.$get,
+  200
+>["data"][0];
+
 export const transactionsColumnsDefinition: ColumnDef<TransactionsResponseType>[] =
   [
     {
@@ -138,8 +143,12 @@ export const transactionsColumnsDefinition: ColumnDef<TransactionsResponseType>[
           />
         );
       },
-      enableGlobalFilter: true,
-      filterFn: "includesString",
+      enableColumnFilter: true,
+      filterFn: (row, columnId, filterAccounts: AccountsResponseType[]) => {
+        if (filterAccounts.length === 0) return true;
+        const account = row.getValue(columnId);
+        return filterAccounts.some((a) => a.name === account);
+      },
     },
     {
       id: "actions",

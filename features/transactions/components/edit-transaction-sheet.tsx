@@ -1,5 +1,3 @@
-import React from "react";
-
 import Spinner from "@/components/spinner";
 import {
   Sheet,
@@ -92,11 +90,12 @@ export default function EditTransactionSheet() {
   const defaultValues = raw
     ? {
         type: (raw.type ?? "expense") as "income" | "expense" | "transfer",
-        amount: String(Math.abs(raw.amount)),
+        amount: String(raw.amount),
         payee: raw.payee,
         description: raw.description ?? "",
         date: new Date(raw.date),
         accountId: raw.accountId,
+        toAccountId: raw.toAccountId ?? undefined,
         categoryId: raw.categoryId ?? null,
         recurrence: (raw.recurrence ?? "none") as
           | "none"

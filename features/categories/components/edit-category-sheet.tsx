@@ -1,4 +1,3 @@
-import * as LucideIcons from "lucide-react";
 import { z } from "zod";
 
 import Spinner from "@/components/spinner";
@@ -15,7 +14,6 @@ import { useEditCategory } from "@/features/categories/api/use-edit-category";
 import { useGetCategory } from "@/features/categories/api/use-get-category";
 import { useOpenCategory } from "@/features/categories/hooks/use-open-category";
 import { useConfirm } from "@/hooks/use-confirm";
-import { getFilteredIconDisplayNames } from "@/lib/icons";
 
 import CategoryForm from "./category-form";
 
@@ -38,8 +36,6 @@ export default function EditCategorySheet() {
     "Are you sure?",
     "This action cannot be undone. This will permanently delete the category."
   );
-
-  const iconOptions = getFilteredIconDisplayNames(LucideIcons);
 
   const categoryQuery = useGetCategory(id);
   const editMutation = useEditCategory(id);
@@ -102,7 +98,6 @@ export default function EditCategorySheet() {
               disabled={isPending}
               onDelete={onDelete}
               defaultValues={defaultValues}
-              iconOptions={iconOptions}
             />
           )}
         </SheetContent>

@@ -1,62 +1,46 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EmojiClickData, Theme } from "emoji-picker-react";
-import { Trash } from "lucide-react";
-import dynamic from "next/dynamic";
+import { Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { ColorPicker, IColor, useColor } from "react-color-palette";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { insertCategorySchema } from "@/db/schema";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
+const DEFAULT_COLOR = "#3b82f6";
+
 const formSchema = z.object({
-  name: z.string(),
-  description: z.string().optional(),
-  icon: z.string(),
+  name: z.string().min(1, "Name is required"),
+  icon: z.string().optional(),
+  color: z.string().optional(),
 });
 
-const apiSchema = insertCategorySchema.omit({
-  id: true,
-  userId: true,
-  orgId: true,
-  created_at: true,
-  created_by: true,
-  updated_at: true,
-  updated_by: true,
-});
-
-type FormValues = z.input<typeof formSchema>;
-type ApiFormValues = z.output<typeof apiSchema>;
+export type TaskListFormValues = z.infer<typeof formSchema>;
 
 type Props = {
   id?: string;
-  defaultValues?: FormValues;
-  onSubmit: (values: ApiFormValues) => void;
+  defaultValues?: Partial<TaskListFormValues>;
+  onSubmit: (values: TaskListFormValues) => void;
   onDelete?: () => void;
   disabled?: boolean;
 };
 
-export default function CategoryForm({
+export default function TaskListForm({
   id,
   defaultValues,
   onSubmit,
@@ -66,50 +50,36 @@ export default function CategoryForm({
   const [emojiOpen, setEmojiOpen] = useState(false);
   const { resolvedTheme } = useTheme();
 
-  const form = useForm<FormValues>({
+  const form = useForm<TaskListFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: {
+      name: "",
+      icon: "",
+      color: DEFAULT_COLOR,
+      ...defaultValues,
+    },
   });
 
   const selectedIcon = form.watch("icon");
+  const [color, setColor] = useColor(defaultValues?.color ?? DEFAULT_COLOR);
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
-          name="name"
           control={form.control}
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input disabled={disabled} placeholder="Add a name" {...field} />
-              </FormControl>
+              <Input placeholder="Home tasks" disabled={disabled} {...field} />
             </FormItem>
           )}
         />
 
         <FormField
-          name="description"
           control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  value={field.value ?? ""}
-                  disabled={disabled}
-                  placeholder="Optional description"
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <FormField
           name="icon"
-          control={form.control}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Icon</FormLabel>
@@ -124,7 +94,9 @@ export default function CategoryForm({
                     {selectedIcon ? (
                       <span className="text-xl">{selectedIcon}</span>
                     ) : (
-                      <span className="text-muted-foreground">Pick an emoji…</span>
+                      <span className="text-muted-foreground">
+                        Pick an emoji…
+                      </span>
                     )}
                   </Button>
                 </PopoverTrigger>
@@ -144,20 +116,37 @@ export default function CategoryForm({
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="color"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Color</FormLabel>
+              <ColorPicker
+                color={color}
+                onChange={(newColor: IColor) => {
+                  setColor(newColor);
+                  field.onChange(newColor.hex);
+                }}
+              />
+            </FormItem>
+          )}
+        />
+
         <Button type="submit" className="w-full" disabled={disabled}>
-          {id ? "Save changes" : "Create category"}
+          {id ? "Save changes" : "Create list"}
         </Button>
 
-        {!!id && (
+        {id && onDelete && (
           <Button
             type="button"
+            variant="outline"
+            className="w-full"
             disabled={disabled}
             onClick={onDelete}
-            className="w-full"
-            variant="outline"
           >
-            <Trash className="mr-2 size-4" />
-            Delete category
+            <Trash2 className="mr-2 size-4" />
+            Delete list
           </Button>
         )}
       </form>
