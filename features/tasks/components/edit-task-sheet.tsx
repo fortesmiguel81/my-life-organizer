@@ -5,6 +5,7 @@ import { useEditTask } from "@/features/tasks/api/use-edit-task";
 import { useGetTask } from "@/features/tasks/api/use-get-task";
 import { useGetTaskLists } from "@/features/tasks/api/use-get-task-lists";
 import { useOpenTask } from "@/features/tasks/hooks/use-open-task";
+import { useNewEvent } from "@/features/events/hooks/use-new-event";
 import { useConfirm } from "@/hooks/use-confirm";
 
 import TaskForm, { TaskFormValues } from "./task-form";
@@ -15,6 +16,7 @@ export default function EditTaskSheet() {
   const editMutation = useEditTask(id);
   const deleteMutation = useDeleteTask(id);
   const { data: taskLists = [] } = useGetTaskLists();
+  const { onOpen: openNewEvent } = useNewEvent();
   const [ConfirmDialog, confirm] = useConfirm("Delete task?", "This cannot be undone.");
 
   const onSubmit = (values: TaskFormValues) => {
@@ -27,6 +29,22 @@ export default function EditTaskSheet() {
   const onDelete = async () => {
     const ok = await confirm();
     if (ok) deleteMutation.mutate(undefined, { onSuccess: onClose });
+  };
+
+  const onCreateEvent = () => {
+    const raw = taskQuery.data;
+    if (!raw) return;
+    const start = raw.dueDate
+      ? new Date(new Date(raw.dueDate).setHours(9, 0, 0, 0))
+      : (() => { const d = new Date(); d.setHours(9, 0, 0, 0); return d; })();
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    onClose();
+    openNewEvent({
+      start,
+      end,
+      title: raw.title,
+      description: raw.description ?? undefined,
+    });
   };
 
   const raw = taskQuery.data;
@@ -61,6 +79,7 @@ export default function EditTaskSheet() {
               defaultValues={defaultValues}
               onSubmit={onSubmit}
               onDelete={onDelete}
+              onCreateEvent={onCreateEvent}
               disabled={editMutation.isPending || deleteMutation.isPending}
             />
           )}

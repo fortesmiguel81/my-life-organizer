@@ -1,10 +1,27 @@
 import Image from "next/image";
 
+import { auth } from "@clerk/nextjs/server";
 import { ClerkLoaded, ClerkLoading, SignIn } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
 import Spinner from "@/components/spinner";
 
-export default function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: { redirect_url?: string };
+}) {
+  const { userId } = auth();
+
+  if (userId) {
+    const target = searchParams.redirect_url ?? "/dashboard";
+    // Only allow relative or same-origin redirects
+    const safe = target.startsWith("http")
+      ? new URL(target).pathname + new URL(target).search
+      : target;
+    redirect(safe);
+  }
+
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
       <div className="h-full flex-col items-center justify-center px-4 lg:flex">

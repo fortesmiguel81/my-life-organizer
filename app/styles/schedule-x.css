@@ -1,0 +1,73 @@
+/* Light mode: map schedule-x variables to shadcn/ui tokens */
+:root {
+  --sx-color-primary: hsl(var(--primary));
+  --sx-color-on-primary: hsl(var(--primary-foreground));
+  --sx-color-primary-container: hsl(var(--primary) / 0.12);
+  --sx-color-on-primary-container: hsl(var(--primary));
+  --sx-color-secondary: hsl(var(--muted-foreground));
+  --sx-color-on-secondary: hsl(var(--background));
+  --sx-color-secondary-container: hsl(var(--muted));
+  --sx-color-on-secondary-container: hsl(var(--foreground));
+  --sx-color-surface: hsl(var(--background));
+  --sx-color-surface-dim: hsl(var(--muted));
+  --sx-color-surface-bright: hsl(var(--background));
+  --sx-color-on-surface: hsl(var(--foreground));
+  --sx-color-surface-container: hsl(var(--card));
+  --sx-color-surface-container-low: hsl(var(--background));
+  --sx-color-surface-container-high: hsl(var(--muted));
+  --sx-color-background: hsl(var(--background));
+  --sx-color-on-background: hsl(var(--foreground));
+  --sx-color-outline: hsl(var(--border));
+  --sx-color-outline-variant: hsl(var(--border));
+  --sx-internal-color-text: hsl(var(--foreground));
+  --sx-internal-color-light-gray: hsl(var(--muted));
+  --sx-internal-color-gray-ripple-background: hsl(var(--muted));
+  --sx-rounding-extra-small: calc(var(--radius) - 4px);
+  --sx-rounding-small: calc(var(--radius) - 2px);
+  --sx-rounding-extra-large: var(--radius);
+}
+
+/* Dark mode: same tokens resolve to dark palette via .dark on <html> */
+.dark .is-dark {
+  --sx-color-primary: hsl(var(--primary));
+  --sx-color-on-primary: hsl(var(--primary-foreground));
+  --sx-color-primary-container: hsl(var(--primary) / 0.2);
+  --sx-color-on-primary-container: hsl(var(--primary));
+  --sx-color-secondary: hsl(var(--muted-foreground));
+  --sx-color-on-secondary: hsl(var(--background));
+  --sx-color-secondary-container: hsl(var(--muted));
+  --sx-color-on-secondary-container: hsl(var(--foreground));
+  --sx-color-surface: hsl(var(--background));
+  --sx-color-surface-dim: hsl(var(--muted));
+  --sx-color-surface-bright: hsl(var(--card));
+  --sx-color-on-surface: hsl(var(--foreground));
+  --sx-color-surface-container: hsl(var(--card));
+  --sx-color-surface-container-low: hsl(var(--background));
+  --sx-color-surface-container-high: hsl(var(--muted));
+  --sx-color-background: hsl(var(--background));
+  --sx-color-on-background: hsl(var(--foreground));
+  --sx-color-outline: hsl(var(--border));
+  --sx-color-outline-variant: hsl(var(--border));
+  --sx-internal-color-text: hsl(var(--foreground));
+  --sx-internal-color-light-gray: hsl(var(--muted));
+  --sx-internal-color-gray-ripple-background: hsl(var(--muted));
+}
+
+/* Fill the container height */
+.sx__calendar-wrapper,
+.sx-react-calendar-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+/*
+  Keep schedule-x chrome below the app's sheet overlay (z-50 = 50).
+  Must be on .sx__calendar-wrapper (not :root) so it wins via inheritance
+  proximity over schedule-x's own :root declarations, regardless of CSS
+  load order.
+*/
+.sx__calendar-wrapper {
+  --sx-z-index-week-header: 10;
+  --sx-z-index-event-modal: 10;
+  --sx-calendar-header-popup-z-index: 10;
+}

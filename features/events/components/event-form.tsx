@@ -6,6 +6,8 @@ import { CalendarIcon, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { Download } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { TimePicker } from "@/components/time-picker";
 import { cn } from "@/lib/utils";
 
 const NOTIFY_OPTIONS = [
@@ -64,6 +67,7 @@ type Props = {
   defaultValues?: Partial<EventFormValues>;
   onSubmit: (values: EventFormValues) => void;
   onDelete?: () => void;
+  onExport?: () => void;
   disabled?: boolean;
 };
 
@@ -72,6 +76,7 @@ export default function EventForm({
   defaultValues,
   onSubmit,
   onDelete,
+  onExport,
   disabled,
 }: Props) {
   const form = useForm<EventFormValues>({
@@ -242,6 +247,18 @@ export default function EventForm({
             Delete event
           </Button>
         )}
+
+        {id && onExport && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            onClick={onExport}
+          >
+            <Download className="mr-2 size-4" />
+            Export .ics
+          </Button>
+        )}
       </form>
     </Form>
   );
@@ -258,14 +275,6 @@ function DateTimeInput({
   allDay: boolean;
   disabled?: boolean;
 }) {
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!value) return;
-    const [h, m] = e.target.value.split(":").map(Number);
-    const next = new Date(value);
-    next.setHours(h, m, 0, 0);
-    onChange(next);
-  };
-
   return (
     <div className="flex gap-2">
       <Popover>
@@ -298,13 +307,7 @@ function DateTimeInput({
       </Popover>
 
       {!allDay && (
-        <Input
-          type="time"
-          className="w-32"
-          value={value ? format(value, "HH:mm") : ""}
-          onChange={handleTimeChange}
-          disabled={disabled}
-        />
+        <TimePicker value={value} onChange={onChange} disabled={disabled} />
       )}
     </div>
   );

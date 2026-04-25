@@ -6,6 +6,8 @@ import { CalendarIcon, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { CalendarPlus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -51,10 +53,11 @@ type Props = {
   defaultValues?: Partial<TaskFormValues>;
   onSubmit: (values: TaskFormValues) => void;
   onDelete?: () => void;
+  onCreateEvent?: () => void;
   disabled?: boolean;
 };
 
-export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDelete, disabled }: Props) {
+export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDelete, onCreateEvent, disabled }: Props) {
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { status: "todo", priority: "medium", dueDate: null, description: "", ...defaultValues },
@@ -199,6 +202,13 @@ export default function TaskForm({ id, taskLists, defaultValues, onSubmit, onDel
           <Button type="button" variant="outline" className="w-full" disabled={disabled} onClick={onDelete}>
             <Trash2 className="mr-2 size-4" />
             Delete task
+          </Button>
+        )}
+
+        {id && onCreateEvent && (
+          <Button type="button" variant="ghost" className="w-full" onClick={onCreateEvent}>
+            <CalendarPlus className="mr-2 size-4" />
+            Add to Calendar
           </Button>
         )}
       </form>
