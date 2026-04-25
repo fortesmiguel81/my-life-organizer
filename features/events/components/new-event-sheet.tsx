@@ -11,7 +11,7 @@ import { useNewEvent } from "@/features/events/hooks/use-new-event";
 import EventForm, { EventFormValues } from "./event-form";
 
 export default function NewEventSheet() {
-  const { isOpen, onClose, defaultStart, defaultEnd } = useNewEvent();
+  const { isOpen, onClose, defaultStart, defaultEnd, defaultTitle, defaultDescription } = useNewEvent();
   const mutation = useCreateEvent();
 
   const onSubmit = (values: EventFormValues) => {
@@ -26,12 +26,12 @@ export default function NewEventSheet() {
     );
   };
 
-  const defaultValues = defaultStart
-    ? {
-        startDate: defaultStart,
-        endDate: defaultEnd ?? defaultStart,
-      }
-    : undefined;
+  const defaultValues = {
+    ...(defaultStart && { startDate: defaultStart }),
+    ...(defaultEnd && { endDate: defaultEnd ?? defaultStart }),
+    ...(defaultTitle && { title: defaultTitle }),
+    ...(defaultDescription && { description: defaultDescription }),
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>

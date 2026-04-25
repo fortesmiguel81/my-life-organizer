@@ -145,8 +145,8 @@ export default function Navbar() {
                     <NavigationMenuContent>
                       <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px]">
                         <li className="row-span-4">
-                          <Link href="/calendar">
-                            <NavigationMenuLink>
+                          <NavigationMenuLink asChild>
+                            <Link href="/calendar">
                               <div className="flex h-full w-full cursor-default select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none hover:cursor-pointer focus:shadow-md">
                                 <Image
                                   src="/calendar.svg"
@@ -162,8 +162,8 @@ export default function Navbar() {
                                   important dates.
                                 </p>
                               </div>
-                            </NavigationMenuLink>
-                          </Link>
+                            </Link>
+                          </NavigationMenuLink>
                         </li>
                       </ul>
                     </NavigationMenuContent>
@@ -179,8 +179,8 @@ export default function Navbar() {
                     <NavigationMenuContent>
                       <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px]">
                         <li className="row-span-4">
-                          <Link href="/tasks">
-                            <NavigationMenuLink>
+                          <NavigationMenuLink asChild>
+                            <Link href="/tasks">
                               <div className="flex h-full w-full cursor-default select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none hover:cursor-pointer focus:shadow-md">
                                 <Image
                                   src="/to-do.svg"
@@ -196,8 +196,8 @@ export default function Navbar() {
                                   stay organized.
                                 </p>
                               </div>
-                            </NavigationMenuLink>
-                          </Link>
+                            </Link>
+                          </NavigationMenuLink>
                         </li>
                       </ul>
                     </NavigationMenuContent>
@@ -213,8 +213,8 @@ export default function Navbar() {
                     <NavigationMenuContent>
                       <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                         <li className="row-span-4">
-                          <Link href="/finance">
-                            <NavigationMenuLink>
+                          <NavigationMenuLink asChild>
+                            <Link href="/finance">
                               <div className="flex h-full w-full cursor-default select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none hover:cursor-pointer focus:shadow-md">
                                 <Image
                                   src="/finance.svg"
@@ -230,30 +230,22 @@ export default function Navbar() {
                                   income.
                                 </p>
                               </div>
-                            </NavigationMenuLink>
-                          </Link>
+                            </Link>
+                          </NavigationMenuLink>
                         </li>
-                        <Link href="/finance/accounts">
-                          <NavItem title="Accounts">
-                            Manage your accounts, track your balance.
-                          </NavItem>
-                        </Link>
-                        <Link href="/finance/categories">
-                          <NavItem title="Categories">
-                            Manage your spending categories.
-                          </NavItem>
-                        </Link>
-                        <Link href="/finance/transactions">
-                          <NavItem title="Transactions">
-                            Manage your transactions, track your expenses and
-                            income.
-                          </NavItem>
-                        </Link>
-                        <Link href="/finance/budgets">
-                          <NavItem title="Budgets">
-                            Manage your budgets, track your spending.
-                          </NavItem>
-                        </Link>
+                        <NavItem href="/finance/accounts" title="Accounts">
+                          Manage your accounts, track your balance.
+                        </NavItem>
+                        <NavItem href="/finance/categories" title="Categories">
+                          Manage your spending categories.
+                        </NavItem>
+                        <NavItem href="/finance/transactions" title="Transactions">
+                          Manage your transactions, track your expenses and
+                          income.
+                        </NavItem>
+                        <NavItem href="/finance/budgets" title="Budgets">
+                          Manage your budgets, track your spending.
+                        </NavItem>
                       </ul>
                     </NavigationMenuContent>
                   </NavigationMenuItem>

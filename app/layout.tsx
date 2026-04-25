@@ -5,6 +5,7 @@ import { Providers } from "@/providers/providers";
 
 import "./globals.css";
 import "./styles/rcp.css";
+import "./styles/schedule-x.css";
 
 const inter = Inter({ subsets: ["latin"] });
 

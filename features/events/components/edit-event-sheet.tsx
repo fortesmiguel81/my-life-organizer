@@ -1,4 +1,5 @@
 import Spinner from "@/components/spinner";
+import { downloadICS } from "@/lib/ics";
 import {
   Sheet,
   SheetContent,
@@ -45,6 +46,24 @@ export default function EditEventSheet() {
     if (ok) deleteMutation.mutate(undefined, { onSuccess: onClose });
   };
 
+  const onExport = () => {
+    if (!raw) return;
+    downloadICS(
+      [
+        {
+          id: raw.id,
+          title: raw.title,
+          description: raw.description,
+          location: raw.location,
+          startDate: new Date(raw.startDate),
+          endDate: new Date(raw.endDate),
+          allDay: raw.allDay,
+        },
+      ],
+      `${raw.title.replace(/[^a-z0-9]/gi, "-").toLowerCase()}.ics`
+    );
+  };
+
   const raw = eventQuery.data;
   const defaultValues: Partial<EventFormValues> | undefined = raw
     ? {
@@ -77,6 +96,7 @@ export default function EditEventSheet() {
               id={id}
               onSubmit={onSubmit}
               onDelete={onDelete}
+              onExport={onExport}
               disabled={isPending}
               defaultValues={defaultValues}
             />
