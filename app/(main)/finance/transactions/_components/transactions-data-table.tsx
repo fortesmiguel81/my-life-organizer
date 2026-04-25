@@ -149,7 +149,7 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
           </Button>
           <Button
             className="font-md h-9 w-full md:w-auto lg:w-auto"
-            onClick={newTransaction.onOpen}
+            onClick={() => newTransaction.onOpen()}
           >
             <PlusCircle className="mr-2 h-4 w-4" />
             <span>Add Transaction</span>

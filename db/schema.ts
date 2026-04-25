@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { boolean, doublePrecision, integer, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, doublePrecision, integer, pgEnum, pgTable, real, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -236,3 +236,60 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
 export const insertTaskSchema = createInsertSchema(tasks, {
   dueDate: z.coerce.date().optional().nullable(),
 });
+
+export const shoppingItemCategoryEnum = pgEnum("shopping_item_category", [
+  "produce",
+  "dairy",
+  "meat",
+  "bakery",
+  "household",
+  "other",
+]);
+
+export const shoppingLists = pgTable("shopping_lists", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  icon: text("icon"),
+  userId: text("user_id"),
+  orgId: text("org_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const shoppingListsRelations = relations(shoppingLists, ({ many }) => ({
+  items: many(shoppingItems),
+}));
+
+export const insertShoppingListSchema = createInsertSchema(shoppingLists);
+
+export const shoppingItems = pgTable("shopping_items", {
+  id: text("id").primaryKey(),
+  listId: text("list_id")
+    .notNull()
+    .references(() => shoppingLists.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  quantity: real("quantity").notNull().default(1),
+  unit: text("unit"),
+  category: shoppingItemCategoryEnum("category").notNull().default("other"),
+  checked: boolean("checked").notNull().default(false),
+  estimatedPrice: integer("estimated_price"),
+  note: text("note"),
+  addedBy: text("added_by"),
+  userId: text("user_id"),
+  orgId: text("org_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const shoppingItemsRelations = relations(shoppingItems, ({ one }) => ({
+  list: one(shoppingLists, {
+    fields: [shoppingItems.listId],
+    references: [shoppingLists.id],
+  }),
+}));
+
+export const insertShoppingItemSchema = createInsertSchema(shoppingItems);

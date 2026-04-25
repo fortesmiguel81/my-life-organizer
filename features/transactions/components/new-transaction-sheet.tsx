@@ -18,7 +18,7 @@ import TransactionForm, {
 } from "./transaction-form";
 
 export default function NewTransactionSheet() {
-  const { isOpen, onClose } = useNewTransaction();
+  const { isOpen, onClose, defaultAmount, defaultDescription } = useNewTransaction();
 
   const createMutation = useCreateTransaction();
 
@@ -85,6 +85,10 @@ export default function NewTransactionSheet() {
             onCreateAccount={onCreateAccount}
             categoryOptions={categoryOptions}
             onCreateCategory={onCreateCategory}
+            defaultValues={{
+              amount: defaultAmount ? (defaultAmount / 100).toFixed(2) : undefined,
+              description: defaultDescription ?? "",
+            }}
           />
         )}
       </SheetContent>
