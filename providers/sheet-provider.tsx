@@ -9,6 +9,10 @@ import EditCategorySheet from "@/features/categories/components/edit-category-sh
 import NewCategorySheet from "@/features/categories/components/new-category-sheet";
 import EditEventSheet from "@/features/events/components/edit-event-sheet";
 import NewEventSheet from "@/features/events/components/new-event-sheet";
+import EditShoppingItemSheet from "@/features/shopping/components/edit-shopping-item-sheet";
+import EditShoppingListSheet from "@/features/shopping/components/edit-shopping-list-sheet";
+import NewShoppingItemSheet from "@/features/shopping/components/new-shopping-item-sheet";
+import NewShoppingListSheet from "@/features/shopping/components/new-shopping-list-sheet";
 import EditTaskListSheet from "@/features/tasks/components/edit-task-list-sheet";
 import EditTaskSheet from "@/features/tasks/components/edit-task-sheet";
 import NewTaskListSheet from "@/features/tasks/components/new-task-list-sheet";
@@ -44,6 +48,11 @@ export default function SheetProvider() {
       <EditTaskListSheet />
       <NewTaskSheet />
       <EditTaskSheet />
+
+      <NewShoppingListSheet />
+      <EditShoppingListSheet />
+      <NewShoppingItemSheet />
+      <EditShoppingItemSheet />
     </>
   );
 }

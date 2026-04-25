@@ -205,6 +205,35 @@ export default function Navbar() {
                   <NavigationMenuItem>
                     <NavigationMenuTrigger
                       className={cn(
+                        pathname.startsWith("/shopping") && "bg-accent/50"
+                      )}
+                    >
+                      Shopping
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px]">
+                        <li className="row-span-4">
+                          <NavigationMenuLink asChild>
+                            <Link href="/shopping">
+                              <div className="flex h-full w-full cursor-default select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none hover:cursor-pointer focus:shadow-md">
+                                <span className="text-4xl">🛒</span>
+                                <div className="mb-2 mt-4 text-lg font-medium">
+                                  Shopping Lists
+                                </div>
+                                <p className="text-sm leading-tight text-muted-foreground">
+                                  Manage grocery and shopping lists, track
+                                  estimated costs, and log purchases.
+                                </p>
+                              </div>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger
+                      className={cn(
                         pathname.startsWith("/finance") && "bg-accent/50"
                       )}
                     >

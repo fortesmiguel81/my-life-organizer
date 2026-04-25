@@ -9,6 +9,8 @@ import googleCalendar from "./google-calendar";
 import taskListsRoute from "./task-lists";
 import tasksRoute from "./tasks";
 import recurring from "./recurring";
+import shoppingListsRoute from "./shopping-lists";
+import shoppingItemsRoute from "./shopping-items";
 import summary from "./summary";
 import transactions from "./transactions";
 import webhooks from "./webhooks";
@@ -28,7 +30,9 @@ const routes = app
   .route("/events", events)
   .route("/google-calendar", googleCalendar)
   .route("/task-lists", taskListsRoute)
-  .route("/tasks", tasksRoute);
+  .route("/tasks", tasksRoute)
+  .route("/shopping-lists", shoppingListsRoute)
+  .route("/shopping-items", shoppingItemsRoute);
 
 export const GET = handle(app);
 export const POST = handle(app);
