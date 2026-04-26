@@ -1,9 +1,16 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import dynamic from "next/dynamic";
+import { useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { EmojiClickData, Theme } from "emoji-picker-react";
+import { useTheme } from "next-themes";
+import { ColorPicker, IColor, useColor } from "react-color-palette";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { TimePicker } from "@/components/time-picker";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,6 +22,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -23,24 +35,28 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-const ICONS = [
-  "✅", "💪", "🏃", "📚", "💧", "🧘", "🥗", "😴",
-  "🎯", "🧠", "🎨", "🎵", "💊", "🛏️", "🚴", "🏋️",
-  "🌟", "📝", "🍎", "☕", "🧹", "🐕", "🌿", "🙏",
-];
+const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
-const COLORS = [
-  "#6366f1", "#8b5cf6", "#ec4899", "#ef4444", "#f97316",
-  "#eab308", "#22c55e", "#14b8a6", "#3b82f6", "#64748b",
-];
-
+const DEFAULT_COLOR = "#6366f1";
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function timeStrToDate(s: string | null | undefined): Date | undefined {
+  if (!s) return undefined;
+  const [h, m] = s.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+function dateToTimeStr(d: Date): string {
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
 
 export const habitFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional().nullable(),
   icon: z.string().default("✅"),
-  color: z.string().default("#6366f1"),
+  color: z.string().default(DEFAULT_COLOR),
   frequency: z.enum(["daily", "weekly"]).default("daily"),
   targetDays: z.number().int().nullable().default(null),
   reminderTime: z.string().nullable().default(null),
@@ -61,13 +77,16 @@ export default function HabitForm({
   disabled,
   submitLabel = "Save",
 }: Props) {
+  const { resolvedTheme } = useTheme();
+  const [emojiOpen, setEmojiOpen] = useState(false);
+
   const form = useForm<HabitFormValues>({
     resolver: zodResolver(habitFormSchema),
     defaultValues: {
       title: "",
       description: null,
       icon: "✅",
-      color: "#6366f1",
+      color: DEFAULT_COLOR,
       frequency: "daily",
       targetDays: null,
       reminderTime: null,
@@ -75,8 +94,9 @@ export default function HabitForm({
     },
   });
 
+  const [color, setColor] = useColor(defaultValues?.color ?? DEFAULT_COLOR);
+
   const frequency = form.watch("frequency");
-  const targetDays = form.watch("targetDays") ?? 127;
   const selectedColor = form.watch("color");
   const selectedIcon = form.watch("icon");
 
@@ -116,7 +136,10 @@ export default function HabitForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description <span className="text-muted-foreground">(optional)</span></FormLabel>
+              <FormLabel>
+                Description{" "}
+                <span className="text-muted-foreground">(optional)</span>
+              </FormLabel>
               <FormControl>
                 <Input
                   placeholder="Short note about this habit"
@@ -130,60 +153,59 @@ export default function HabitForm({
           )}
         />
 
-        {/* Icon picker */}
+        {/* Icon — full emoji picker */}
         <FormField
           control={form.control}
           name="icon"
-          render={() => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Icon</FormLabel>
-              <div className="flex flex-wrap gap-1.5">
-                {ICONS.map((emoji) => (
-                  <button
-                    key={emoji}
+              <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+                <PopoverTrigger asChild>
+                  <Button
                     type="button"
+                    variant="outline"
                     disabled={disabled}
-                    onClick={() => form.setValue("icon", emoji)}
-                    className={cn(
-                      "flex size-9 items-center justify-center rounded-md border text-lg transition-colors",
-                      selectedIcon === emoji
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:bg-muted"
-                    )}
+                    className="h-10 w-full justify-start gap-2 font-normal"
                   >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
+                    {selectedIcon ? (
+                      <span className="text-xl">{selectedIcon}</span>
+                    ) : (
+                      <span className="text-muted-foreground">Pick an emoji…</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <EmojiPicker
+                    theme={resolvedTheme === "dark" ? Theme.DARK : Theme.LIGHT}
+                    onEmojiClick={(data: EmojiClickData) => {
+                      field.onChange(data.emoji);
+                      setEmojiOpen(false);
+                    }}
+                    searchPlaceholder="Search emoji…"
+                    lazyLoadEmojis
+                  />
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Color picker */}
+        {/* Color — full color picker */}
         <FormField
           control={form.control}
           name="color"
-          render={() => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Color</FormLabel>
-              <div className="flex flex-wrap gap-2">
-                {COLORS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => form.setValue("color", color)}
-                    style={{ backgroundColor: color }}
-                    className={cn(
-                      "size-7 rounded-full border-2 transition-transform",
-                      selectedColor === color
-                        ? "scale-125 border-foreground"
-                        : "border-transparent hover:scale-110"
-                    )}
-                  />
-                ))}
-              </div>
+              <ColorPicker
+                color={color}
+                onChange={(newColor: IColor) => {
+                  setColor(newColor);
+                  field.onChange(newColor.hex);
+                }}
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -216,16 +238,16 @@ export default function HabitForm({
           )}
         />
 
-        {/* Day-of-week selector (always shown for daily too — skip days) */}
+        {/* Day-of-week bitmask */}
         <FormField
           control={form.control}
           name="targetDays"
           render={() => (
             <FormItem>
               <FormLabel>
-                {frequency === "weekly" ? "Target days" : "Skip days"}
+                {frequency === "weekly" ? "Target days" : "Active days"}
                 <span className="ml-1 text-xs text-muted-foreground">
-                  {frequency === "daily" ? "(leave all on for every day)" : ""}
+                  (leave all on for every day)
                 </span>
               </FormLabel>
               <div className="flex gap-1.5">
@@ -235,7 +257,11 @@ export default function HabitForm({
                     type="button"
                     disabled={disabled}
                     onClick={() => toggleDay(i)}
-                    style={isDaySelected(i) ? { backgroundColor: selectedColor } : undefined}
+                    style={
+                      isDaySelected(i)
+                        ? { backgroundColor: selectedColor }
+                        : undefined
+                    }
                     className={cn(
                       "flex h-8 w-9 items-center justify-center rounded-md border text-xs font-medium transition-colors",
                       isDaySelected(i)
@@ -252,22 +278,34 @@ export default function HabitForm({
           )}
         />
 
-        {/* Reminder time */}
+        {/* Reminder time — shared TimePicker */}
         <FormField
           control={form.control}
           name="reminderTime"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Reminder time <span className="text-muted-foreground">(optional, UTC)</span></FormLabel>
-              <FormControl>
-                <Input
-                  type="time"
+              <FormLabel>
+                Reminder time{" "}
+                <span className="text-muted-foreground">(optional, UTC)</span>
+              </FormLabel>
+              <div className="flex items-center gap-2">
+                <TimePicker
+                  value={timeStrToDate(field.value)}
+                  onChange={(d) => field.onChange(dateToTimeStr(d))}
                   disabled={disabled}
-                  {...field}
-                  value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value || null)}
                 />
-              </FormControl>
+                {field.value && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => field.onChange(null)}
+                    className="text-muted-foreground"
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
               <FormMessage />
             </FormItem>
           )}
