@@ -9,6 +9,7 @@ import googleCalendar from "./google-calendar";
 import taskListsRoute from "./task-lists";
 import tasksRoute from "./tasks";
 import recurring from "./recurring";
+import documentsRoute from "./documents";
 import shoppingListsRoute from "./shopping-lists";
 import shoppingItemsRoute from "./shopping-items";
 import summary from "./summary";
@@ -32,7 +33,8 @@ const routes = app
   .route("/task-lists", taskListsRoute)
   .route("/tasks", tasksRoute)
   .route("/shopping-lists", shoppingListsRoute)
-  .route("/shopping-items", shoppingItemsRoute);
+  .route("/shopping-items", shoppingItemsRoute)
+  .route("/documents", documentsRoute);
 
 export const GET = handle(app);
 export const POST = handle(app);

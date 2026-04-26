@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { boolean, doublePrecision, integer, pgEnum, pgTable, real, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -293,3 +293,37 @@ export const shoppingItemsRelations = relations(shoppingItems, ({ one }) => ({
 }));
 
 export const insertShoppingItemSchema = createInsertSchema(shoppingItems);
+
+export const documentCategoryEnum = pgEnum("document_category", [
+  "legal",
+  "insurance",
+  "medical",
+  "household",
+  "financial",
+  "other",
+]);
+
+export const documents = pgTable("documents", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: documentCategoryEnum("category").notNull().default("other"),
+  tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
+  fileUrl: text("file_url").notNull(),
+  fileKey: text("file_key").notNull(),
+  mimeType: text("mime_type").notNull(),
+  fileSize: integer("file_size").notNull(),
+  expiryDate: timestamp("expiry_date", { mode: "date" }),
+  expiryNotified: boolean("expiry_notified").notNull().default(false),
+  userId: text("user_id"),
+  orgId: text("org_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const insertDocumentSchema = createInsertSchema(documents, {
+  expiryDate: z.coerce.date().optional().nullable(),
+  tags: z.array(z.string()).default([]),
+});

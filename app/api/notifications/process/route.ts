@@ -4,7 +4,8 @@ import { type NextRequest } from "next/server";
 import { Resend } from "resend";
 
 import { db } from "@/db/drizzle";
-import { events } from "@/db/schema";
+import { documents, events } from "@/db/schema";
+import { decryptField } from "@/lib/encryption";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY! });
@@ -68,5 +69,60 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return Response.json({ processed: sent, total: upcoming.length });
+  // Document expiry notifications (30-day window)
+  const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const expiringDocs = await db
+    .select()
+    .from(documents)
+    .where(
+      and(
+        gte(documents.expiryDate, now),
+        lte(documents.expiryDate, in30Days),
+        eq(documents.expiryNotified, false)
+      )
+    );
+
+  let docsSent = 0;
+
+  for (const doc of expiringDocs) {
+    const userId = doc.userId;
+    if (!userId) continue;
+
+    try {
+      const user = await clerk.users.getUser(userId);
+      const email = user.emailAddresses[0]?.emailAddress;
+      if (!email) continue;
+
+      const name = (await decryptField(doc.name)) ?? doc.name;
+      const daysLeft = Math.ceil(
+        (doc.expiryDate!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL ?? "no-reply@mylifeorganizer.app",
+        to: email,
+        subject: `Document expiring soon: ${name}`,
+        html: `
+          <h2>Document Expiry Reminder</h2>
+          <p>Your document <strong>${name}</strong> expires in <strong>${daysLeft} day${daysLeft === 1 ? "" : "s"}</strong> (${doc.expiryDate!.toLocaleDateString()}).</p>
+          <p>Log in to review or renew it.</p>
+        `,
+      });
+
+      await db
+        .update(documents)
+        .set({ expiryNotified: true })
+        .where(eq(documents.id, doc.id));
+
+      docsSent++;
+    } catch {
+      // Skip on error; will retry on next cron run
+    }
+  }
+
+  return Response.json({
+    events: { processed: sent, total: upcoming.length },
+    documents: { processed: docsSent, total: expiringDocs.length },
+  });
 }
