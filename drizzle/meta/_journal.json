@@ -92,6 +92,13 @@
       "when": 1777154457277,
       "tag": "0012_exotic_azazel",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1777215443122,
+      "tag": "0013_sturdy_vin_gonzales",
+      "breakpoints": true
     }
   ]
 }
