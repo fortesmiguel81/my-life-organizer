@@ -63,9 +63,7 @@ const app = new Hono()
     const auth = getAuth(ctx);
     if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
-    const userFilter = auth.orgId
-      ? eq(habits.orgId, auth.orgId)
-      : eq(habits.userId, auth.userId);
+    const userFilter = eq(habits.userId, auth.userId);
 
     const today = todayStr();
 
@@ -143,7 +141,7 @@ const app = new Hono()
         .values({
           id: createId(),
           ...values,
-          userId: auth.orgId ? null : auth.userId,
+          userId: auth.userId,
           orgId: auth.orgId ?? null,
           created_at: now,
           created_by: auth.userId,
