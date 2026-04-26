@@ -4,7 +4,7 @@ import { type NextRequest } from "next/server";
 import { Resend } from "resend";
 
 import { db } from "@/db/drizzle";
-import { documents, events } from "@/db/schema";
+import { documents, events, habitLogs, habits } from "@/db/schema";
 import { decryptField } from "@/lib/encryption";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -121,8 +121,68 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Habit reminders — fire if reminderTime falls within the current 15-min window and not yet completed today
+  const utcHour = now.getUTCHours().toString().padStart(2, "0");
+  const utcMin = now.getUTCMinutes();
+  const windowStart = `${utcHour}:${String(Math.floor(utcMin / 15) * 15).padStart(2, "0")}`;
+  const windowEndMin = Math.floor(utcMin / 15) * 15 + 15;
+  const windowEnd =
+    windowEndMin >= 60
+      ? `${String(now.getUTCHours() + 1).padStart(2, "0")}:00`
+      : `${utcHour}:${String(windowEndMin).padStart(2, "0")}`;
+
+  const today = now.toISOString().split("T")[0];
+
+  const allHabits = await db
+    .select()
+    .from(habits)
+    .where(and(gte(habits.reminderTime, windowStart), lte(habits.reminderTime, windowEnd)));
+
+  let habitsSent = 0;
+
+  for (const habit of allHabits) {
+    const userId = habit.userId;
+    if (!userId) continue;
+
+    // Check if already completed today
+    const [log] = await db
+      .select()
+      .from(habitLogs)
+      .where(
+        and(
+          eq(habitLogs.habitId, habit.id),
+          eq(habitLogs.date, today),
+          eq(habitLogs.completed, true)
+        )
+      );
+
+    if (log) continue; // already done
+
+    try {
+      const user = await clerk.users.getUser(userId);
+      const email = user.emailAddresses[0]?.emailAddress;
+      if (!email) continue;
+
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL ?? "no-reply@mylifeorganizer.app",
+        to: email,
+        subject: `Habit reminder: ${habit.icon ?? "✅"} ${habit.title}`,
+        html: `
+          <h2>${habit.icon ?? "✅"} ${habit.title}</h2>
+          <p>Don't forget to complete your habit today!</p>
+          ${habit.description ? `<p>${habit.description}</p>` : ""}
+        `,
+      });
+
+      habitsSent++;
+    } catch {
+      // Skip on error
+    }
+  }
+
   return Response.json({
     events: { processed: sent, total: upcoming.length },
     documents: { processed: docsSent, total: expiringDocs.length },
+    habits: { processed: habitsSent, total: allHabits.length },
   });
 }

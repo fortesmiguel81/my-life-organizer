@@ -213,6 +213,16 @@ export default function Navbar() {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
+                    <Link href="/habits" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        active={pathname.startsWith("/habits")}
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Habits
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
                     <NavigationMenuTrigger
                       className={cn(
                         pathname.startsWith("/shopping") && "bg-accent/50"

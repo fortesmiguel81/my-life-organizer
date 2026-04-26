@@ -11,6 +11,8 @@ import EditEventSheet from "@/features/events/components/edit-event-sheet";
 import NewEventSheet from "@/features/events/components/new-event-sheet";
 import DocumentDetailSheet from "@/features/documents/components/document-detail-sheet";
 import UploadDocumentModal from "@/features/documents/components/upload-document-modal";
+import EditHabitSheet from "@/features/habits/components/edit-habit-sheet";
+import NewHabitSheet from "@/features/habits/components/new-habit-sheet";
 import EditShoppingItemSheet from "@/features/shopping/components/edit-shopping-item-sheet";
 import EditShoppingListSheet from "@/features/shopping/components/edit-shopping-list-sheet";
 import NewShoppingItemSheet from "@/features/shopping/components/new-shopping-item-sheet";
@@ -53,6 +55,9 @@ export default function SheetProvider() {
 
       <UploadDocumentModal />
       <DocumentDetailSheet />
+
+      <NewHabitSheet />
+      <EditHabitSheet />
 
       <NewShoppingListSheet />
       <EditShoppingListSheet />
