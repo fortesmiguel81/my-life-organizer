@@ -9,6 +9,8 @@ import EditCategorySheet from "@/features/categories/components/edit-category-sh
 import NewCategorySheet from "@/features/categories/components/new-category-sheet";
 import EditEventSheet from "@/features/events/components/edit-event-sheet";
 import NewEventSheet from "@/features/events/components/new-event-sheet";
+import DocumentDetailSheet from "@/features/documents/components/document-detail-sheet";
+import UploadDocumentModal from "@/features/documents/components/upload-document-modal";
 import EditShoppingItemSheet from "@/features/shopping/components/edit-shopping-item-sheet";
 import EditShoppingListSheet from "@/features/shopping/components/edit-shopping-list-sheet";
 import NewShoppingItemSheet from "@/features/shopping/components/new-shopping-item-sheet";
@@ -48,6 +50,9 @@ export default function SheetProvider() {
       <EditTaskListSheet />
       <NewTaskSheet />
       <EditTaskSheet />
+
+      <UploadDocumentModal />
+      <DocumentDetailSheet />
 
       <NewShoppingListSheet />
       <EditShoppingListSheet />

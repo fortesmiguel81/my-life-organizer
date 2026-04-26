@@ -70,3 +70,13 @@ Values are stored with an `enc:` prefix. Rows written before encryption was enab
 - **Modals/Sheets**: Slide-over sheets are managed via Zustand stores in each feature's `hooks/` folder and registered in `providers/sheet-provider.tsx`.
 - **Prettier config**: Double quotes, semicolons on, 3-tier import sorting (builtins → external → internal). Run `npm run format` before committing — note it only targets `app/`, not the full repo.
 - **TypeScript**: Strict mode enabled. No `any` casts without justification.
+
+## graphify
+
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)
