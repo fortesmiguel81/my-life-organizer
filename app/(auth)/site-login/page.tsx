@@ -6,6 +6,7 @@ import { Suspense, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 export default function SiteLoginPage() {
   return (
@@ -18,7 +19,7 @@ export default function SiteLoginPage() {
 function SiteLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get("redirect_url") ?? "/select-profile";
+  const redirectUrl = safeRedirectPath(searchParams.get("redirect_url"), "/select-profile");
 
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { PROFILE_COOKIE } from "@/lib/local-auth";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { isValidSiteToken, SITE_AUTH_COOKIE } from "@/lib/site-auth";
 
 const isSiteAuthPublic = (pathname: string) =>
@@ -11,6 +12,7 @@ const isProfilePublic = (pathname: string) =>
 
 export default async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  const target = safeRedirectPath(pathname + search, "/");
 
   if (isSiteAuthPublic(pathname)) {
     return NextResponse.next();
@@ -19,7 +21,7 @@ export default async function middleware(request: NextRequest) {
   const siteToken = request.cookies.get(SITE_AUTH_COOKIE)?.value;
   if (!(await isValidSiteToken(siteToken))) {
     const url = new URL("/site-login", request.url);
-    url.searchParams.set("redirect_url", pathname + search);
+    url.searchParams.set("redirect_url", target);
     return NextResponse.redirect(url);
   }
 
@@ -28,7 +30,7 @@ export default async function middleware(request: NextRequest) {
   }
 
   const url = new URL("/select-profile", request.url);
-  url.searchParams.set("redirect_url", pathname + search);
+  url.searchParams.set("redirect_url", target);
   return NextResponse.redirect(url);
 }
 

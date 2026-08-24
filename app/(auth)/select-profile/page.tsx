@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { useCreateProfile } from "@/features/profiles/api/use-create-profile";
 import { useGetProfiles } from "@/features/profiles/api/use-get-profiles";
 import { useSwitchProfile } from "@/features/profiles/api/use-switch-profile";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
 
 const EMOJI_OPTIONS = [
@@ -57,7 +58,7 @@ export default function SelectProfilePage() {
 function SelectProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get("redirect_url") ?? "/dashboard";
+  const redirectUrl = safeRedirectPath(searchParams.get("redirect_url"), "/dashboard");
 
   const { data: profiles, isLoading } = useGetProfiles();
   const switchProfile = useSwitchProfile();
