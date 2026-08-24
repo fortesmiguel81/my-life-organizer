@@ -3,12 +3,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ElementRef, useCallback, useRef, useState } from "react";
 
-import {
-  OrganizationSwitcher,
-  UserButton,
-  useOrganization,
-  useUser,
-} from "@clerk/nextjs";
 import { ChevronLeft, SettingsIcon } from "lucide-react";
 import { useMediaQuery } from "usehooks-ts";
 
@@ -23,18 +17,19 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { useGetCurrentProfile } from "@/features/profiles/api/use-get-current-profile";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
 
 import NavItem from "./nav-item";
+import ProfileSwitcher from "./profile-switcher";
 
 export default function Navbar() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const search = useSearch();
   const sidebarRef = useRef<ElementRef<"aside">>(null);
-  const { isLoaded: isLoadedOrganization } = useOrganization();
-  const { user, isLoaded: isLoadedUser } = useUser();
+  const { data: profile, isLoading: isLoadingProfile } = useGetCurrentProfile();
   const settings = useSettings();
   const pathname = usePathname();
 
@@ -80,18 +75,8 @@ export default function Navbar() {
         </div>
         <div className="flex flex-col p-4">
           <div className="flex items-center gap-3">
-            {isLoadedUser ? <UserButton /> : <Spinner size="lg" />}
-            <span>
-              {user?.firstName} {user?.lastName}
-            </span>
+            {isLoadingProfile ? <Spinner size="lg" /> : <ProfileSwitcher profile={profile} />}
           </div>
-        </div>
-        <div className="absolute bottom-2 p-2">
-          {isLoadedOrganization && isLoadedUser ? (
-            <OrganizationSwitcher />
-          ) : (
-            <Spinner size="lg" />
-          )}
         </div>
       </aside>
       <div
@@ -115,12 +100,6 @@ export default function Navbar() {
                 <h1 className="ml-4 text-xl font-bold">Life Organizer</h1>
               )}
             </div>
-            {!isMobile &&
-              (isLoadedOrganization && isLoadedUser ? (
-                <OrganizationSwitcher />
-              ) : (
-                <Spinner size="lg" />
-              ))}
             {!isMobile && (
               <NavigationMenu className="ml-4">
                 <NavigationMenuList>
@@ -318,7 +297,11 @@ export default function Navbar() {
               <SettingsIcon className="h-6 w-6 text-muted-foreground" />
             </Button>
             {!isMobile &&
-              (isLoadedUser ? <UserButton /> : <Spinner size="lg" />)}
+              (isLoadingProfile ? (
+                <Spinner size="lg" />
+              ) : (
+                <ProfileSwitcher profile={profile} />
+              ))}
           </div>
         </div>
       </div>

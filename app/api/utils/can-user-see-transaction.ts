@@ -1,7 +1,7 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
-import { accounts, memberships, transactions } from "@/db/schema";
+import { accounts, transactions } from "@/db/schema";
 
 export async function canUserSeeTransaction(
   transactionId: string,
@@ -31,30 +31,15 @@ export async function canUserSeeTransaction(
     };
   }
 
-  const { accountId } = data;
-
   const [account] = await db
     .select()
     .from(accounts)
-    .where(eq(accounts.id, accountId));
+    .where(eq(accounts.id, data.accountId));
 
-  if (!account) {
-    return { canSeeTransaction: false, data: null };
-  }
-
-  if (account.userId === userId) {
-    return { canSeeTransaction: true, data: data, error: null };
-  }
-
-  const [hasOrganizationAccess] = await db
-    .select()
-    .from(memberships)
-    .where(
-      and(eq(memberships.userId, userId), eq(memberships.orgId, account.orgId!))
-    );
+  const canSeeTransaction = account?.userId === userId;
 
   return {
-    canSeeTransaction: hasOrganizationAccess !== null,
-    data: hasOrganizationAccess !== null ? data : null,
+    canSeeTransaction,
+    data: canSeeTransaction ? data : null,
   };
 }

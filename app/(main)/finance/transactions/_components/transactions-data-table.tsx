@@ -19,7 +19,6 @@ import { File, PlusCircle, X } from "lucide-react";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { exportTransactionsToCSV } from "@/lib/export";
 import {
   Table,
   TableBody,
@@ -29,6 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useNewTransaction } from "@/features/transactions/hooks/use-new-transaction";
+import { exportTransactionsToCSV } from "@/lib/export";
 import { client } from "@/lib/hono";
 
 import { AccountDropdownFilter } from "./account-dropdown-filter";
@@ -100,7 +100,9 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
   }, [selectedAccounts, table]);
 
   const handleExportTransactions = () => {
-    exportTransactionsToCSV(data as Parameters<typeof exportTransactionsToCSV>[0]);
+    exportTransactionsToCSV(
+      data as Parameters<typeof exportTransactionsToCSV>[0]
+    );
   };
 
   return (
@@ -123,7 +125,9 @@ export function TransactionsDataTable<TransactionsResponseType, TValue>({
             selectedAccounts={selectedAccounts}
             setSelectedAccounts={setSelectedAccounts}
           />
-          {(globalFilter || selectedCategories.length > 0 || selectedAccounts.length > 0) && (
+          {(globalFilter ||
+            selectedCategories.length > 0 ||
+            selectedAccounts.length > 0) && (
             <Button
               variant="ghost"
               className="font-md h-9 px-3 py-0"

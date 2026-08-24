@@ -1,10 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
+import { getServerAuth } from "@/lib/local-auth";
 
 const SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
 
 export async function GET() {
-  const { userId } = await auth();
-  if (!userId) return new Response("Unauthorized", { status: 401 });
+  const auth = getServerAuth();
+  if (!auth?.userId) return new Response("Unauthorized", { status: 401 });
 
   const redirectUri =
     process.env.GOOGLE_REDIRECT_URI ??

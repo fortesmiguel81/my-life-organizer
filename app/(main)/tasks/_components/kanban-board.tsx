@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, type DropResult, Droppable } from "@hello-pangea/dnd";
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 
 import { useNewTask } from "@/features/tasks/hooks/use-new-task";
@@ -60,10 +60,13 @@ export default function KanbanBoard({ tasks, activeListId }: Props) {
     const before = destColTasks[destination.index - 1];
     const after = destColTasks[destination.index];
     const newOrder =
-      before && after ? (before.order + after.order) / 2
-      : before ? before.order + 1
-      : after ? after.order - 1
-      : 0;
+      before && after
+        ? (before.order + after.order) / 2
+        : before
+          ? before.order + 1
+          : after
+            ? after.order - 1
+            : 0;
 
     // Optimistic update
     setLocalTasks((prev) =>
@@ -85,7 +88,9 @@ export default function KanbanBoard({ tasks, activeListId }: Props) {
       .catch(() => {
         setLocalTasks((prev) =>
           prev.map((t) =>
-            t.id === task.id ? { ...t, status: task.status, order: task.order } : t
+            t.id === task.id
+              ? { ...t, status: task.status, order: task.order }
+              : t
           )
         );
         queryClient.invalidateQueries({ queryKey: ["tasks"] });

@@ -1,4 +1,3 @@
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
 import { and, eq, sql } from "drizzle-orm";
@@ -7,15 +6,14 @@ import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { insertTaskListSchema, taskLists, tasks } from "@/db/schema";
+import { getAuth } from "@/lib/local-auth";
 
 const app = new Hono()
-  .get("/", clerkMiddleware(), async (ctx) => {
+  .get("/", async (ctx) => {
     const auth = getAuth(ctx);
     if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
-    const userFilter = auth.orgId
-      ? eq(taskLists.orgId, auth.orgId)
-      : eq(taskLists.userId, auth.userId);
+    const userFilter = eq(taskLists.userId, auth.userId);
 
     const data = await db
       .select({
@@ -34,13 +32,11 @@ const app = new Hono()
   })
   .post(
     "/",
-    clerkMiddleware(),
     zValidator(
       "json",
       insertTaskListSchema.omit({
         id: true,
         userId: true,
-        orgId: true,
         created_at: true,
         created_by: true,
         updated_at: true,
@@ -59,8 +55,7 @@ const app = new Hono()
         .values({
           id: createId(),
           ...values,
-          userId: auth.orgId ? null : auth.userId,
-          orgId: auth.orgId ?? null,
+          userId: auth.userId,
           created_at: now,
           created_by: auth.userId,
           updated_at: now,
@@ -73,7 +68,6 @@ const app = new Hono()
   )
   .patch(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     zValidator(
       "json",
@@ -81,7 +75,6 @@ const app = new Hono()
         .omit({
           id: true,
           userId: true,
-          orgId: true,
           created_at: true,
           created_by: true,
           updated_at: true,
@@ -95,9 +88,7 @@ const app = new Hono()
 
       const { id } = ctx.req.valid("param");
       const values = ctx.req.valid("json");
-      const userFilter = auth.orgId
-        ? eq(taskLists.orgId, auth.orgId)
-        : eq(taskLists.userId, auth.userId);
+      const userFilter = eq(taskLists.userId, auth.userId);
 
       const [data] = await db
         .update(taskLists)
@@ -111,16 +102,13 @@ const app = new Hono()
   )
   .delete(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
-      const userFilter = auth.orgId
-        ? eq(taskLists.orgId, auth.orgId)
-        : eq(taskLists.userId, auth.userId);
+      const userFilter = eq(taskLists.userId, auth.userId);
 
       const [data] = await db
         .delete(taskLists)

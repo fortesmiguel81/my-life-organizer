@@ -1,4 +1,3 @@
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
 import { and, eq, gte, inArray, lte } from "drizzle-orm";
@@ -7,6 +6,7 @@ import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { habitLogs, habits, insertHabitSchema } from "@/db/schema";
+import { getAuth } from "@/lib/local-auth";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -59,7 +59,7 @@ function isHabitDueToday(targetDays: number | null) {
 
 const app = new Hono()
   // GET /api/habits — list with today's log status + current streak
-  .get("/", clerkMiddleware(), async (ctx) => {
+  .get("/", async (ctx) => {
     const auth = getAuth(ctx);
     if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
@@ -79,11 +79,14 @@ const app = new Hono()
         .where(
           and(
             eq(habitLogs.completed, true),
-            gte(habitLogs.date, (() => {
-              const d = new Date();
-              d.setDate(d.getDate() - 366);
-              return d.toISOString().split("T")[0];
-            })())
+            gte(
+              habitLogs.date,
+              (() => {
+                const d = new Date();
+                d.setDate(d.getDate() - 366);
+                return d.toISOString().split("T")[0];
+              })()
+            )
           )
         )
         .orderBy(habitLogs.date),
@@ -116,13 +119,11 @@ const app = new Hono()
   // POST /api/habits — create
   .post(
     "/",
-    clerkMiddleware(),
     zValidator(
       "json",
       insertHabitSchema.omit({
         id: true,
         userId: true,
-        orgId: true,
         created_at: true,
         created_by: true,
         updated_at: true,
@@ -142,7 +143,6 @@ const app = new Hono()
           id: createId(),
           ...values,
           userId: auth.userId,
-          orgId: auth.orgId ?? null,
           created_at: now,
           created_by: auth.userId,
           updated_at: now,
@@ -157,7 +157,6 @@ const app = new Hono()
   // PATCH /api/habits/:id — update
   .patch(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     zValidator(
       "json",
@@ -165,7 +164,6 @@ const app = new Hono()
         .omit({
           id: true,
           userId: true,
-          orgId: true,
           created_at: true,
           created_by: true,
           updated_at: true,
@@ -179,9 +177,7 @@ const app = new Hono()
 
       const { id } = ctx.req.valid("param");
       const values = ctx.req.valid("json");
-      const userFilter = auth.orgId
-        ? eq(habits.orgId, auth.orgId)
-        : eq(habits.userId, auth.userId);
+      const userFilter = eq(habits.userId, auth.userId);
 
       const [existing] = await db
         .select({ id: habits.id })
@@ -203,16 +199,13 @@ const app = new Hono()
   // DELETE /api/habits/:id — delete (logs cascade)
   .delete(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
-      const userFilter = auth.orgId
-        ? eq(habits.orgId, auth.orgId)
-        : eq(habits.userId, auth.userId);
+      const userFilter = eq(habits.userId, auth.userId);
 
       const [existing] = await db
         .select({ id: habits.id })
@@ -233,7 +226,6 @@ const app = new Hono()
   // POST /api/habits/:id/log — upsert today's log (toggle)
   .post(
     "/:id/log",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     zValidator(
       "json",
@@ -274,7 +266,6 @@ const app = new Hono()
   // GET /api/habits/:id/stats — streak + completion stats
   .get(
     "/:id/stats",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     async (ctx) => {
       const auth = getAuth(ctx);
@@ -314,7 +305,6 @@ const app = new Hono()
   // GET /api/habits/:id/logs?from=&to= — raw log history for heatmap
   .get(
     "/:id/logs",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     zValidator(
       "query",

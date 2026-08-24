@@ -1,9 +1,9 @@
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { differenceInDays, parse, subDays } from "date-fns";
 import { Hono } from "hono";
 import { z } from "zod";
 
+import { getAuth } from "@/lib/local-auth";
 import { calculatePercentageChange, fillMissingDays } from "@/lib/utils";
 
 import { fetchFinancialData } from "../utils/fetch-financial-data";
@@ -12,7 +12,6 @@ import { fetchSpendingByDays } from "../utils/fetch-spending-by-days";
 
 const app = new Hono().get(
   "/finance",
-  clerkMiddleware(),
   zValidator(
     "query",
     z.object({
@@ -47,7 +46,6 @@ const app = new Hono().get(
       auth.userId,
       startDate,
       endDate,
-      auth.orgId,
       accountId
     );
 
@@ -55,7 +53,6 @@ const app = new Hono().get(
       auth.userId,
       lastPeriodStart,
       lastPeriodEnd,
-      auth.orgId,
       accountId
     );
 
@@ -78,7 +75,6 @@ const app = new Hono().get(
       auth.userId,
       startDate,
       endDate,
-      auth.orgId,
       accountId
     );
 
@@ -86,7 +82,6 @@ const app = new Hono().get(
       auth.userId,
       startDate,
       endDate,
-      auth.orgId,
       accountId
     );
 

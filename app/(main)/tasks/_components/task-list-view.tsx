@@ -5,9 +5,9 @@ import { CalendarDays, Layers } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
 import { useEditTask } from "@/features/tasks/api/use-edit-task";
 import { useOpenTask } from "@/features/tasks/hooks/use-open-task";
+import { cn } from "@/lib/utils";
 
 const PRIORITY_BADGE: Record<string, string> = {
   low: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
@@ -47,7 +47,13 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
   );
 }
 
-function TaskRow({ task, onOpen }: { task: Task; onOpen: (id: string) => void }) {
+function TaskRow({
+  task,
+  onOpen,
+}: {
+  task: Task;
+  onOpen: (id: string) => void;
+}) {
   const editMutation = useEditTask(task.id);
   const isDone = task.status === "done";
 
@@ -70,15 +76,32 @@ function TaskRow({ task, onOpen }: { task: Task; onOpen: (id: string) => void })
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className={cn("truncate text-sm font-medium", isDone && "line-through text-muted-foreground")}>
+        <p
+          className={cn(
+            "truncate text-sm font-medium",
+            isDone && "text-muted-foreground line-through"
+          )}
+        >
           {task.title}
         </p>
         <div className="mt-0.5 flex items-center gap-2">
-          <Badge variant="secondary" className={cn("text-[10px]", PRIORITY_BADGE[task.priority])}>
+          <Badge
+            variant="secondary"
+            className={cn("text-[10px]", PRIORITY_BADGE[task.priority])}
+          >
             {task.priority}
           </Badge>
           {dueDateObj && (
-            <span className={cn("flex items-center gap-0.5 text-[10px]", isOverdue ? "text-red-500 font-semibold" : isDueToday ? "text-orange-500" : "text-muted-foreground")}>
+            <span
+              className={cn(
+                "flex items-center gap-0.5 text-[10px]",
+                isOverdue
+                  ? "font-semibold text-red-500"
+                  : isDueToday
+                    ? "text-orange-500"
+                    : "text-muted-foreground"
+              )}
+            >
               <CalendarDays className="size-3" />
               {isOverdue ? "Overdue · " : isDueToday ? "Today · " : ""}
               {format(dueDateObj, "MMM d")}

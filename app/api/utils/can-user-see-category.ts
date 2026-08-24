@@ -1,7 +1,7 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
-import { categories, memberships } from "@/db/schema";
+import { categories } from "@/db/schema";
 
 export async function canUserSeeCategory(categoryId: string, userId: string) {
   const [data] = await db
@@ -11,7 +11,6 @@ export async function canUserSeeCategory(categoryId: string, userId: string) {
       icon: categories.icon,
       description: categories.description,
       userId: categories.userId,
-      orgId: categories.orgId,
     })
     .from(categories)
     .where(eq(categories.id, categoryId));
@@ -23,19 +22,10 @@ export async function canUserSeeCategory(categoryId: string, userId: string) {
     };
   }
 
-  const { orgId, userId: categoryUserId } = data;
-
-  if (userId === categoryUserId) {
-    return { canSeeCategory: true, data: data, error: null };
-  }
-
-  const [hasOrganizationAccess] = await db
-    .select()
-    .from(memberships)
-    .where(and(eq(memberships.userId, userId), eq(memberships.orgId, orgId!)));
+  const canSeeCategory = userId === data.userId;
 
   return {
-    canSeeCategory: hasOrganizationAccess !== null,
-    data: hasOrganizationAccess !== null ? data : null,
+    canSeeCategory,
+    data: canSeeCategory ? data : null,
   };
 }

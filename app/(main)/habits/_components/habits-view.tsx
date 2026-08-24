@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 
-import { Check, Pencil, Plus, Flame } from "lucide-react";
+import { Check, Flame, Pencil, Plus } from "lucide-react";
 
 import Spinner from "@/components/spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGetHabits } from "@/features/habits/api/use-get-habits";
 import { useGetHabitLogs } from "@/features/habits/api/use-get-habit-logs";
 import { useGetHabitStats } from "@/features/habits/api/use-get-habit-stats";
+import { useGetHabits } from "@/features/habits/api/use-get-habits";
 import { useLogHabit } from "@/features/habits/api/use-log-habit";
 import { useNewHabit } from "@/features/habits/hooks/use-new-habit";
 import { useOpenHabit } from "@/features/habits/hooks/use-open-habit";
@@ -75,11 +75,15 @@ function HabitCard({ habit }: { habit: Habit }) {
       <button
         onClick={toggle}
         disabled={logMutation.isPending}
-        style={habit.todayCompleted ? { backgroundColor: habit.color ?? "#6366f1" } : undefined}
+        style={
+          habit.todayCompleted
+            ? { backgroundColor: habit.color ?? "#6366f1" }
+            : undefined
+        }
         className={cn(
           "flex size-12 shrink-0 items-center justify-center rounded-full border-2 transition-all",
           habit.todayCompleted
-            ? "border-transparent text-white scale-95"
+            ? "scale-95 border-transparent text-white"
             : "border-border hover:scale-105"
         )}
       >
@@ -93,15 +97,24 @@ function HabitCard({ habit }: { habit: Habit }) {
       {/* Info */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className={cn("truncate font-semibold", habit.todayCompleted && "line-through text-muted-foreground")}>
+          <p
+            className={cn(
+              "truncate font-semibold",
+              habit.todayCompleted && "text-muted-foreground line-through"
+            )}
+          >
             {habit.title}
           </p>
           {!habit.dueToday && (
-            <Badge variant="secondary" className="text-[10px]">rest day</Badge>
+            <Badge variant="secondary" className="text-[10px]">
+              rest day
+            </Badge>
           )}
         </div>
         {habit.description && (
-          <p className="truncate text-xs text-muted-foreground">{habit.description}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {habit.description}
+          </p>
         )}
       </div>
 
@@ -153,7 +166,9 @@ function HabitHeatmap({ habitId, color }: { habitId: string; color: string }) {
             <div
               key={date}
               title={date}
-              style={completedSet.has(date) ? { backgroundColor: color } : undefined}
+              style={
+                completedSet.has(date) ? { backgroundColor: color } : undefined
+              }
               className={cn(
                 "size-3 rounded-sm",
                 completedSet.has(date) ? "opacity-90" : "bg-muted"
@@ -189,7 +204,10 @@ function HabitOverviewCard({ habit }: { habit: Habit }) {
 
       <div className="mt-3 grid grid-cols-3 gap-2 text-center">
         <div className="rounded-lg bg-muted/50 p-2">
-          <p className="text-lg font-bold" style={{ color: habit.color ?? "#6366f1" }}>
+          <p
+            className="text-lg font-bold"
+            style={{ color: habit.color ?? "#6366f1" }}
+          >
             {stats?.currentStreak ?? 0}
           </p>
           <p className="text-[10px] text-muted-foreground">Current streak</p>
@@ -222,7 +240,11 @@ export default function HabitsView() {
     <div className="flex flex-col gap-4">
       {/* Tabs + New habit */}
       <div className="flex items-center gap-3">
-        <Tabs value={tab} onValueChange={(v) => setTab(v as "today" | "overview")} className="flex-1">
+        <Tabs
+          value={tab}
+          onValueChange={(v) => setTab(v as "today" | "overview")}
+          className="flex-1"
+        >
           <TabsList>
             <TabsTrigger value="today">Today</TabsTrigger>
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -258,7 +280,8 @@ export default function HabitsView() {
               <span className="font-medium">
                 {dueToday.length > 0
                   ? Math.round((completedToday / dueToday.length) * 100)
-                  : 0}%
+                  : 0}
+                %
               </span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -290,13 +313,18 @@ export default function HabitsView() {
               <summary className="cursor-pointer list-none text-xs text-muted-foreground hover:text-foreground">
                 <span className="underline underline-offset-2">
                   {habits.filter((h) => !h.dueToday).length} habit
-                  {habits.filter((h) => !h.dueToday).length !== 1 ? "s" : ""} not scheduled today
+                  {habits.filter((h) => !h.dueToday).length !== 1
+                    ? "s"
+                    : ""}{" "}
+                  not scheduled today
                 </span>
               </summary>
               <div className="mt-2 flex flex-col gap-2 opacity-60">
-                {habits.filter((h) => !h.dueToday).map((h) => (
-                  <HabitCard key={h.id} habit={h} />
-                ))}
+                {habits
+                  .filter((h) => !h.dueToday)
+                  .map((h) => (
+                    <HabitCard key={h.id} habit={h} />
+                  ))}
               </div>
             </details>
           )}

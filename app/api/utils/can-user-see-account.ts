@@ -1,7 +1,7 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
-import { accounts, memberships } from "@/db/schema";
+import { accounts } from "@/db/schema";
 
 export async function canUserSeeAccount(accountId: string, userId: string) {
   const [data] = await db
@@ -13,7 +13,6 @@ export async function canUserSeeAccount(accountId: string, userId: string) {
       number: accounts.number,
       bankIcon: accounts.bankIcon,
       userId: accounts.userId,
-      orgId: accounts.orgId,
     })
     .from(accounts)
     .where(eq(accounts.id, accountId));
@@ -25,19 +24,10 @@ export async function canUserSeeAccount(accountId: string, userId: string) {
     };
   }
 
-  const { orgId, userId: accountUserId } = data;
-
-  if (userId === accountUserId) {
-    return { canSeeAccount: true, data: data, error: null };
-  }
-
-  const [hasOrganizationAccess] = await db
-    .select()
-    .from(memberships)
-    .where(and(eq(memberships.userId, userId), eq(memberships.orgId, orgId!)));
+  const canSeeAccount = userId === data.userId;
 
   return {
-    canSeeAccount: hasOrganizationAccess !== null,
-    data: hasOrganizationAccess !== null ? data : null,
+    canSeeAccount,
+    data: canSeeAccount ? data : null,
   };
 }

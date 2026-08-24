@@ -7,11 +7,10 @@ export async function fetchSpendingByCategory(
   userId: string,
   startDate: Date,
   endDate: Date,
-  orgId?: string,
   accountId?: string
 ) {
   const queryConditions = [
-    orgId ? eq(accounts.orgId, orgId) : eq(accounts.userId, userId),
+    eq(accounts.userId, userId),
     lt(transactions.amount, 0),
     ne(transactions.type, "transfer"),
     gte(transactions.date, startDate),

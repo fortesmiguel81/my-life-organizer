@@ -1,16 +1,21 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { PROFILE_COOKIE } from "@/lib/local-auth";
 
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/api/uploadthing"]);
+const isPublicPath = (pathname: string) =>
+  pathname.startsWith("/select-profile") || pathname.startsWith("/api/profiles");
 
-export default clerkMiddleware((auth, request) => {
-  if (!isPublicRoute(request)) {
-    auth().protect();
+export default function middleware(request: NextRequest) {
+  const { pathname, search } = request.nextUrl;
+
+  if (isPublicPath(pathname) || request.cookies.has(PROFILE_COOKIE)) {
+    return NextResponse.next();
   }
 
-  return NextResponse.next();
-});
+  const url = new URL("/select-profile", request.url);
+  url.searchParams.set("redirect_url", pathname + search);
+  return NextResponse.redirect(url);
+}
 
 export const config = {
   matcher: [

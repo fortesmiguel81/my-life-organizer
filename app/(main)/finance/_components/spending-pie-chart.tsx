@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import React from "react";
 
 import { subDays } from "date-fns";
 import { FileSearch, PieChart, Radar, Target } from "lucide-react";
@@ -28,7 +29,6 @@ import { formatDateRange } from "@/lib/utils";
 import { PieVariant } from "./pie-variant";
 import { RadarVariant } from "./radar-variant";
 import { RadialVariant } from "./radial-variant";
-import React from "react";
 
 type Props = {
   data?: {

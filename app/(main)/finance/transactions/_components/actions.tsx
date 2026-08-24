@@ -4,10 +4,10 @@ import { Edit, MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useOpenTransaction } from "@/features/transactions/hooks/use-open-transaction";
 

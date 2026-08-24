@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: milo
+      POSTGRES_PASSWORD: milo
+      POSTGRES_DB: milo
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U milo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ntfy:
+    image: binwiederhier/ntfy
+    restart: unless-stopped
+    command: serve
+    ports:
+      - "8080:80"
+    volumes:
+      - ntfy-data:/var/cache/ntfy
+
+  migrate:
+    build:
+      context: .
+      target: builder
+    env_file: .env.local
+    environment:
+      DATABASE_URL: postgres://milo:milo@postgres:5432/milo
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["npx", "drizzle-kit", "migrate"]
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env.local
+    environment:
+      DATABASE_URL: postgres://milo:milo@postgres:5432/milo
+      NTFY_URL: http://ntfy:80
+      UPLOADS_DIR: /data/uploads
+    volumes:
+      - uploads-data:/data/uploads
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  cron:
+    image: alpine:3.20
+    restart: unless-stopped
+    env_file: .env.local
+    environment:
+      APP_URL: http://app:3000
+    depends_on:
+      - app
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apk add --no-cache curl >/dev/null
+        while true; do
+          curl -sf -X POST "$$APP_URL/api/notifications/process" -H "Authorization: Bearer $$CRON_SECRET" || true
+          sleep 900
+        done
+
+volumes:
+  postgres-data:
+  ntfy-data:
+  uploads-data:

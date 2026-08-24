@@ -1,4 +1,3 @@
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
 import { and, eq, gte, lte } from "drizzle-orm";
@@ -7,6 +6,7 @@ import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { events, insertEventSchema } from "@/db/schema";
+import { getAuth } from "@/lib/local-auth";
 
 const app = new Hono()
   .get(
@@ -15,7 +15,6 @@ const app = new Hono()
       "query",
       z.object({ from: z.string().optional(), to: z.string().optional() })
     ),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
@@ -23,9 +22,7 @@ const app = new Hono()
       const { from, to } = ctx.req.valid("query");
 
       const conditions: Parameters<typeof and>[0][] = [
-        auth.orgId
-          ? eq(events.orgId, auth.orgId)
-          : eq(events.userId, auth.userId),
+        eq(events.userId, auth.userId),
       ];
       if (from) conditions.push(gte(events.startDate, new Date(from)));
       if (to) conditions.push(lte(events.endDate, new Date(to)));
@@ -41,7 +38,6 @@ const app = new Hono()
   .get(
     "/:id",
     zValidator("param", z.object({ id: z.string() })),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
@@ -51,14 +47,7 @@ const app = new Hono()
       const [data] = await db
         .select()
         .from(events)
-        .where(
-          and(
-            eq(events.id, id),
-            auth.orgId
-              ? eq(events.orgId, auth.orgId)
-              : eq(events.userId, auth.userId)
-          )
-        );
+        .where(and(eq(events.id, id), eq(events.userId, auth.userId)));
 
       if (!data) return ctx.json({ error: "Event not found" }, 404);
 
@@ -67,13 +56,11 @@ const app = new Hono()
   )
   .post(
     "/",
-    clerkMiddleware(),
     zValidator(
       "json",
       insertEventSchema.omit({
         id: true,
         userId: true,
-        orgId: true,
         created_at: true,
         created_by: true,
         updated_at: true,
@@ -96,8 +83,7 @@ const app = new Hono()
           id: createId(),
           ...values,
           notified: false,
-          userId: auth.orgId ? null : auth.userId,
-          orgId: auth.orgId ?? null,
+          userId: auth.userId,
           created_at: now,
           created_by: auth.userId,
           updated_at: now,
@@ -110,14 +96,12 @@ const app = new Hono()
   )
   .patch(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     zValidator(
       "json",
       insertEventSchema.omit({
         id: true,
         userId: true,
-        orgId: true,
         created_at: true,
         created_by: true,
         updated_at: true,
@@ -137,14 +121,7 @@ const app = new Hono()
       const [existing] = await db
         .select({ id: events.id })
         .from(events)
-        .where(
-          and(
-            eq(events.id, id),
-            auth.orgId
-              ? eq(events.orgId, auth.orgId)
-              : eq(events.userId, auth.userId)
-          )
-        );
+        .where(and(eq(events.id, id), eq(events.userId, auth.userId)));
 
       if (!existing) return ctx.json({ error: "Event not found" }, 404);
 
@@ -164,7 +141,6 @@ const app = new Hono()
   )
   .delete(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     async (ctx) => {
       const auth = getAuth(ctx);
@@ -175,14 +151,7 @@ const app = new Hono()
       const [existing] = await db
         .select({ id: events.id })
         .from(events)
-        .where(
-          and(
-            eq(events.id, id),
-            auth.orgId
-              ? eq(events.orgId, auth.orgId)
-              : eq(events.userId, auth.userId)
-          )
-        );
+        .where(and(eq(events.id, id), eq(events.userId, auth.userId)));
 
       if (!existing) return ctx.json({ error: "Event not found" }, 404);
 

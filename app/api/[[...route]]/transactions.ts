@@ -1,4 +1,3 @@
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
 import {
@@ -21,16 +20,24 @@ import {
   transactions,
 } from "@/db/schema";
 import { decryptFields, encryptFields } from "@/lib/encryption";
+import { getAuth } from "@/lib/local-auth";
 
 import { canUserSeeAccount } from "../utils/can-user-see-account";
 import { canUserSeeTransaction } from "../utils/can-user-see-transaction";
 import { updateAccountBalance } from "../utils/update-account-balance";
 
-async function decryptTransaction<T extends { payee: string; description: string | null }>(
-  row: T
-): Promise<T> {
-  const decrypted = await decryptFields({ payee: row.payee, description: row.description ?? "" });
-  return { ...row, payee: decrypted.payee ?? row.payee, description: decrypted.description };
+async function decryptTransaction<
+  T extends { payee: string; description: string | null },
+>(row: T): Promise<T> {
+  const decrypted = await decryptFields({
+    payee: row.payee,
+    description: row.description ?? "",
+  });
+  return {
+    ...row,
+    payee: decrypted.payee ?? row.payee,
+    description: decrypted.description,
+  };
 }
 
 export function getNextDueDate(
@@ -77,7 +84,6 @@ const app = new Hono()
         to: z.string().optional(),
       })
     ),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
 
@@ -96,11 +102,7 @@ const app = new Hono()
 
       const endDate = to ? parse(to, "yyyy-MM-dd", new Date()) : defaultTo;
 
-      const queryConditions = [
-        auth.orgId
-          ? eq(accounts.orgId, auth.orgId)
-          : eq(accounts.userId, auth.userId),
-      ];
+      const queryConditions = [eq(accounts.userId, auth.userId)];
 
       if (accountId) {
         queryConditions.push(eq(transactions.accountId, accountId));
@@ -147,7 +149,6 @@ const app = new Hono()
   .get(
     "/:id",
     zValidator("param", z.object({ id: z.string().optional() })),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
 
@@ -187,154 +188,155 @@ const app = new Hono()
       return ctx.json({ data: { ...decrypted, toAccountId } });
     }
   )
-  .post(
-    "/",
-    clerkMiddleware(),
-    zValidator("json", createSchema),
-    async (ctx) => {
-      try {
-        const auth = getAuth(ctx);
-        if (!auth?.userId) {
-          return ctx.json({ error: "Unauthorized" }, 401);
-        }
+  .post("/", zValidator("json", createSchema), async (ctx) => {
+    try {
+      const auth = getAuth(ctx);
+      if (!auth?.userId) {
+        return ctx.json({ error: "Unauthorized" }, 401);
+      }
 
-        const { toAccountId, ...values } = ctx.req.valid("json");
+      const { toAccountId, ...values } = ctx.req.valid("json");
 
-        const { data: account, canSeeAccount } = await canUserSeeAccount(
-          values.accountId,
-          auth.userId
+      const { data: account, canSeeAccount } = await canUserSeeAccount(
+        values.accountId,
+        auth.userId
+      );
+
+      if (!canSeeAccount || !account) {
+        return ctx.json(
+          { error: `Account with the id: ${values.accountId} not found` },
+          404
         );
+      }
 
-        if (!canSeeAccount || !account) {
+      // --- Transfer: create two linked transactions ---
+      if (values.type === "transfer" && toAccountId) {
+        const { data: toAccount, canSeeAccount: canSeeToAccount } =
+          await canUserSeeAccount(toAccountId, auth.userId);
+
+        if (!canSeeToAccount || !toAccount) {
           return ctx.json(
-            { error: `Account with the id: ${values.accountId} not found` },
+            { error: `Destination account ${toAccountId} not found` },
             404
           );
         }
 
-        // --- Transfer: create two linked transactions ---
-        if (values.type === "transfer" && toAccountId) {
-          const { data: toAccount, canSeeAccount: canSeeToAccount } =
-            await canUserSeeAccount(toAccountId, auth.userId);
+        const transferAmount = Math.abs(values.amount);
+        const sourceId = createId();
+        const destId = createId();
+        const now = new Date();
+        const encryptedTransfer = await encryptFields({
+          payee: values.payee,
+          description: values.description ?? "",
+        });
+        const encPayee = encryptedTransfer.payee ?? values.payee;
+        const encDesc =
+          encryptedTransfer.description ?? values.description ?? "";
 
-          if (!canSeeToAccount || !toAccount) {
-            return ctx.json(
-              { error: `Destination account ${toAccountId} not found` },
-              404
-            );
-          }
-
-          const transferAmount = Math.abs(values.amount);
-          const sourceId = createId();
-          const destId = createId();
-          const now = new Date();
-          const encryptedTransfer = await encryptFields({ payee: values.payee, description: values.description ?? "" });
-          const encPayee = encryptedTransfer.payee ?? values.payee;
-          const encDesc = encryptedTransfer.description ?? values.description ?? "";
-
-          const [source] = await db
-            .insert(transactions)
-            .values({
-              id: sourceId,
-              ...values,
-              payee: encPayee,
-              description: encDesc,
-              amount: -transferAmount,
-              type: "transfer",
-              recurrence: "none",
-              nextDueDate: null,
-              linkedTransactionId: destId,
-              categoryId: values.categoryId ?? null,
-              created_at: now,
-              created_by: auth.userId,
-              updated_at: now,
-              updated_by: auth.userId,
-            })
-            .returning();
-
-          await db.insert(transactions).values({
-            id: destId,
+        const [source] = await db
+          .insert(transactions)
+          .values({
+            id: sourceId,
             ...values,
             payee: encPayee,
             description: encDesc,
-            accountId: toAccountId,
-            amount: transferAmount,
+            amount: -transferAmount,
             type: "transfer",
             recurrence: "none",
             nextDueDate: null,
-            linkedTransactionId: sourceId,
+            linkedTransactionId: destId,
             categoryId: values.categoryId ?? null,
             created_at: now,
             created_by: auth.userId,
             updated_at: now,
             updated_by: auth.userId,
-          });
-
-          await db
-            .update(accounts)
-            .set({
-              balance: account.balance - transferAmount,
-              updated_at: now,
-              updated_by: auth.userId,
-            })
-            .where(eq(accounts.id, account.id));
-
-          await db
-            .update(accounts)
-            .set({
-              balance: toAccount.balance + transferAmount,
-              updated_at: now,
-              updated_by: auth.userId,
-            })
-            .where(eq(accounts.id, toAccount.id));
-
-          return ctx.json({ data: source }, 201);
-        }
-
-        // --- Regular income / expense ---
-        const nextDueDate =
-          values.recurrence && values.recurrence !== "none"
-            ? (getNextDueDate(values.date, values.recurrence) ?? null)
-            : null;
-
-        const encrypted = await encryptFields({ payee: values.payee, description: values.description ?? "" });
-
-        const [data] = await db
-          .insert(transactions)
-          .values({
-            id: createId(),
-            ...values,
-            payee: encrypted.payee ?? values.payee,
-            description: encrypted.description ?? values.description ?? "",
-            nextDueDate,
-            linkedTransactionId: null,
-            created_at: new Date(),
-            created_by: auth.userId,
-            updated_at: new Date(),
-            updated_by: auth.userId,
           })
           .returning();
+
+        await db.insert(transactions).values({
+          id: destId,
+          ...values,
+          payee: encPayee,
+          description: encDesc,
+          accountId: toAccountId,
+          amount: transferAmount,
+          type: "transfer",
+          recurrence: "none",
+          nextDueDate: null,
+          linkedTransactionId: sourceId,
+          categoryId: values.categoryId ?? null,
+          created_at: now,
+          created_by: auth.userId,
+          updated_at: now,
+          updated_by: auth.userId,
+        });
 
         await db
           .update(accounts)
           .set({
-            balance: account.balance + values.amount,
-            updated_at: new Date(),
+            balance: account.balance - transferAmount,
+            updated_at: now,
             updated_by: auth.userId,
           })
-          .where(eq(accounts.id, values.accountId));
+          .where(eq(accounts.id, account.id));
 
-        return ctx.json({ data }, 201);
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "An unknown error occurred";
-        return ctx.json({ error: errorMessage }, 400);
+        await db
+          .update(accounts)
+          .set({
+            balance: toAccount.balance + transferAmount,
+            updated_at: now,
+            updated_by: auth.userId,
+          })
+          .where(eq(accounts.id, toAccount.id));
+
+        return ctx.json({ data: source }, 201);
       }
+
+      // --- Regular income / expense ---
+      const nextDueDate =
+        values.recurrence && values.recurrence !== "none"
+          ? (getNextDueDate(values.date, values.recurrence) ?? null)
+          : null;
+
+      const encrypted = await encryptFields({
+        payee: values.payee,
+        description: values.description ?? "",
+      });
+
+      const [data] = await db
+        .insert(transactions)
+        .values({
+          id: createId(),
+          ...values,
+          payee: encrypted.payee ?? values.payee,
+          description: encrypted.description ?? values.description ?? "",
+          nextDueDate,
+          linkedTransactionId: null,
+          created_at: new Date(),
+          created_by: auth.userId,
+          updated_at: new Date(),
+          updated_by: auth.userId,
+        })
+        .returning();
+
+      await db
+        .update(accounts)
+        .set({
+          balance: account.balance + values.amount,
+          updated_at: new Date(),
+          updated_by: auth.userId,
+        })
+        .where(eq(accounts.id, values.accountId));
+
+      return ctx.json({ data }, 201);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      return ctx.json({ error: errorMessage }, 400);
     }
-  )
+  })
   .patch(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string().optional() })),
     zValidator(
       "json",
@@ -422,7 +424,10 @@ const app = new Hono()
             ? (getNextDueDate(values.date, values.recurrence) ?? null)
             : null;
 
-        const encryptedPatch = await encryptFields({ payee: values.payee, description: values.description ?? "" });
+        const encryptedPatch = await encryptFields({
+          payee: values.payee,
+          description: values.description ?? "",
+        });
 
         const [data] = await db
           .update(transactions)
@@ -447,7 +452,6 @@ const app = new Hono()
   )
   .delete(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string().optional() })),
     async (ctx) => {
       const auth = getAuth(ctx);
