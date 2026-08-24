@@ -6,6 +6,10 @@ services:
       POSTGRES_USER: milo
       POSTGRES_PASSWORD: milo
       POSTGRES_DB: milo
+    ports:
+      # Loopback-only on the server, not the LAN — connect from other
+      # machines via an SSH tunnel: ssh -N -L 5432:localhost:5432 <server>
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
