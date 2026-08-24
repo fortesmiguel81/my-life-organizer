@@ -45,7 +45,12 @@ API routes use `@hono/zod-validator` for request validation and run on the Node.
 
 ### Authentication & Identity
 
-There is no login. `middleware.ts` requires a `milo_profile_id` cookie on every request and redirects to `/select-profile` if it's missing — a lightweight "who's using this" picker (like Netflix profiles) so each family member's data stays separate, backed by the `profiles` table. `lib/local-auth.ts` exposes `getAuth(c)` (Hono routes) and `getServerAuth()` (Next.js route handlers) returning `{ userId }` from that cookie, mirroring the shape the old Clerk helpers used so route handlers barely changed. `hooks/use-organization-query-invalidation.ts` invalidates all React Query cache entries when the active profile changes.
+Two layers, both cookie-based, no accounts:
+
+1. **Site gate** (`lib/site-auth.ts`) — a single shared `APP_PASSWORD` protects the whole app from anything on the network. `middleware.ts` requires a `milo_site_auth` cookie (an HMAC of a fixed string keyed by `APP_PASSWORD`, verified without server-side session storage) and redirects to `/site-login` if it's missing or invalid. **Required** — if `APP_PASSWORD` isn't set, every request is rejected.
+2. **Profile picker** (`lib/local-auth.ts`) — once past the site gate, `middleware.ts` requires a `milo_profile_id` cookie and redirects to `/select-profile` if it's missing: a lightweight "who's using this" picker (like Netflix profiles) so each family member's data stays separate, backed by the `profiles` table. `getAuth(c)` (Hono routes) and `getServerAuth()` (Next.js route handlers) return `{ userId }` from that cookie, mirroring the shape the old Clerk helpers used so route handlers barely changed.
+
+`hooks/use-organization-query-invalidation.ts` invalidates all React Query cache entries when the active profile changes.
 
 ### Notifications
 

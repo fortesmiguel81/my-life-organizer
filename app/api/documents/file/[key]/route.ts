@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
 import { documents } from "@/db/schema";
+import { INLINE_RENDERABLE_MIME_TYPES } from "@/lib/allowed-mime-types";
 import { getServerAuth } from "@/lib/local-auth";
 import { readUploadedFile } from "@/lib/local-storage";
 
@@ -27,7 +28,14 @@ export async function GET(
 
   const buffer = await readUploadedFile(params.key);
 
-  return new Response(buffer, {
-    headers: { "Content-Type": doc.mimeType },
-  });
+  const isRenderable = INLINE_RENDERABLE_MIME_TYPES.has(doc.mimeType);
+  const headers: HeadersInit = {
+    "Content-Type": isRenderable ? doc.mimeType : "application/octet-stream",
+    "X-Content-Type-Options": "nosniff",
+  };
+  if (!isRenderable) {
+    headers["Content-Disposition"] = "attachment";
+  }
+
+  return new Response(buffer, { headers });
 }

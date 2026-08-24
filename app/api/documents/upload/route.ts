@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 
+import { ALLOWED_DOCUMENT_MIME_TYPES } from "@/lib/allowed-mime-types";
 import { getServerAuth } from "@/lib/local-auth";
 import { saveUploadedFile } from "@/lib/local-storage";
 
@@ -20,6 +21,10 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "File exceeds 16MB limit" }, { status: 400 });
   }
 
+  if (!ALLOWED_DOCUMENT_MIME_TYPES.has(file.type)) {
+    return Response.json({ error: "Unsupported file type" }, { status: 400 });
+  }
+
   const { fileKey, size } = await saveUploadedFile(file);
 
   return Response.json({
@@ -28,7 +33,7 @@ export async function POST(req: NextRequest) {
       fileKey,
       name: file.name,
       size,
-      type: file.type || "application/octet-stream",
+      type: file.type,
     },
   });
 }

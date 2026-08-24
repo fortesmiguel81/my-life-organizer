@@ -1,14 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { PROFILE_COOKIE } from "@/lib/local-auth";
+import { isValidSiteToken, SITE_AUTH_COOKIE } from "@/lib/site-auth";
 
-const isPublicPath = (pathname: string) =>
+const isSiteAuthPublic = (pathname: string) =>
+  pathname.startsWith("/site-login") || pathname.startsWith("/api/site-auth");
+
+const isProfilePublic = (pathname: string) =>
   pathname.startsWith("/select-profile") || pathname.startsWith("/api/profiles");
 
-export default function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  if (isPublicPath(pathname) || request.cookies.has(PROFILE_COOKIE)) {
+  if (isSiteAuthPublic(pathname)) {
+    return NextResponse.next();
+  }
+
+  const siteToken = request.cookies.get(SITE_AUTH_COOKIE)?.value;
+  if (!(await isValidSiteToken(siteToken))) {
+    const url = new URL("/site-login", request.url);
+    url.searchParams.set("redirect_url", pathname + search);
+    return NextResponse.redirect(url);
+  }
+
+  if (isProfilePublic(pathname) || request.cookies.has(PROFILE_COOKIE)) {
     return NextResponse.next();
   }
 
