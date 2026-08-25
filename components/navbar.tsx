@@ -116,7 +116,7 @@ export default function Navbar() {
                   <NavigationMenuItem>
                     <NavigationMenuTrigger
                       className={cn(
-                        pathname.startsWith("/finance") && "bg-accent/50"
+                        pathname.startsWith("/calendar") && "bg-accent/50"
                       )}
                     >
                       Calendar
@@ -150,7 +150,7 @@ export default function Navbar() {
                   <NavigationMenuItem>
                     <NavigationMenuTrigger
                       className={cn(
-                        pathname.startsWith("/finance") && "bg-accent/50"
+                        pathname.startsWith("/tasks") && "bg-accent/50"
                       )}
                     >
                       Tasks
