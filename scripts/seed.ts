@@ -1,23 +1,21 @@
 /**
- * Seed script — populates all tables with realistic sample data.
- *
- * Requires in .env.local:
- *   SEED_USER_ID  — from https://dashboard.clerk.com → Users
- *   SEED_ORG_ID   — from https://dashboard.clerk.com → Organizations (optional)
+ * Seed script — creates a default profile and populates all tables with
+ * realistic sample data scoped to it.
  *
  * Usage:  npm run db:seed
  */
-import { neon } from "@neondatabase/serverless";
 import { createId } from "@paralleldrive/cuid2";
 import { addDays, subDays } from "date-fns";
 import { config } from "dotenv";
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 
 import {
   accounts,
   budgets,
   categories,
   events,
+  profiles,
   taskLists,
   tasks,
   transactions,
@@ -26,41 +24,15 @@ import { encryptField } from "../lib/encryption";
 
 config({ path: ".env.local" });
 
-// ── DB (same proxy as db/drizzle.ts) ─────────────────────────────────────────
-const neonSql = neon(process.env.DATABASE_URL!);
-const clientProxy = new Proxy(neonSql, {
-  apply: (_t, _this, args) =>
-    (
-      neonSql as unknown as {
-        query: (
-          text: string,
-          params?: unknown[],
-          opts?: unknown
-        ) => Promise<unknown>;
-      }
-    ).query(args[0], args[1], args[2]),
-});
-const db = drizzle(clientProxy as typeof neonSql);
-
-// ── Config ────────────────────────────────────────────────────────────────────
-const userId = process.env.SEED_USER_ID;
-const orgId = process.env.SEED_ORG_ID ?? null;
-
-if (!userId) {
-  console.error("\n❌  SEED_USER_ID not set in .env.local\n");
-  process.exit(1);
-}
-
-// When an org is present the scoping userId is null (matches app behaviour)
-const scopeUserId = orgId ? null : userId;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+const db = drizzle(pool);
 
 const now = new Date();
 const ago = (n: number) => subDays(now, n);
 const ahead = (n: number) => addDays(now, n);
 
-const base = () => ({
-  userId: scopeUserId,
-  orgId,
+const base = (userId: string) => ({
+  userId,
   created_at: now,
   created_by: userId,
   updated_at: now,
@@ -74,8 +46,20 @@ async function enc(v: string) {
 // ── Seed ──────────────────────────────────────────────────────────────────────
 async function main() {
   console.log(`\n🌱  Seeding…`);
-  console.log(`   userId : ${userId}`);
-  console.log(`   orgId  : ${orgId ?? "(none — personal account)"}\n`);
+
+  const [profile] = await db
+    .insert(profiles)
+    .values({
+      id: createId(),
+      name: "Miguel",
+      emoji: "🧑",
+      color: "#6366f1",
+      created_at: now,
+    })
+    .returning();
+
+  const userId = profile.id;
+  console.log(`✓  profile "${profile.name}" (${userId})`);
 
   // 1. Categories ──────────────────────────────────────────────────────────────
   const catDefs = [
@@ -97,7 +81,7 @@ async function main() {
         name: c.name,
         icon: c.icon,
         description: null,
-        ...base(),
+        ...base(userId),
       }))
     )
     .returning();
@@ -120,7 +104,7 @@ async function main() {
       balance: 350000,
       number: await enc("GB82WEST12345698765432"),
       bankIcon: null,
-      ...base(),
+      ...base(userId),
     },
     {
       id: savingsId,
@@ -129,7 +113,7 @@ async function main() {
       balance: 1500000,
       number: await enc("GB82WEST12345698765433"),
       bankIcon: null,
-      ...base(),
+      ...base(userId),
     },
     {
       id: creditId,
@@ -138,7 +122,7 @@ async function main() {
       balance: -85000,
       number: await enc("4111111111111111"),
       bankIcon: null,
-      ...base(),
+      ...base(userId),
     },
   ]);
   console.log("✓  3 accounts");
@@ -150,35 +134,35 @@ async function main() {
       amount: 200000,
       categoryId: cat("Housing").id,
       type: "monthly",
-      ...base(),
+      ...base(userId),
     },
     {
       id: createId(),
       amount: 50000,
       categoryId: cat("Groceries").id,
       type: "monthly",
-      ...base(),
+      ...base(userId),
     },
     {
       id: createId(),
       amount: 30000,
       categoryId: cat("Dining Out").id,
       type: "monthly",
-      ...base(),
+      ...base(userId),
     },
     {
       id: createId(),
       amount: 20000,
       categoryId: cat("Entertainment").id,
       type: "monthly",
-      ...base(),
+      ...base(userId),
     },
     {
       id: createId(),
       amount: 15000,
       categoryId: cat("Transport").id,
       type: "monthly",
-      ...base(),
+      ...base(userId),
     },
   ]);
   console.log("✓  5 budgets");
@@ -337,7 +321,7 @@ async function main() {
         recurrence: "none" as const,
         nextDueDate: null,
         linkedTransactionId: null,
-        ...base(),
+        ...base(userId),
       }))
     )
   );
@@ -358,7 +342,7 @@ async function main() {
       googleCalendarId: null,
       notifyBefore: 60,
       notified: false,
-      ...base(),
+      ...base(userId),
     },
     {
       id: createId(),
@@ -373,7 +357,7 @@ async function main() {
       googleCalendarId: null,
       notifyBefore: 1440,
       notified: false,
-      ...base(),
+      ...base(userId),
     },
     {
       id: createId(),
@@ -388,7 +372,7 @@ async function main() {
       googleCalendarId: null,
       notifyBefore: 60,
       notified: false,
-      ...base(),
+      ...base(userId),
     },
     {
       id: createId(),
@@ -403,7 +387,7 @@ async function main() {
       googleCalendarId: null,
       notifyBefore: 60,
       notified: false,
-      ...base(),
+      ...base(userId),
     },
   ]);
   console.log("✓  4 events");
@@ -421,21 +405,21 @@ async function main() {
       name: "House Setup",
       icon: "🏠",
       color: "#22c55e",
-      ...base(),
+      ...base(userId),
     },
     {
       id: financeListId,
       name: "Finance",
       icon: "💰",
       color: "#3b82f6",
-      ...base(),
+      ...base(userId),
     },
     {
       id: personalListId,
       name: "Personal",
       icon: "✅",
       color: "#8b5cf6",
-      ...base(),
+      ...base(userId),
     },
   ]);
   console.log("✓  3 task lists");
@@ -459,7 +443,7 @@ async function main() {
     assignedTo: null,
     parentId: null,
     calendarEventId: null,
-    ...base(),
+    ...base(userId),
   });
 
   await db

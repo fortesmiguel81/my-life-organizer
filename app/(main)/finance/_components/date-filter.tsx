@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React from "react";
 
 import { format, subDays } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -10,14 +11,13 @@ import { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import { useGetAccounts } from "@/features/accounts/api/use-get-accounts";
 import { useGetFinanceSummary } from "@/features/summary/api/use-get-finance-summary";
 import { cn } from "@/lib/utils";
-import React from "react";
 
 export function DateFilter() {
   const router = useRouter();

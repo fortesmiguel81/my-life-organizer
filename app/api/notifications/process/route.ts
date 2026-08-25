@@ -1,14 +1,29 @@
-import { createClerkClient } from "@clerk/backend";
-import { and, eq, gte, lte } from "drizzle-orm";
 import { type NextRequest } from "next/server";
-import { Resend } from "resend";
+
+import { and, eq, gte, lte } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
-import { documents, events, habitLogs, habits } from "@/db/schema";
+import { documents, events, habitLogs, habits, profiles } from "@/db/schema";
 import { decryptField } from "@/lib/encryption";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY! });
+const NTFY_URL = process.env.NTFY_URL ?? "http://ntfy:80";
+
+async function pushNotification(topic: string, title: string, message: string) {
+  await fetch(`${NTFY_URL}/${topic}`, {
+    method: "POST",
+    body: message,
+    headers: { Title: title },
+  });
+}
+
+async function getNtfyTopic(userId: string) {
+  const [profile] = await db
+    .select({ ntfyTopic: profiles.ntfyTopic })
+    .from(profiles)
+    .where(eq(profiles.id, userId));
+
+  return profile?.ntfyTopic ?? null;
+}
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -38,25 +53,18 @@ export async function POST(req: NextRequest) {
     if (!userId) continue;
 
     try {
-      const user = await clerk.users.getUser(userId);
-      const email = user.emailAddresses[0]?.emailAddress;
-      if (!email) continue;
+      const topic = await getNtfyTopic(userId);
+      if (!topic) continue;
 
       const startStr = event.allDay
         ? event.startDate.toLocaleDateString()
         : event.startDate.toLocaleString();
 
-      await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL ?? "no-reply@mylifeorganizer.app",
-        to: email,
-        subject: `Reminder: ${event.title}`,
-        html: `
-          <h2>${event.title}</h2>
-          <p><strong>When:</strong> ${startStr}</p>
-          ${event.location ? `<p><strong>Where:</strong> ${event.location}</p>` : ""}
-          ${event.description ? `<p>${event.description}</p>` : ""}
-        `,
-      });
+      await pushNotification(
+        topic,
+        `Reminder: ${event.title}`,
+        `${startStr}${event.location ? ` — ${event.location}` : ""}`
+      );
 
       await db
         .update(events)
@@ -90,25 +98,19 @@ export async function POST(req: NextRequest) {
     if (!userId) continue;
 
     try {
-      const user = await clerk.users.getUser(userId);
-      const email = user.emailAddresses[0]?.emailAddress;
-      if (!email) continue;
+      const topic = await getNtfyTopic(userId);
+      if (!topic) continue;
 
       const name = (await decryptField(doc.name)) ?? doc.name;
       const daysLeft = Math.ceil(
         (doc.expiryDate!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
       );
 
-      await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL ?? "no-reply@mylifeorganizer.app",
-        to: email,
-        subject: `Document expiring soon: ${name}`,
-        html: `
-          <h2>Document Expiry Reminder</h2>
-          <p>Your document <strong>${name}</strong> expires in <strong>${daysLeft} day${daysLeft === 1 ? "" : "s"}</strong> (${doc.expiryDate!.toLocaleDateString()}).</p>
-          <p>Log in to review or renew it.</p>
-        `,
-      });
+      await pushNotification(
+        topic,
+        `Document expiring soon: ${name}`,
+        `Expires in ${daysLeft} day${daysLeft === 1 ? "" : "s"} (${doc.expiryDate!.toLocaleDateString()})`
+      );
 
       await db
         .update(documents)
@@ -136,7 +138,12 @@ export async function POST(req: NextRequest) {
   const allHabits = await db
     .select()
     .from(habits)
-    .where(and(gte(habits.reminderTime, windowStart), lte(habits.reminderTime, windowEnd)));
+    .where(
+      and(
+        gte(habits.reminderTime, windowStart),
+        lte(habits.reminderTime, windowEnd)
+      )
+    );
 
   let habitsSent = 0;
 
@@ -159,20 +166,14 @@ export async function POST(req: NextRequest) {
     if (log) continue; // already done
 
     try {
-      const user = await clerk.users.getUser(userId);
-      const email = user.emailAddresses[0]?.emailAddress;
-      if (!email) continue;
+      const topic = await getNtfyTopic(userId);
+      if (!topic) continue;
 
-      await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL ?? "no-reply@mylifeorganizer.app",
-        to: email,
-        subject: `Habit reminder: ${habit.icon ?? "✅"} ${habit.title}`,
-        html: `
-          <h2>${habit.icon ?? "✅"} ${habit.title}</h2>
-          <p>Don't forget to complete your habit today!</p>
-          ${habit.description ? `<p>${habit.description}</p>` : ""}
-        `,
-      });
+      await pushNotification(
+        topic,
+        `Habit reminder: ${habit.icon ?? "✅"} ${habit.title}`,
+        habit.description ?? "Don't forget to complete your habit today!"
+      );
 
       habitsSent++;
     } catch {

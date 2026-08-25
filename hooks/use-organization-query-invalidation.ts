@@ -1,25 +1,30 @@
 import { useEffect, useRef } from "react";
 
-import { useOrganization, useUser } from "@clerk/nextjs";
 import { useQueryClient } from "@tanstack/react-query";
+
+import { useGetCurrentProfile } from "@/features/profiles/api/use-get-current-profile";
 
 import { useLoading } from "./use-loading";
 
 export const useOrganizationQueryInvalidation = () => {
   const queryClient = useQueryClient();
-  const { organization, isLoaded: isLoadedOrganization } = useOrganization();
-  const { user, isLoaded: isLoadedUser } = useUser();
+  const { data: profile, isLoading } = useGetCurrentProfile();
   const setLoading = useLoading((state) => state.setLoading);
 
   const hasLoadedBefore = useRef(false);
+  const lastProfileId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!hasLoadedBefore.current && isLoadedOrganization && isLoadedUser) {
+    if (isLoading) return;
+
+    if (!hasLoadedBefore.current) {
       hasLoadedBefore.current = true;
+      lastProfileId.current = profile?.id ?? null;
       return;
     }
 
-    if (isLoadedOrganization && isLoadedUser) {
+    if (profile?.id !== lastProfileId.current) {
+      lastProfileId.current = profile?.id ?? null;
       setLoading(true);
 
       queryClient
@@ -31,12 +36,5 @@ export const useOrganizationQueryInvalidation = () => {
           setLoading(false);
         });
     }
-  }, [
-    organization?.id,
-    user?.id,
-    isLoadedOrganization,
-    isLoadedUser,
-    queryClient,
-    setLoading,
-  ]);
+  }, [profile?.id, isLoading, queryClient, setLoading]);
 };

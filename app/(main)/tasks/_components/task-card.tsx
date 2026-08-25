@@ -5,8 +5,8 @@ import { format, isPast, isToday } from "date-fns";
 import { CalendarDays, ChevronRight, Layers } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { useOpenTask } from "@/features/tasks/hooks/use-open-task";
+import { cn } from "@/lib/utils";
 
 const PRIORITY_BORDER: Record<string, string> = {
   low: "border-l-slate-400",
@@ -31,7 +31,13 @@ type Task = {
   subtaskCount: number;
 };
 
-export default function TaskCard({ task, index }: { task: Task; index: number }) {
+export default function TaskCard({
+  task,
+  index,
+}: {
+  task: Task;
+  index: number;
+}) {
   const { onOpen } = useOpenTask();
   const dueDateObj = task.dueDate ? new Date(task.dueDate) : null;
   const isOverdue = dueDateObj && isPast(dueDateObj) && task.status !== "done";
@@ -52,22 +58,39 @@ export default function TaskCard({ task, index }: { task: Task; index: number })
           )}
         >
           <div className="flex items-start justify-between gap-2">
-            <p className={cn("text-sm font-medium leading-snug", task.status === "done" && "line-through text-muted-foreground")}>
+            <p
+              className={cn(
+                "text-sm font-medium leading-snug",
+                task.status === "done" && "text-muted-foreground line-through"
+              )}
+            >
               {task.title}
             </p>
             <ChevronRight className="mt-0.5 size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <Badge variant="secondary" className={cn("text-[10px] font-medium", PRIORITY_BADGE[task.priority])}>
+            <Badge
+              variant="secondary"
+              className={cn(
+                "text-[10px] font-medium",
+                PRIORITY_BADGE[task.priority]
+              )}
+            >
               {task.priority}
             </Badge>
 
             {dueDateObj && (
-              <span className={cn(
-                "flex items-center gap-0.5 text-[10px]",
-                isOverdue ? "font-semibold text-red-500" : isDueToday ? "font-medium text-orange-500" : "text-muted-foreground"
-              )}>
+              <span
+                className={cn(
+                  "flex items-center gap-0.5 text-[10px]",
+                  isOverdue
+                    ? "font-semibold text-red-500"
+                    : isDueToday
+                      ? "font-medium text-orange-500"
+                      : "text-muted-foreground"
+                )}
+              >
                 <CalendarDays className="size-3" />
                 {isOverdue ? "Overdue · " : isDueToday ? "Today · " : ""}
                 {format(dueDateObj, "MMM d")}

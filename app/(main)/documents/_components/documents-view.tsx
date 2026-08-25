@@ -9,11 +9,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetDocuments } from "@/features/documents/api/use-get-documents";
+import { CATEGORY_LABELS } from "@/features/documents/components/document-metadata-form";
 import { useOpenDocument } from "@/features/documents/hooks/use-open-document";
 import { useUploadDocument } from "@/features/documents/hooks/use-upload-document";
-import { CATEGORY_LABELS } from "@/features/documents/components/document-metadata-form";
 
-type Category = "all" | "legal" | "insurance" | "medical" | "household" | "financial" | "other";
+type Category =
+  | "all"
+  | "legal"
+  | "insurance"
+  | "medical"
+  | "household"
+  | "financial"
+  | "other";
 
 const CATEGORY_ICONS: Record<string, string> = {
   legal: "⚖️",
@@ -33,10 +40,27 @@ function getMimeIcon(mimeType: string) {
 }
 
 function ExpiryChip({ date }: { date: Date }) {
-  const diffDays = Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  if (diffDays < 0) return <Badge variant="destructive" className="text-[10px]">Expired</Badge>;
-  if (diffDays <= 30) return <Badge variant="destructive" className="text-[10px]">~{diffDays}d left</Badge>;
-  if (diffDays <= 90) return <Badge className="bg-amber-100 text-amber-800 text-[10px] dark:bg-amber-900 dark:text-amber-200">~{diffDays}d left</Badge>;
+  const diffDays = Math.ceil(
+    (date.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  );
+  if (diffDays < 0)
+    return (
+      <Badge variant="destructive" className="text-[10px]">
+        Expired
+      </Badge>
+    );
+  if (diffDays <= 30)
+    return (
+      <Badge variant="destructive" className="text-[10px]">
+        ~{diffDays}d left
+      </Badge>
+    );
+  if (diffDays <= 90)
+    return (
+      <Badge className="bg-amber-100 text-[10px] text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+        ~{diffDays}d left
+      </Badge>
+    );
   return null;
 }
 
@@ -78,10 +102,18 @@ export default function DocumentsView() {
 
       {/* Category tabs + upload button */}
       <div className="flex items-center gap-3">
-        <Tabs value={activeCategory} onValueChange={(v) => setActiveCategory(v as Category)} className="flex-1">
+        <Tabs
+          value={activeCategory}
+          onValueChange={(v) => setActiveCategory(v as Category)}
+          className="flex-1"
+        >
           <TabsList className="h-9 flex-wrap">
-            <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-            {(Object.keys(CATEGORY_LABELS) as (keyof typeof CATEGORY_LABELS)[]).map((cat) => (
+            <TabsTrigger value="all" className="text-xs">
+              All
+            </TabsTrigger>
+            {(
+              Object.keys(CATEGORY_LABELS) as (keyof typeof CATEGORY_LABELS)[]
+            ).map((cat) => (
               <TabsTrigger key={cat} value={cat} className="gap-1 text-xs">
                 <span>{CATEGORY_ICONS[cat]}</span>
                 {CATEGORY_LABELS[cat]}
@@ -155,17 +187,25 @@ export default function DocumentsView() {
                 </div>
                 <p className="line-clamp-2 text-sm font-medium">{doc.name}</p>
                 {doc.description && (
-                  <p className="line-clamp-1 text-xs text-muted-foreground">{doc.description}</p>
+                  <p className="line-clamp-1 text-xs text-muted-foreground">
+                    {doc.description}
+                  </p>
                 )}
                 <div className="mt-auto flex flex-wrap items-center gap-1 pt-1">
                   {expiryDate && <ExpiryChip date={expiryDate} />}
                   {doc.tags.slice(0, 2).map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-[10px]">
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="text-[10px]"
+                    >
                       {tag}
                     </Badge>
                   ))}
                   {doc.tags.length > 2 && (
-                    <span className="text-[10px] text-muted-foreground">+{doc.tags.length - 2}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      +{doc.tags.length - 2}
+                    </span>
                   )}
                 </div>
               </button>

@@ -1,8 +1,8 @@
 "use client";
 
 import LoadingIndicator from "@/components/loading-indicator";
-import Navbar from "@/components/navbar";
 import SearchCommand from "@/components/modals/search-command";
+import Navbar from "@/components/navbar";
 import { useOrganizationQueryInvalidation } from "@/hooks/use-organization-query-invalidation";
 
 import { PageBreadcrumb } from "../../components/breadcrumb";

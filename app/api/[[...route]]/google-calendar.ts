@@ -1,10 +1,10 @@
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { createId } from "@paralleldrive/cuid2";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 
 import { db } from "@/db/drizzle";
 import { events, googleTokens } from "@/db/schema";
+import { getAuth } from "@/lib/local-auth";
 
 async function getValidAccessToken(
   token: typeof googleTokens.$inferSelect
@@ -45,7 +45,7 @@ async function getValidAccessToken(
 }
 
 const app = new Hono()
-  .get("/status", clerkMiddleware(), async (ctx) => {
+  .get("/status", async (ctx) => {
     const auth = getAuth(ctx);
     if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
@@ -56,7 +56,7 @@ const app = new Hono()
 
     return ctx.json({ connected: !!token });
   })
-  .post("/import", clerkMiddleware(), async (ctx) => {
+  .post("/import", async (ctx) => {
     const auth = getAuth(ctx);
     if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
@@ -99,9 +99,7 @@ const app = new Hono()
     const calendarData = await res.json();
     const googleEvents: any[] = calendarData.items ?? [];
 
-    const userFilter = auth.orgId
-      ? eq(events.orgId, auth.orgId)
-      : eq(events.userId, auth.userId);
+    const userFilter = eq(events.userId, auth.userId);
 
     let imported = 0;
     let updated = 0;
@@ -121,9 +119,7 @@ const app = new Hono()
       const [existing] = await db
         .select({ id: events.id })
         .from(events)
-        .where(
-          and(eq(events.googleEventId, gEvent.id as string), userFilter)
-        );
+        .where(and(eq(events.googleEventId, gEvent.id as string), userFilter));
 
       const payload = {
         title: (gEvent.summary as string | undefined) ?? "Untitled",
@@ -137,10 +133,7 @@ const app = new Hono()
       };
 
       if (existing) {
-        await db
-          .update(events)
-          .set(payload)
-          .where(eq(events.id, existing.id));
+        await db.update(events).set(payload).where(eq(events.id, existing.id));
         updated++;
       } else {
         await db.insert(events).values({
@@ -151,8 +144,7 @@ const app = new Hono()
           googleCalendarId: "primary",
           notifyBefore: 30,
           notified: false,
-          userId: auth.orgId ? null : auth.userId,
-          orgId: auth.orgId ?? null,
+          userId: auth.userId,
           created_at: now,
           created_by: auth.userId,
         });

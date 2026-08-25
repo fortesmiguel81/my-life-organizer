@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCreateDocument } from "@/features/documents/api/use-create-document";
 import { useUploadDocument } from "@/features/documents/hooks/use-upload-document";
-import { useUploadThing } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
 
 import DocumentMetadataForm, { DocumentMetadataFormValues } from "./document-metadata-form";
@@ -26,36 +25,35 @@ export default function UploadDocumentModal() {
   const createMutation = useCreateDocument();
   const [uploaded, setUploaded] = useState<UploadedFile | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { startUpload, isUploading } = useUploadThing("documentUploader", {
-    onClientUploadComplete: (files) => {
-      const f = files[0];
-      setUploaded({
-        url: f.ufsUrl,
-        key: f.key,
-        name: f.name,
-        size: f.size,
-        type: f.type ?? "application/octet-stream",
-      });
-      setUploadProgress(0);
-    },
-    onUploadProgress: (p) => setUploadProgress(p),
-  });
+  const handleFiles = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
 
-  const handleFiles = useCallback(
-    (files: FileList | null) => {
-      if (!files || files.length === 0) return;
-      startUpload(Array.from(files));
-    },
-    [startUpload]
-  );
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/documents/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Upload failed");
+
+      const { data } = await response.json();
+      setUploaded({ url: data.fileUrl, key: data.fileKey, name: data.name, size: data.size, type: data.type });
+    } finally {
+      setIsUploading(false);
+    }
+  }, []);
 
   const handleClose = () => {
     if (isUploading) return;
     setUploaded(null);
-    setUploadProgress(0);
     onClose();
   };
 
@@ -110,13 +108,7 @@ export default function UploadDocumentModal() {
               {isUploading ? (
                 <>
                   <Loader2 className="size-8 animate-spin text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Uploading… {uploadProgress}%</p>
-                  <div className="h-1.5 w-48 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-primary transition-all"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
+                  <p className="text-sm text-muted-foreground">Uploading…</p>
                 </>
               ) : (
                 <>

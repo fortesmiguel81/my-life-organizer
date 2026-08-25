@@ -1,8 +1,6 @@
 "use client";
 
-import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
-import { ThemeProvider, useTheme } from "next-themes";
+import { ThemeProvider } from "next-themes";
 
 import SettingsModal from "@/components/modals/settings-modal";
 import { Toaster } from "@/components/ui/sonner";
@@ -21,27 +19,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
       storageKey="my-life-organizer-theme"
     >
       <ThemeColorProvider>
-        <OtherProviders>{children}</OtherProviders>
+        <QueryProvider>
+          <Toaster />
+          <SheetProvider />
+          <SettingsModal />
+          {children}
+        </QueryProvider>
       </ThemeColorProvider>
     </ThemeProvider>
-  );
-}
-
-function OtherProviders({ children }: { children: React.ReactNode }) {
-  const { resolvedTheme } = useTheme();
-
-  return (
-    <ClerkProvider
-      appearance={{
-        baseTheme: resolvedTheme === "dark" ? dark : undefined,
-      }}
-    >
-      <QueryProvider>
-        <Toaster />
-        <SheetProvider />
-        <SettingsModal />
-        {children}
-      </QueryProvider>
-    </ClerkProvider>
   );
 }

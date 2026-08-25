@@ -3,12 +3,16 @@ import { boolean, doublePrecision, integer, pgEnum, pgTable, real, text, timesta
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const memberships = pgTable("memberships", {
+export const profiles = pgTable("profiles", {
   id: text("id").primaryKey(),
-  userId: text("user_id"),
-  orgId: text("org_id"),
+  name: text("name").notNull(),
+  emoji: text("emoji").notNull().default("🙂"),
+  color: text("color").notNull().default("#6366f1"),
+  ntfyTopic: text("ntfy_topic"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
 });
+
+export const insertProfileSchema = createInsertSchema(profiles);
 
 export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
@@ -18,7 +22,6 @@ export const accounts = pgTable("accounts", {
   number: text("number").notNull(),
   bankIcon: text("bank_icon"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -46,7 +49,6 @@ export const budgets = pgTable("budgets", {
     }),
   type: budgetFrequencyEnum("type").notNull(),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -68,7 +70,6 @@ export const categories = pgTable("categories", {
   description: text("description"),
   icon: text("icon"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -150,7 +151,6 @@ export const events = pgTable("events", {
   notifyBefore: integer("notify_before").default(30),
   notified: boolean("notified").notNull().default(false),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -192,7 +192,6 @@ export const taskLists = pgTable("task_lists", {
   icon: text("icon"),
   color: text("color"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -216,7 +215,6 @@ export const tasks = pgTable("tasks", {
   parentId: text("parent_id"),
   calendarEventId: text("calendar_event_id"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -251,7 +249,6 @@ export const shoppingLists = pgTable("shopping_lists", {
   name: text("name").notNull(),
   icon: text("icon"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -278,7 +275,6 @@ export const shoppingItems = pgTable("shopping_items", {
   note: text("note"),
   addedBy: text("added_by"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -316,7 +312,6 @@ export const documents = pgTable("documents", {
   expiryDate: timestamp("expiry_date", { mode: "date" }),
   expiryNotified: boolean("expiry_notified").notNull().default(false),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -340,7 +335,6 @@ export const habits = pgTable("habits", {
   targetDays: integer("target_days"), // bitmask: bit 0=Mon…bit 6=Sun; null=every day
   reminderTime: text("reminder_time"), // "HH:MM" UTC
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),

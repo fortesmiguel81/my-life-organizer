@@ -3,13 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { UserButton } from "@clerk/nextjs";
+import ProfileSwitcher from "@/components/profile-switcher";
+import { useGetCurrentProfile } from "@/features/profiles/api/use-get-current-profile";
 
 export default function MobileLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { data: profile } = useGetCurrentProfile();
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="flex items-center justify-between border-b px-4 py-3">
@@ -17,7 +20,7 @@ export default function MobileLayout({
           <Image src="/logo.svg" alt="Logo" width={28} height={28} />
           <span className="text-sm font-semibold">Life Organizer</span>
         </Link>
-        <UserButton afterSignOutUrl="/sign-in" />
+        <ProfileSwitcher profile={profile} />
       </header>
       <main className="flex flex-1 flex-col">{children}</main>
     </div>

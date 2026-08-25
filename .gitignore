@@ -28,8 +28,8 @@ yarn-error.log*
 # local env files
 .env*.local
 
-# vercel
-.vercel
+# local document uploads (default UPLOADS_DIR when not running in Docker)
+/uploads
 
 # typescript
 *.tsbuildinfo

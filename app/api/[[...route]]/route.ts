@@ -4,25 +4,23 @@ import { handle } from "hono/vercel";
 import accounts from "./accounts";
 import budgets from "./budgets";
 import categories from "./categories";
+import documentsRoute from "./documents";
 import events from "./events";
 import googleCalendar from "./google-calendar";
+import habitsRoute from "./habits";
+import profilesRoute from "./profiles";
+import recurring from "./recurring";
+import shoppingItemsRoute from "./shopping-items";
+import shoppingListsRoute from "./shopping-lists";
+import summary from "./summary";
 import taskListsRoute from "./task-lists";
 import tasksRoute from "./tasks";
-import recurring from "./recurring";
-import documentsRoute from "./documents";
-import habitsRoute from "./habits";
-import shoppingListsRoute from "./shopping-lists";
-import shoppingItemsRoute from "./shopping-items";
-import summary from "./summary";
 import transactions from "./transactions";
-import webhooks from "./webhooks";
-
-export const runtime = "edge";
 
 const app = new Hono().basePath("/api");
 
 const routes = app
-  .route("/webhooks", webhooks)
+  .route("/profiles", profilesRoute)
   .route("/accounts", accounts)
   .route("/transactions", transactions)
   .route("/categories", categories)
