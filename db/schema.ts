@@ -1,5 +1,15 @@
 import { relations, sql } from "drizzle-orm";
-import { boolean, doublePrecision, integer, pgEnum, pgTable, real, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  doublePrecision,
+  integer,
+  pgEnum,
+  pgTable,
+  real,
+  text,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -304,7 +314,10 @@ export const documents = pgTable("documents", {
   name: text("name").notNull(),
   description: text("description"),
   category: documentCategoryEnum("category").notNull().default("other"),
-  tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
+  tags: text("tags")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
   fileUrl: text("file_url").notNull(),
   fileKey: text("file_key").notNull(),
   mimeType: text("mime_type").notNull(),
@@ -361,7 +374,10 @@ export const habitLogs = pgTable(
     created_at: timestamp("created_at", { mode: "date" }).notNull(),
   },
   (table) => ({
-    habitLogHabitDateIdx: uniqueIndex("habit_log_habit_date_idx").on(table.habitId, table.date),
+    habitLogHabitDateIdx: uniqueIndex("habit_log_habit_date_idx").on(
+      table.habitId,
+      table.date
+    ),
   })
 );
 
@@ -370,3 +386,78 @@ export const habitLogsRelations = relations(habitLogs, ({ one }) => ({
 }));
 
 export const insertHabitLogSchema = createInsertSchema(habitLogs);
+
+export const vendorTradeEnum = pgEnum("vendor_trade", [
+  "plumber",
+  "electrician",
+  "hvac",
+  "general_contractor",
+  "landscaping",
+  "appliance_repair",
+  "pest_control",
+  "cleaning",
+  "roofing",
+  "handyman",
+  "other",
+]);
+
+export const vendors = pgTable("vendors", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  trade: vendorTradeEnum("trade").notNull().default("other"),
+  phone: text("phone"),
+  email: text("email"),
+  website: text("website"),
+  address: text("address"),
+  rating: integer("rating"), // 1-5
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const vendorsRelations = relations(vendors, ({ many }) => ({
+  quotes: many(vendorQuotes),
+}));
+
+export const insertVendorSchema = createInsertSchema(vendors, {
+  rating: z.coerce.number().int().min(1).max(5).optional().nullable(),
+});
+
+export const vendorQuoteStatusEnum = pgEnum("vendor_quote_status", [
+  "pending",
+  "accepted",
+  "declined",
+  "expired",
+]);
+
+export const vendorQuotes = pgTable("vendor_quotes", {
+  id: text("id").primaryKey(),
+  vendorId: text("vendor_id")
+    .notNull()
+    .references(() => vendors.id, { onDelete: "cascade" }),
+  description: text("description").notNull(),
+  amount: integer("amount"), // miliunits
+  status: vendorQuoteStatusEnum("status").notNull().default("pending"),
+  quoteDate: timestamp("quote_date", { mode: "date" }),
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const vendorQuotesRelations = relations(vendorQuotes, ({ one }) => ({
+  vendor: one(vendors, {
+    fields: [vendorQuotes.vendorId],
+    references: [vendors.id],
+  }),
+}));
+
+export const insertVendorQuoteSchema = createInsertSchema(vendorQuotes, {
+  amount: z.coerce.number().optional().nullable(),
+  quoteDate: z.coerce.date().optional().nullable(),
+});

@@ -16,6 +16,8 @@ import summary from "./summary";
 import taskListsRoute from "./task-lists";
 import tasksRoute from "./tasks";
 import transactions from "./transactions";
+import vendorQuotesRoute from "./vendor-quotes";
+import vendorsRoute from "./vendors";
 
 const app = new Hono().basePath("/api");
 
@@ -34,7 +36,9 @@ const routes = app
   .route("/shopping-lists", shoppingListsRoute)
   .route("/shopping-items", shoppingItemsRoute)
   .route("/documents", documentsRoute)
-  .route("/habits", habitsRoute);
+  .route("/habits", habitsRoute)
+  .route("/vendors", vendorsRoute)
+  .route("/vendor-quotes", vendorQuotesRoute);
 
 export const GET = handle(app);
 export const POST = handle(app);

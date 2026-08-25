@@ -75,7 +75,11 @@ export default function Navbar() {
         </div>
         <div className="flex flex-col p-4">
           <div className="flex items-center gap-3">
-            {isLoadingProfile ? <Spinner size="lg" /> : <ProfileSwitcher profile={profile} />}
+            {isLoadingProfile ? (
+              <Spinner size="lg" />
+            ) : (
+              <ProfileSwitcher profile={profile} />
+            )}
           </div>
         </div>
       </aside>
@@ -202,6 +206,16 @@ export default function Navbar() {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
+                    <Link href="/vendors" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        active={pathname.startsWith("/vendors")}
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Vendors
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
                     <NavigationMenuTrigger
                       className={cn(
                         pathname.startsWith("/shopping") && "bg-accent/50"
@@ -267,7 +281,10 @@ export default function Navbar() {
                         <NavItem href="/finance/categories" title="Categories">
                           Manage your spending categories.
                         </NavItem>
-                        <NavItem href="/finance/transactions" title="Transactions">
+                        <NavItem
+                          href="/finance/transactions"
+                          title="Transactions"
+                        >
                           Manage your transactions, track your expenses and
                           income.
                         </NavItem>
