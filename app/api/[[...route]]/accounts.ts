@@ -6,13 +6,10 @@ import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { accounts, insertAccountSchema } from "@/db/schema";
-import { decryptField, decryptFields, encryptFields } from "@/lib/encryption";
+import { decryptFields, encryptFields } from "@/lib/encryption";
 import { getAuth } from "@/lib/local-auth";
 
 import { canUserSeeAccount } from "../utils/can-user-see-account";
-
-/** Encrypted fields stored on the accounts table. */
-const ACCOUNT_SENSITIVE = ["holder", "number"] as const;
 
 async function decryptAccount<T extends { holder: string; number: string }>(
   row: T
