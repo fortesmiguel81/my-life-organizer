@@ -1,15 +1,16 @@
-import { auth } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
 import { type NextRequest } from "next/server";
 
 import { createId } from "@paralleldrive/cuid2";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
 import { googleTokens } from "@/db/schema";
+import { getServerAuth } from "@/lib/local-auth";
 
 export async function GET(req: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) return new Response("Unauthorized", { status: 401 });
+  const auth = await getServerAuth();
+  if (!auth?.userId) return new Response("Unauthorized", { status: 401 });
+  const { userId } = auth;
 
   const { searchParams, origin } = req.nextUrl;
   const code = searchParams.get("code");
@@ -19,8 +20,7 @@ export async function GET(req: NextRequest) {
   }
 
   const redirectUri =
-    process.env.GOOGLE_REDIRECT_URI ??
-    `${origin}/api/google-calendar/callback`;
+    process.env.GOOGLE_REDIRECT_URI ?? `${origin}/api/google-calendar/callback`;
 
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",

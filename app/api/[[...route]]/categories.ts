@@ -1,4 +1,3 @@
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
 import { and, eq } from "drizzle-orm";
@@ -7,11 +6,12 @@ import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { categories, insertCategorySchema } from "@/db/schema";
+import { getAuth } from "@/lib/local-auth";
 
 import { canUserSeeCategory } from "../utils/can-user-see-category";
 
 const app = new Hono()
-  .get("/", clerkMiddleware(), async (ctx) => {
+  .get("/", async (ctx) => {
     const auth = getAuth(ctx);
 
     if (!auth?.userId) {
@@ -25,16 +25,9 @@ const app = new Hono()
         icon: categories.icon,
         description: categories.description,
         userId: categories.userId,
-        orgId: categories.orgId,
       })
       .from(categories)
-      .where(
-        and(
-          auth?.orgId
-            ? eq(categories.orgId, auth?.orgId)
-            : eq(categories.userId, auth.userId)
-        )
-      );
+      .where(and(eq(categories.userId, auth.userId)));
 
     return ctx.json({ data });
   })
@@ -46,7 +39,6 @@ const app = new Hono()
         id: z.string().optional(),
       })
     ),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
 
@@ -77,13 +69,11 @@ const app = new Hono()
   )
   .post(
     "/",
-    clerkMiddleware(),
     zValidator(
       "json",
       insertCategorySchema.omit({
         id: true,
         userId: true,
-        orgId: true,
         created_at: true,
         created_by: true,
         updated_at: true,
@@ -103,8 +93,7 @@ const app = new Hono()
         .values({
           id: createId(),
           ...values,
-          orgId: auth?.orgId,
-          userId: auth?.orgId ? null : auth.userId,
+          userId: auth.userId,
           created_at: new Date(),
           created_by: auth.userId,
           updated_at: new Date(),
@@ -117,7 +106,6 @@ const app = new Hono()
   )
   .patch(
     "/:id",
-    clerkMiddleware(),
     zValidator(
       "param",
       z.object({
@@ -129,7 +117,6 @@ const app = new Hono()
       insertCategorySchema.omit({
         id: true,
         userId: true,
-        orgId: true,
         created_at: true,
         created_by: true,
         updated_at: true,
@@ -175,7 +162,6 @@ const app = new Hono()
   )
   .delete(
     "/:id",
-    clerkMiddleware(),
     zValidator(
       "param",
       z.object({

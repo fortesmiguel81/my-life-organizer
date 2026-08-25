@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import { X } from "lucide-react";
 import qs from "query-string";
@@ -14,6 +15,14 @@ import DataCharts from "./_components/data-charts";
 import { DateFilter } from "./_components/date-filter";
 
 export default function FinanceDashboardPage() {
+  return (
+    <Suspense>
+      <FinanceDashboardContent />
+    </Suspense>
+  );
+}
+
+function FinanceDashboardContent() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();

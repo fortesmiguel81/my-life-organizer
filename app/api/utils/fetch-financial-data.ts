@@ -7,11 +7,10 @@ export async function fetchFinancialData(
   userId: string,
   startDate: Date,
   endDate: Date,
-  orgId?: string,
   accountId?: string
 ) {
   const queryConditions = [
-    orgId ? eq(accounts.orgId, orgId) : eq(accounts.userId, userId),
+    eq(accounts.userId, userId),
     gte(transactions.date, startDate),
     lte(transactions.date, endDate),
     ne(transactions.type, "transfer"),

@@ -12,23 +12,28 @@ npm run format       # Prettier format (targets app/ only)
 npm run db:generate  # Generate Drizzle migrations from schema changes
 npm run db:migrate   # Apply pending migrations to the database
 npm run db:studio    # Open Drizzle Studio GUI for the database
+npm run db:seed      # Seed a default profile + sample data (needs DATABASE_URL in .env.local)
+
+docker compose up -d --build   # Run the full stack locally: Postgres, ntfy, app, cron sidecar
 ```
 
 There is no test suite configured in this project.
 
 ## Architecture
 
-**My Life Organizer** is a financial management SaaS built on Next.js 14 App Router with multi-tenancy via Clerk organizations.
+**My Life Organizer** is a self-hosted personal/family organizer built on Next.js 14 App Router. It runs entirely on local infrastructure — no cloud auth, database, storage, or email provider — intended for a home server (e.g. a Docker Compose stack on a home Ubuntu box).
+
+A cloud/multi-tenant variant (Clerk auth, Neon Postgres, UploadThing, Resend) is preserved on the `cloud-saas` branch for a future scenario where the app needs to be served to multiple unrelated households; `main` is local-only going forward.
 
 ### API Layer (Hono)
 
-All backend logic lives in `app/api/[[...route]]/`. The entry point is `route.ts`, which assembles a Hono app from sub-routers (`accounts.ts`, `transactions.ts`, `categories.ts`, `budgets.ts`, `summary.ts`, `webhooks.ts`). The Hono app is exported as `AppType` and consumed by a typed client in `lib/hono.ts` — all frontend API calls go through this typed client, never raw `fetch`.
+All backend logic lives in `app/api/[[...route]]/`. The entry point is `route.ts`, which assembles a Hono app from sub-routers (`accounts.ts`, `transactions.ts`, `categories.ts`, `budgets.ts`, `summary.ts`, `profiles.ts`, etc). The Hono app is exported as `AppType` and consumed by a typed client in `lib/hono.ts` — all frontend API calls go through this typed client, never raw `fetch`.
 
-API routes use `@hono/zod-validator` for request validation and run on the edge runtime. Authorization utilities in `app/api/utils/` implement row-level access checks (e.g. `can-user-see-account`), scoping queries to either the authenticated user or their active Clerk organization.
+API routes use `@hono/zod-validator` for request validation and run on the Node.js runtime (not edge — required for the `pg` Postgres driver). Authorization utilities in `app/api/utils/` implement row-level access checks (e.g. `can-user-see-account`), scoping queries to the active local profile's `userId`.
 
 ### Feature Modules
 
-`features/` is organized by domain: `accounts`, `budgets`, `categories`, `transactions`, `summary`. Each feature follows this structure:
+`features/` is organized by domain: `accounts`, `budgets`, `categories`, `transactions`, `summary`, `events`, `tasks`, `shopping`, `documents`, `habits`, `profiles`. Each feature follows this structure:
 
 - `api/` — React Query hooks (e.g. `use-get-accounts.ts`, `use-create-account.ts`)
 - `components/` — Forms and slide-over sheets for that domain
@@ -36,15 +41,28 @@ API routes use `@hono/zod-validator` for request validation and run on the edge 
 
 ### Data Layer
 
-`db/schema.ts` defines all Drizzle tables: `accounts`, `transactions`, `categories`, `budgets`, `memberships`. Drizzle schemas are used directly to derive Zod validation schemas for API routes. The database is Neon (serverless PostgreSQL), configured in `db/drizzle.ts`.
+`db/schema.ts` defines all Drizzle tables: `accounts`, `transactions`, `categories`, `budgets`, `profiles`, etc. Drizzle schemas are used directly to derive Zod validation schemas for API routes. The database is plain Postgres (run via `docker-compose.yml`'s `postgres` service), configured in `db/drizzle.ts` via `drizzle-orm/node-postgres`.
 
-### Authentication & Multi-tenancy
+### Authentication & Identity
 
-Clerk handles auth at the middleware level (`middleware.ts`). Public routes are limited to `/sign-in` and `/sign-up`. The app supports both personal and organization contexts — when a user switches orgs, `hooks/use-organization-query-invalidation.ts` invalidates all React Query cache entries.
+Two layers, both cookie-based, no accounts:
+
+1. **Site gate** (`lib/site-auth.ts`) — a single shared `APP_PASSWORD` protects the whole app from anything on the network. `middleware.ts` requires a `milo_site_auth` cookie (an HMAC of a fixed string keyed by `APP_PASSWORD`, verified without server-side session storage) and redirects to `/site-login` if it's missing or invalid. **Required** — if `APP_PASSWORD` isn't set, every request is rejected.
+2. **Profile picker** (`lib/local-auth.ts`) — once past the site gate, `middleware.ts` requires a `milo_profile_id` cookie and redirects to `/select-profile` if it's missing: a lightweight "who's using this" picker (like Netflix profiles) so each family member's data stays separate, backed by the `profiles` table. `getAuth(c)` (Hono routes) and `getServerAuth()` (Next.js route handlers) return `{ userId }` from that cookie, mirroring the shape the old Clerk helpers used so route handlers barely changed.
+
+`hooks/use-organization-query-invalidation.ts` invalidates all React Query cache entries when the active profile changes.
+
+### Notifications
+
+Reminders (upcoming events, expiring documents, habit nudges) are pushed via a self-hosted [ntfy](https://ntfy.sh) server (the `ntfy` service in `docker-compose.yml`) rather than email. Each profile can set a personal ntfy topic in Settings; `app/api/notifications/process/route.ts` is polled every 15 minutes by the `cron` sidecar container and pushes to each profile's topic.
+
+### File Storage
+
+Uploaded documents are written to local disk (`lib/local-storage.ts`, under `UPLOADS_DIR`, mounted as a Docker volume) rather than a cloud object store. `app/api/documents/upload/route.ts` accepts the upload and `app/api/documents/file/[key]/route.ts` serves it back, both auth-gated by the active profile.
 
 ### Providers
 
-`providers/providers.tsx` composes all root providers: Clerk, React Query, next-themes, sheet modals, and custom theme colors. Add new global providers here.
+`providers/providers.tsx` composes all root providers: React Query, next-themes, sheet modals, and custom theme colors. Add new global providers here.
 
 ## Field-level Encryption
 

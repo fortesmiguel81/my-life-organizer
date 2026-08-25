@@ -1,4 +1,3 @@
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
 import { and, eq, lt, sql } from "drizzle-orm";
@@ -13,11 +12,12 @@ import {
   insertBudgetSchema,
   transactions,
 } from "@/db/schema";
+import { getAuth } from "@/lib/local-auth";
 
 import { canUserSeeBudget } from "../utils/can-user-see-budget";
 
 const app = new Hono()
-  .get("/", clerkMiddleware(), async (ctx) => {
+  .get("/", async (ctx) => {
     const auth = getAuth(ctx);
 
     if (!auth?.userId) {
@@ -31,7 +31,6 @@ const app = new Hono()
         amount: budgets.amount,
         type: budgets.type, // Monthly or Yearly
         userId: budgets.userId,
-        orgId: budgets.orgId,
         categoryId: budgets.categoryId,
         category: categories.name,
         categoryDescription: categories.description,
@@ -39,13 +38,7 @@ const app = new Hono()
       })
       .from(budgets)
       .innerJoin(categories, eq(budgets.categoryId, categories.id))
-      .where(
-        and(
-          auth.orgId
-            ? eq(budgets.orgId, auth.orgId)
-            : eq(budgets.userId, auth.userId)
-        )
-      );
+      .where(and(eq(budgets.userId, auth.userId)));
 
     // Single aggregated query for all budgets instead of one query per budget
     const aggregatedData = await db
@@ -59,18 +52,14 @@ const app = new Hono()
         accounts,
         and(
           eq(transactions.accountId, accounts.id),
-          auth.orgId
-            ? eq(accounts.orgId, auth.orgId)
-            : eq(accounts.userId, auth.userId)
+          eq(accounts.userId, auth.userId)
         )
       )
       .innerJoin(
         budgets,
         and(
           eq(transactions.categoryId, budgets.categoryId),
-          auth.orgId
-            ? eq(budgets.orgId, auth.orgId)
-            : eq(budgets.userId, auth.userId)
+          eq(budgets.userId, auth.userId)
         )
       )
       .where(
@@ -111,7 +100,6 @@ const app = new Hono()
         id: z.string().optional(),
       })
     ),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
 
@@ -136,13 +124,11 @@ const app = new Hono()
   )
   .post(
     "/",
-    clerkMiddleware(),
     zValidator(
       "json",
       insertBudgetSchema.omit({
         id: true,
         userId: true,
-        orgId: true,
         created_at: true,
         created_by: true,
         updated_at: true,
@@ -162,8 +148,7 @@ const app = new Hono()
         .values({
           id: createId(),
           ...values,
-          orgId: auth?.orgId,
-          userId: auth?.orgId ? null : auth.userId,
+          userId: auth.userId,
           created_at: new Date(),
           created_by: auth.userId,
           updated_at: new Date(),
@@ -176,7 +161,6 @@ const app = new Hono()
   )
   .patch(
     "/:id",
-    clerkMiddleware(),
     zValidator(
       "param",
       z.object({
@@ -188,7 +172,6 @@ const app = new Hono()
       insertBudgetSchema.omit({
         id: true,
         userId: true,
-        orgId: true,
         created_at: true,
         created_by: true,
         updated_at: true,
@@ -231,7 +214,6 @@ const app = new Hono()
   )
   .delete(
     "/:id",
-    clerkMiddleware(),
     zValidator(
       "param",
       z.object({

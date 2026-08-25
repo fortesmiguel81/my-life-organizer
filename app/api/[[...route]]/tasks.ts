@@ -1,4 +1,3 @@
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
 import { and, asc, eq, isNull } from "drizzle-orm";
@@ -7,6 +6,7 @@ import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { insertTaskSchema, taskLists, tasks } from "@/db/schema";
+import { getAuth } from "@/lib/local-auth";
 
 const app = new Hono()
   .get(
@@ -19,15 +19,12 @@ const app = new Hono()
         priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
       })
     ),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { listId, status, priority } = ctx.req.valid("query");
-      const userFilter = auth.orgId
-        ? eq(taskLists.orgId, auth.orgId)
-        : eq(taskLists.userId, auth.userId);
+      const userFilter = eq(taskLists.userId, auth.userId);
 
       const conditions: Parameters<typeof and>[0][] = [
         userFilter,
@@ -67,25 +64,26 @@ const app = new Hono()
 
       const subtasksMap: Record<string, number> = {};
       for (const r of subtaskRows) {
-        if (r.parentId) subtasksMap[r.parentId] = (subtasksMap[r.parentId] ?? 0) + 1;
+        if (r.parentId)
+          subtasksMap[r.parentId] = (subtasksMap[r.parentId] ?? 0) + 1;
       }
 
-      const data = rows.map((t) => ({ ...t, subtaskCount: subtasksMap[t.id] ?? 0 }));
+      const data = rows.map((t) => ({
+        ...t,
+        subtaskCount: subtasksMap[t.id] ?? 0,
+      }));
       return ctx.json({ data });
     }
   )
   .get(
     "/:id",
     zValidator("param", z.object({ id: z.string() })),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
-      const userFilter = auth.orgId
-        ? eq(taskLists.orgId, auth.orgId)
-        : eq(taskLists.userId, auth.userId);
+      const userFilter = eq(taskLists.userId, auth.userId);
 
       const [row] = await db
         .select({ tasks })
@@ -105,13 +103,11 @@ const app = new Hono()
   )
   .post(
     "/",
-    clerkMiddleware(),
     zValidator(
       "json",
       insertTaskSchema.omit({
         id: true,
         userId: true,
-        orgId: true,
         created_at: true,
         created_by: true,
         updated_at: true,
@@ -130,8 +126,7 @@ const app = new Hono()
         .values({
           id: createId(),
           ...values,
-          userId: auth.orgId ? null : auth.userId,
-          orgId: auth.orgId ?? null,
+          userId: auth.userId,
           created_at: now,
           created_by: auth.userId,
           updated_at: now,
@@ -144,7 +139,6 @@ const app = new Hono()
   )
   .patch(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     zValidator(
       "json",
@@ -152,7 +146,6 @@ const app = new Hono()
         .omit({
           id: true,
           userId: true,
-          orgId: true,
           created_at: true,
           created_by: true,
           updated_at: true,
@@ -166,9 +159,7 @@ const app = new Hono()
 
       const { id } = ctx.req.valid("param");
       const values = ctx.req.valid("json");
-      const userFilter = auth.orgId
-        ? eq(taskLists.orgId, auth.orgId)
-        : eq(taskLists.userId, auth.userId);
+      const userFilter = eq(taskLists.userId, auth.userId);
 
       const [existing] = await db
         .select({ id: tasks.id })
@@ -189,16 +180,13 @@ const app = new Hono()
   )
   .delete(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
-      const userFilter = auth.orgId
-        ? eq(taskLists.orgId, auth.orgId)
-        : eq(taskLists.userId, auth.userId);
+      const userFilter = eq(taskLists.userId, auth.userId);
 
       const [existing] = await db
         .select({ id: tasks.id })
@@ -208,10 +196,7 @@ const app = new Hono()
 
       if (!existing) return ctx.json({ error: "Task not found" }, 404);
 
-      const [data] = await db
-        .delete(tasks)
-        .where(eq(tasks.id, id))
-        .returning();
+      const [data] = await db.delete(tasks).where(eq(tasks.id, id)).returning();
 
       return ctx.json({ data });
     }

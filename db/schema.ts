@@ -1,14 +1,18 @@
 import { relations, sql } from "drizzle-orm";
-import { boolean, doublePrecision, integer, pgEnum, pgTable, real, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, doublePrecision, integer, pgEnum, pgTable, real, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const memberships = pgTable("memberships", {
+export const profiles = pgTable("profiles", {
   id: text("id").primaryKey(),
-  userId: text("user_id"),
-  orgId: text("org_id"),
+  name: text("name").notNull(),
+  emoji: text("emoji").notNull().default("🙂"),
+  color: text("color").notNull().default("#6366f1"),
+  ntfyTopic: text("ntfy_topic"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
 });
+
+export const insertProfileSchema = createInsertSchema(profiles);
 
 export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
@@ -18,7 +22,6 @@ export const accounts = pgTable("accounts", {
   number: text("number").notNull(),
   bankIcon: text("bank_icon"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -46,7 +49,6 @@ export const budgets = pgTable("budgets", {
     }),
   type: budgetFrequencyEnum("type").notNull(),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -68,7 +70,6 @@ export const categories = pgTable("categories", {
   description: text("description"),
   icon: text("icon"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -150,7 +151,6 @@ export const events = pgTable("events", {
   notifyBefore: integer("notify_before").default(30),
   notified: boolean("notified").notNull().default(false),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -192,7 +192,6 @@ export const taskLists = pgTable("task_lists", {
   icon: text("icon"),
   color: text("color"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -216,7 +215,6 @@ export const tasks = pgTable("tasks", {
   parentId: text("parent_id"),
   calendarEventId: text("calendar_event_id"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -251,7 +249,6 @@ export const shoppingLists = pgTable("shopping_lists", {
   name: text("name").notNull(),
   icon: text("icon"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -278,7 +275,6 @@ export const shoppingItems = pgTable("shopping_items", {
   note: text("note"),
   addedBy: text("added_by"),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -316,7 +312,6 @@ export const documents = pgTable("documents", {
   expiryDate: timestamp("expiry_date", { mode: "date" }),
   expiryNotified: boolean("expiry_notified").notNull().default(false),
   userId: text("user_id"),
-  orgId: text("org_id"),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
   created_by: text("created_by").notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
@@ -327,3 +322,51 @@ export const insertDocumentSchema = createInsertSchema(documents, {
   expiryDate: z.coerce.date().optional().nullable(),
   tags: z.array(z.string()).default([]),
 });
+
+export const habitFrequencyEnum = pgEnum("habitFrequency", ["daily", "weekly"]);
+
+export const habits = pgTable("habits", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  icon: text("icon").default("✅"),
+  color: text("color").default("#6366f1"),
+  frequency: habitFrequencyEnum("frequency").notNull().default("daily"),
+  targetDays: integer("target_days"), // bitmask: bit 0=Mon…bit 6=Sun; null=every day
+  reminderTime: text("reminder_time"), // "HH:MM" UTC
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const habitsRelations = relations(habits, ({ many }) => ({
+  logs: many(habitLogs),
+}));
+
+export const insertHabitSchema = createInsertSchema(habits);
+
+export const habitLogs = pgTable(
+  "habit_logs",
+  {
+    id: text("id").primaryKey(),
+    habitId: text("habit_id")
+      .notNull()
+      .references(() => habits.id, { onDelete: "cascade" }),
+    date: text("date").notNull(), // "YYYY-MM-DD"
+    completed: boolean("completed").notNull().default(true),
+    note: text("note"),
+    userId: text("user_id"),
+    created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  },
+  (table) => ({
+    habitLogHabitDateIdx: uniqueIndex("habit_log_habit_date_idx").on(table.habitId, table.date),
+  })
+);
+
+export const habitLogsRelations = relations(habitLogs, ({ one }) => ({
+  habit: one(habits, { fields: [habitLogs.habitId], references: [habits.id] }),
+}));
+
+export const insertHabitLogSchema = createInsertSchema(habitLogs);

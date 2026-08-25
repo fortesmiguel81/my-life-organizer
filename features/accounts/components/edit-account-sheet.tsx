@@ -21,7 +21,6 @@ import React from "react";
 const formSchema = insertAccountSchema.omit({
   id: true,
   userId: true,
-  orgId: true,
   created_at: true,
   created_by: true,
   updated_at: true,

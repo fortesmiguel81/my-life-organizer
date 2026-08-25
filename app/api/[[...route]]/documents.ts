@@ -1,16 +1,14 @@
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { createId } from "@paralleldrive/cuid2";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { Hono } from "hono";
-import { UTApi } from "uploadthing/server";
 import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { documents, insertDocumentSchema } from "@/db/schema";
 import { decryptField, encryptField } from "@/lib/encryption";
-
-const utapi = new UTApi();
+import { getAuth } from "@/lib/local-auth";
+import { deleteUploadedFile } from "@/lib/local-storage";
 
 const app = new Hono()
   .get(
@@ -19,21 +17,25 @@ const app = new Hono()
       "query",
       z.object({
         category: z
-          .enum(["legal", "insurance", "medical", "household", "financial", "other"])
+          .enum([
+            "legal",
+            "insurance",
+            "medical",
+            "household",
+            "financial",
+            "other",
+          ])
           .optional(),
         tag: z.string().optional(),
         expiring: z.coerce.number().optional(),
       })
     ),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { category, tag, expiring } = ctx.req.valid("query");
-      const userFilter = auth.orgId
-        ? eq(documents.orgId, auth.orgId)
-        : eq(documents.userId, auth.userId);
+      const userFilter = eq(documents.userId, auth.userId);
 
       const conditions: Parameters<typeof and>[0][] = [userFilter];
       if (category) conditions.push(eq(documents.category, category));
@@ -65,15 +67,12 @@ const app = new Hono()
   .get(
     "/:id",
     zValidator("param", z.object({ id: z.string() })),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
-      const userFilter = auth.orgId
-        ? eq(documents.orgId, auth.orgId)
-        : eq(documents.userId, auth.userId);
+      const userFilter = eq(documents.userId, auth.userId);
 
       const [doc] = await db
         .select()
@@ -94,15 +93,12 @@ const app = new Hono()
   .get(
     "/:id/download",
     zValidator("param", z.object({ id: z.string() })),
-    clerkMiddleware(),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
-      const userFilter = auth.orgId
-        ? eq(documents.orgId, auth.orgId)
-        : eq(documents.userId, auth.userId);
+      const userFilter = eq(documents.userId, auth.userId);
 
       const [doc] = await db
         .select({ fileUrl: documents.fileUrl })
@@ -115,13 +111,11 @@ const app = new Hono()
   )
   .post(
     "/",
-    clerkMiddleware(),
     zValidator(
       "json",
       insertDocumentSchema.omit({
         id: true,
         userId: true,
-        orgId: true,
         expiryNotified: true,
         created_at: true,
         created_by: true,
@@ -143,8 +137,7 @@ const app = new Hono()
           ...values,
           name: (await encryptField(values.name)) ?? values.name,
           description: await encryptField(values.description ?? null),
-          userId: auth.orgId ? null : auth.userId,
-          orgId: auth.orgId ?? null,
+          userId: auth.userId,
           created_at: now,
           created_by: auth.userId,
           updated_at: now,
@@ -157,7 +150,6 @@ const app = new Hono()
   )
   .patch(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     zValidator(
       "json",
@@ -165,7 +157,6 @@ const app = new Hono()
         .omit({
           id: true,
           userId: true,
-          orgId: true,
           fileUrl: true,
           fileKey: true,
           mimeType: true,
@@ -184,9 +175,7 @@ const app = new Hono()
 
       const { id } = ctx.req.valid("param");
       const values = ctx.req.valid("json");
-      const userFilter = auth.orgId
-        ? eq(documents.orgId, auth.orgId)
-        : eq(documents.userId, auth.userId);
+      const userFilter = eq(documents.userId, auth.userId);
 
       const [existing] = await db
         .select({ expiryDate: documents.expiryDate })
@@ -203,8 +192,13 @@ const app = new Hono()
         .update(documents)
         .set({
           ...values,
-          name: values.name ? ((await encryptField(values.name)) ?? values.name) : undefined,
-          description: values.description !== undefined ? await encryptField(values.description) : undefined,
+          name: values.name
+            ? ((await encryptField(values.name)) ?? values.name)
+            : undefined,
+          description:
+            values.description !== undefined
+              ? await encryptField(values.description)
+              : undefined,
           expiryNotified: expiryChanged ? false : undefined,
           updated_at: new Date(),
           updated_by: auth.userId,
@@ -217,16 +211,13 @@ const app = new Hono()
   )
   .delete(
     "/:id",
-    clerkMiddleware(),
     zValidator("param", z.object({ id: z.string() })),
     async (ctx) => {
       const auth = getAuth(ctx);
       if (!auth?.userId) return ctx.json({ error: "Unauthorized" }, 401);
 
       const { id } = ctx.req.valid("param");
-      const userFilter = auth.orgId
-        ? eq(documents.orgId, auth.orgId)
-        : eq(documents.userId, auth.userId);
+      const userFilter = eq(documents.userId, auth.userId);
 
       const [doc] = await db
         .select({ fileKey: documents.fileKey })
@@ -235,7 +226,7 @@ const app = new Hono()
 
       if (!doc) return ctx.json({ error: "Document not found" }, 404);
 
-      await utapi.deleteFiles(doc.fileKey);
+      await deleteUploadedFile(doc.fileKey);
 
       const [data] = await db
         .delete(documents)

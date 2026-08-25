@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 import { CheckCheck, Pencil, Plus, Receipt, Trash2 } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import Spinner from "@/components/spinner";
@@ -32,15 +32,28 @@ const CATEGORY_LABELS: Record<Category, string> = {
   other: "Other",
 };
 
-const CATEGORY_ORDER: Category[] = ["produce", "dairy", "meat", "bakery", "household", "other"];
+const CATEGORY_ORDER: Category[] = [
+  "produce",
+  "dairy",
+  "meat",
+  "bakery",
+  "household",
+  "other",
+];
 
 function formatPrice(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-type PatchRequest = InferRequestType<(typeof client.api["shopping-items"])[":id"]["$patch"]>;
-type PatchResponse = InferResponseType<(typeof client.api["shopping-items"])[":id"]["$patch"]>;
-type DeleteResponse = InferResponseType<(typeof client.api["shopping-items"])[":id"]["$delete"]>;
+type PatchRequest = InferRequestType<
+  (typeof client.api)["shopping-items"][":id"]["$patch"]
+>;
+type PatchResponse = InferResponseType<
+  (typeof client.api)["shopping-items"][":id"]["$patch"]
+>;
+type DeleteResponse = InferResponseType<
+  (typeof client.api)["shopping-items"][":id"]["$delete"]
+>;
 
 function useInlineItemMutations() {
   const queryClient = useQueryClient();
@@ -50,9 +63,16 @@ function useInlineItemMutations() {
     queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });
   };
 
-  const patchMutation = useMutation<PatchResponse, Error, { id: string; json: PatchRequest["json"] }>({
+  const patchMutation = useMutation<
+    PatchResponse,
+    Error,
+    { id: string; json: PatchRequest["json"] }
+  >({
     mutationFn: async ({ id, json }) => {
-      const res = await client.api["shopping-items"][":id"].$patch({ param: { id }, json });
+      const res = await client.api["shopping-items"][":id"].$patch({
+        param: { id },
+        json,
+      });
       if (!res.ok) throw new Error("Failed to update item");
       return res.json();
     },
@@ -62,7 +82,9 @@ function useInlineItemMutations() {
 
   const deleteMutation = useMutation<DeleteResponse, Error, string>({
     mutationFn: async (id) => {
-      const res = await client.api["shopping-items"][":id"].$delete({ param: { id } });
+      const res = await client.api["shopping-items"][":id"].$delete({
+        param: { id },
+      });
       if (!res.ok) throw new Error("Failed to delete item");
       return res.json();
     },
@@ -100,7 +122,11 @@ export default function ShoppingView() {
   };
 
   const checkAll = () => {
-    items.filter((i) => !i.checked).forEach((i) => patchMutation.mutate({ id: i.id, json: { checked: true } }));
+    items
+      .filter((i) => !i.checked)
+      .forEach((i) =>
+        patchMutation.mutate({ id: i.id, json: { checked: true } })
+      );
   };
 
   const logAsTransaction = () => {
@@ -109,7 +135,8 @@ export default function ShoppingView() {
       .reduce((sum, i) => sum + (i.estimatedPrice ?? 0), 0);
     openNewTransaction({
       amount: total,
-      description: `${activeList?.icon ?? ""} ${activeList?.name ?? "Shopping"}`.trim(),
+      description:
+        `${activeList?.icon ?? ""} ${activeList?.name ?? "Shopping"}`.trim(),
     });
   };
 
@@ -124,8 +151,13 @@ export default function ShoppingView() {
   const checkedCount = items.filter((i) => i.checked).length;
   const hasChecked = checkedCount > 0;
   const allUnchecked = items.length > 0 && checkedCount === 0;
-  const estimatedTotal = items.reduce((sum, i) => sum + (i.estimatedPrice ?? 0), 0);
-  const checkedTotal = items.filter((i) => i.checked).reduce((sum, i) => sum + (i.estimatedPrice ?? 0), 0);
+  const estimatedTotal = items.reduce(
+    (sum, i) => sum + (i.estimatedPrice ?? 0),
+    0
+  );
+  const checkedTotal = items
+    .filter((i) => i.checked)
+    .reduce((sum, i) => sum + (i.estimatedPrice ?? 0), 0);
 
   return (
     <div className="flex h-[calc(100vh-10rem)] gap-4">
@@ -202,12 +234,15 @@ export default function ShoppingView() {
         <div className="flex items-center gap-2">
           <div>
             <h2 className="text-base font-semibold">
-              {activeList ? `${activeList.icon ?? ""} ${activeList.name}` : "Shopping Lists"}
+              {activeList
+                ? `${activeList.icon ?? ""} ${activeList.name}`
+                : "Shopping Lists"}
             </h2>
             {activeListId && (
               <p className="text-xs text-muted-foreground">
                 {checkedCount}/{items.length} items
-                {estimatedTotal > 0 && ` · ${formatPrice(estimatedTotal)} estimated`}
+                {estimatedTotal > 0 &&
+                  ` · ${formatPrice(estimatedTotal)} estimated`}
               </p>
             )}
           </div>
@@ -215,7 +250,12 @@ export default function ShoppingView() {
           <div className="ml-auto flex items-center gap-2">
             {activeListId && hasChecked && (
               <>
-                <Button size="sm" variant="ghost" onClick={logAsTransaction} className="gap-2 text-xs">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={logAsTransaction}
+                  className="gap-2 text-xs"
+                >
                   <Receipt className="size-4" />
                   Log {formatPrice(checkedTotal)}
                 </Button>
@@ -231,7 +271,12 @@ export default function ShoppingView() {
               </>
             )}
             {activeListId && allUnchecked && (
-              <Button size="sm" variant="ghost" onClick={checkAll} className="gap-2 text-xs text-muted-foreground">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={checkAll}
+                className="gap-2 text-xs text-muted-foreground"
+              >
                 <CheckCheck className="size-4" />
                 Check all
               </Button>
@@ -283,7 +328,9 @@ export default function ShoppingView() {
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${Math.round((list.checkedCount / list.itemCount) * 100)}%` }}
+                        style={{
+                          width: `${Math.round((list.checkedCount / list.itemCount) * 100)}%`,
+                        }}
                       />
                     </div>
                   )}
@@ -298,57 +345,70 @@ export default function ShoppingView() {
         ) : items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 text-muted-foreground">
             <p className="text-sm">No items yet.</p>
-            <Button size="sm" variant="outline" onClick={() => openNewItem(activeListId)}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => openNewItem(activeListId)}
+            >
               <Plus className="mr-1 size-4" />
               Add first item
             </Button>
           </div>
         ) : (
           <div className="flex-1 space-y-4 overflow-y-auto pb-4">
-            {CATEGORY_ORDER.filter((cat) => grouped[cat].length > 0).map((cat) => (
-              <div key={cat}>
-                <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {CATEGORY_LABELS[cat]}
-                </p>
-                <div className="space-y-1">
-                  {grouped[cat].map((item) => (
-                    <div
-                      key={item.id}
-                      className={cn(
-                        "group flex items-center gap-3 rounded-lg border bg-background px-4 py-2.5 transition-colors",
-                        item.checked && "opacity-60"
-                      )}
-                    >
-                      <Checkbox
-                        checked={item.checked}
-                        onCheckedChange={() => toggleCheck(item.id, item.checked)}
-                        className="shrink-0"
-                      />
-                      <span className={cn("flex-1 text-sm", item.checked && "line-through")}>
-                        {item.name}
-                        {(item.quantity !== 1 || item.unit) && (
-                          <span className="ml-1.5 text-xs text-muted-foreground">
-                            {item.quantity}
-                            {item.unit ? ` ${item.unit}` : ""}
-                          </span>
+            {CATEGORY_ORDER.filter((cat) => grouped[cat].length > 0).map(
+              (cat) => (
+                <div key={cat}>
+                  <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {CATEGORY_LABELS[cat]}
+                  </p>
+                  <div className="space-y-1">
+                    {grouped[cat].map((item) => (
+                      <div
+                        key={item.id}
+                        className={cn(
+                          "group flex items-center gap-3 rounded-lg border bg-background px-4 py-2.5 transition-colors",
+                          item.checked && "opacity-60"
                         )}
-                      </span>
-                      {item.estimatedPrice ? (
-                        <span className="text-xs text-muted-foreground">
-                          {formatPrice(item.estimatedPrice)}
-                        </span>
-                      ) : null}
-                      <button
-                        onClick={() => openEditItem(item.id)}
-                        className="shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
                       >
-                        <Pencil className="size-3.5" />
-                      </button>
-                    </div>
-                  ))}
+                        <Checkbox
+                          checked={item.checked}
+                          onCheckedChange={() =>
+                            toggleCheck(item.id, item.checked)
+                          }
+                          className="shrink-0"
+                        />
+                        <span
+                          className={cn(
+                            "flex-1 text-sm",
+                            item.checked && "line-through"
+                          )}
+                        >
+                          {item.name}
+                          {(item.quantity !== 1 || item.unit) && (
+                            <span className="ml-1.5 text-xs text-muted-foreground">
+                              {item.quantity}
+                              {item.unit ? ` ${item.unit}` : ""}
+                            </span>
+                          )}
+                        </span>
+                        {item.estimatedPrice ? (
+                          <span className="text-xs text-muted-foreground">
+                            {formatPrice(item.estimatedPrice)}
+                          </span>
+                        ) : null}
+                        <button
+                          onClick={() => openEditItem(item.id)}
+                          className="shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+                        >
+                          <Pencil className="size-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
         )}
       </div>

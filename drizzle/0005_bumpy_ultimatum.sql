@@ -1,1 +1,0 @@
-ALTER TABLE "accounts" ADD COLUMN "bank_icon" text;
