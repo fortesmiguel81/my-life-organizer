@@ -28,6 +28,8 @@ import NewTaskListSheet from "@/features/tasks/components/new-task-list-sheet";
 import NewTaskSheet from "@/features/tasks/components/new-task-sheet";
 import EditTransactionSheet from "@/features/transactions/components/edit-transaction-sheet";
 import NewTransactionSheet from "@/features/transactions/components/new-transaction-sheet";
+import EditUtilityReadingSheet from "@/features/utilities/components/edit-utility-reading-sheet";
+import NewUtilityReadingSheet from "@/features/utilities/components/new-utility-reading-sheet";
 import EditVendorSheet from "@/features/vendors/components/edit-vendor-sheet";
 import NewVendorSheet from "@/features/vendors/components/new-vendor-sheet";
 
@@ -79,6 +81,9 @@ export default function SheetProvider() {
 
       <NewVendorSheet />
       <EditVendorSheet />
+
+      <NewUtilityReadingSheet />
+      <EditUtilityReadingSheet />
     </>
   );
 }

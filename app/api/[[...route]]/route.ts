@@ -19,6 +19,7 @@ import summary from "./summary";
 import taskListsRoute from "./task-lists";
 import tasksRoute from "./tasks";
 import transactions from "./transactions";
+import utilityReadingsRoute from "./utility-readings";
 import vendorQuotesRoute from "./vendor-quotes";
 import vendorsRoute from "./vendors";
 
@@ -44,7 +45,8 @@ const routes = app
   .route("/vendor-quotes", vendorQuotesRoute)
   .route("/assets", assetsRoute)
   .route("/maintenance-tasks", maintenanceTasksRoute)
-  .route("/maintenance-logs", maintenanceLogsRoute);
+  .route("/maintenance-logs", maintenanceLogsRoute)
+  .route("/utility-readings", utilityReadingsRoute);
 
 export const GET = handle(app);
 export const POST = handle(app);

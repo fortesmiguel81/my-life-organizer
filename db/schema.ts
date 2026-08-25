@@ -620,3 +620,33 @@ export const insertMaintenanceLogSchema = createInsertSchema(maintenanceLogs, {
   completedDate: z.coerce.date(),
   cost: z.coerce.number().optional().nullable(),
 });
+
+export const utilityTypeEnum = pgEnum("utility_type", [
+  "electricity",
+  "water",
+  "gas",
+  "other",
+]);
+
+export const utilityReadings = pgTable("utility_readings", {
+  id: text("id").primaryKey(),
+  utilityType: utilityTypeEnum("utility_type").notNull(),
+  periodStart: timestamp("period_start", { mode: "date" }).notNull(),
+  periodEnd: timestamp("period_end", { mode: "date" }).notNull(),
+  usage: doublePrecision("usage").notNull(),
+  unit: text("unit").notNull(),
+  cost: integer("cost"), // miliunits
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const insertUtilityReadingSchema = createInsertSchema(utilityReadings, {
+  periodStart: z.coerce.date(),
+  periodEnd: z.coerce.date(),
+  usage: z.coerce.number().positive(),
+  cost: z.coerce.number().optional().nullable(),
+});

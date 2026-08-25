@@ -236,6 +236,16 @@ export default function Navbar() {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
+                    <Link href="/utilities" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        active={pathname.startsWith("/utilities")}
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Utilities
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
                     <NavigationMenuTrigger
                       className={cn(
                         pathname.startsWith("/shopping") && "bg-accent/50"
