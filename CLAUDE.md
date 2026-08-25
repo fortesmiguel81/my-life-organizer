@@ -7,8 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm run dev          # Start Next.js dev server (port 3000)
 npm run build        # Production build
-npm run lint         # ESLint via next lint
+npm run lint         # ESLint (flat invocation — `next lint` was removed in Next 16)
 npm run format       # Prettier format (targets app/ only)
+npm run test         # Run the Vitest unit-test suite once
+npm run test:watch   # Run Vitest in watch mode
 npm run db:generate  # Generate Drizzle migrations from schema changes
 npm run db:migrate   # Apply pending migrations to the database
 npm run db:studio    # Open Drizzle Studio GUI for the database
@@ -17,7 +19,18 @@ npm run db:seed      # Seed a default profile + sample data (needs DATABASE_URL 
 docker compose up -d --build   # Run the full stack locally: Postgres, ntfy, app, cron sidecar
 ```
 
-There is no test suite configured in this project.
+## Testing
+
+Unit tests (Vitest) cover pure business-logic functions — recurrence date math
+(`getNextDueDate`, `getNextMaintenanceDueDate`), habit streak calculation
+(`computeStreaks`, `isHabitDueToday`), the utility-usage anomaly detector
+(`withAnomalyFlags`), the open-redirect guard (`safeRedirectPath`), and the
+field-encryption round-trip. Tests are colocated as `*.test.ts` next to the
+module they cover and run against plain Node — no database or Next.js runtime
+required, so they're fast and safe to run on every change.
+
+There is no integration/E2E test suite (API routes against a real database,
+or browser-driven flows) yet.
 
 ## Architecture
 

@@ -14,16 +14,18 @@ function todayStr() {
   return new Date().toISOString().split("T")[0];
 }
 
-function daysBetween(earlier: string, later: string) {
+export function daysBetween(earlier: string, later: string) {
   return Math.round(
     (new Date(later).getTime() - new Date(earlier).getTime()) / 86_400_000
   );
 }
 
-function computeStreaks(completedDatesAsc: string[]) {
+export function computeStreaks(
+  completedDatesAsc: string[],
+  today: string = todayStr()
+) {
   if (!completedDatesAsc.length) return { current: 0, longest: 0 };
 
-  const today = todayStr();
   const desc = [...completedDatesAsc].reverse();
   const mostRecent = desc[0];
 
@@ -49,9 +51,12 @@ function computeStreaks(completedDatesAsc: string[]) {
   return { current, longest };
 }
 
-function isHabitDueToday(targetDays: number | null) {
+export function isHabitDueToday(
+  targetDays: number | null,
+  now: Date = new Date()
+) {
   if (targetDays === null) return true;
-  const dayOfWeek = (new Date().getDay() + 6) % 7; // Mon=0 … Sun=6
+  const dayOfWeek = (now.getDay() + 6) % 7; // Mon=0 … Sun=6
   return (targetDays & (1 << dayOfWeek)) !== 0;
 }
 

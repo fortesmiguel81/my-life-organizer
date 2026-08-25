@@ -15,7 +15,7 @@ import { getAuth } from "@/lib/local-auth";
 const ANOMALY_THRESHOLD = 0.3;
 const TRAILING_WINDOW = 3;
 
-function withAnomalyFlags<
+export function withAnomalyFlags<
   T extends {
     id: string;
     utilityType: string;
