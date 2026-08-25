@@ -58,7 +58,10 @@ export default function SelectProfilePage() {
 function SelectProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = safeRedirectPath(searchParams.get("redirect_url"), "/dashboard");
+  const redirectUrl = safeRedirectPath(
+    searchParams.get("redirect_url"),
+    "/dashboard"
+  );
 
   const { data: profiles, isLoading } = useGetProfiles();
   const switchProfile = useSwitchProfile();

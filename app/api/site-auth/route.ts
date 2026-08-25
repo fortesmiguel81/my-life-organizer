@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { computeSiteToken, SITE_AUTH_COOKIE } from "@/lib/site-auth";
+import { SITE_AUTH_COOKIE, computeSiteToken } from "@/lib/site-auth";
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
 

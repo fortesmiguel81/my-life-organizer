@@ -13,7 +13,7 @@ export function getAuth(c: Context): LocalAuth | null {
 }
 
 /** Same, for Next.js App Router route handlers (no Hono context). */
-export function getServerAuth(): LocalAuth | null {
-  const userId = cookies().get(PROFILE_COOKIE)?.value;
+export async function getServerAuth(): Promise<LocalAuth | null> {
+  const userId = (await cookies()).get(PROFILE_COOKIE)?.value;
   return userId ? { userId } : null;
 }

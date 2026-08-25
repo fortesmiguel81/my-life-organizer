@@ -19,7 +19,10 @@ export default function SiteLoginPage() {
 function SiteLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = safeRedirectPath(searchParams.get("redirect_url"), "/select-profile");
+  const redirectUrl = safeRedirectPath(
+    searchParams.get("redirect_url"),
+    "/select-profile"
+  );
 
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -54,10 +57,15 @@ function SiteLoginContent() {
       <div className="flex flex-col items-center gap-3 text-center">
         <Image src="/logo.svg" alt="Life Organizer" width={64} height={64} />
         <h1 className="text-2xl font-bold">Life Organizer</h1>
-        <p className="text-muted-foreground">Enter the household password to continue.</p>
+        <p className="text-muted-foreground">
+          Enter the household password to continue.
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex w-full max-w-xs flex-col gap-3">
+      <form
+        onSubmit={handleSubmit}
+        className="flex w-full max-w-xs flex-col gap-3"
+      >
         <Input
           type="password"
           placeholder="Password"

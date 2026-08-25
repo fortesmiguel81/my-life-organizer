@@ -10,12 +10,13 @@ import { readUploadedFile } from "@/lib/local-storage";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { key: string } }
+  { params }: { params: Promise<{ key: string }> }
 ) {
-  const auth = getServerAuth();
+  const auth = await getServerAuth();
   if (!auth?.userId) return new Response("Unauthorized", { status: 401 });
 
-  const fileUrl = `/api/documents/file/${params.key}`;
+  const { key } = await params;
+  const fileUrl = `/api/documents/file/${key}`;
 
   const [doc] = await db
     .select({ mimeType: documents.mimeType, userId: documents.userId })
@@ -26,7 +27,7 @@ export async function GET(
     return new Response("Not found", { status: 404 });
   }
 
-  const buffer = await readUploadedFile(params.key);
+  const buffer = await readUploadedFile(key);
 
   const isRenderable = INLINE_RENDERABLE_MIME_TYPES.has(doc.mimeType);
   const headers: HeadersInit = {

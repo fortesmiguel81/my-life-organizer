@@ -3,7 +3,7 @@ import { getServerAuth } from "@/lib/local-auth";
 const SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
 
 export async function GET() {
-  const auth = getServerAuth();
+  const auth = await getServerAuth();
   if (!auth?.userId) return new Response("Unauthorized", { status: 401 });
 
   const redirectUri =

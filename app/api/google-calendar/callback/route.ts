@@ -8,7 +8,7 @@ import { googleTokens } from "@/db/schema";
 import { getServerAuth } from "@/lib/local-auth";
 
 export async function GET(req: NextRequest) {
-  const auth = getServerAuth();
+  const auth = await getServerAuth();
   if (!auth?.userId) return new Response("Unauthorized", { status: 401 });
   const { userId } = auth;
 

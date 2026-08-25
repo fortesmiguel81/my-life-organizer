@@ -7,7 +7,7 @@ import { saveUploadedFile } from "@/lib/local-storage";
 const MAX_SIZE = 16 * 1024 * 1024;
 
 export async function POST(req: NextRequest) {
-  const auth = getServerAuth();
+  const auth = await getServerAuth();
   if (!auth?.userId) return new Response("Unauthorized", { status: 401 });
 
   const formData = await req.formData();
