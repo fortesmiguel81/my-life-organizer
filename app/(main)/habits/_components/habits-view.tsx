@@ -232,7 +232,6 @@ export default function HabitsView() {
   const { onOpen: openNew } = useNewHabit();
   const { data: habits, isLoading } = useGetHabits();
 
-  const today = todayStr();
   const dueToday = (habits ?? []).filter((h) => h.dueToday);
   const completedToday = dueToday.filter((h) => h.todayCompleted).length;
 

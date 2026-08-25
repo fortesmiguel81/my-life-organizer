@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { File, PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
@@ -17,7 +17,7 @@ import BudgetCard from "./_components/budget-card";
 
 export default function BudgetsPage() {
   const budgetsQuery = useGetBudgets();
-  const budgets = budgetsQuery.data || [];
+  const budgets = useMemo(() => budgetsQuery.data || [], [budgetsQuery.data]);
 
   const [globalFilter, setGlobalFilter] = useState("");
   const newBudget = useNewBudget();

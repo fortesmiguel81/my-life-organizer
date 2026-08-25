@@ -6,6 +6,16 @@ import { db } from "@/db/drizzle";
 import { events, googleTokens } from "@/db/schema";
 import { getAuth } from "@/lib/local-auth";
 
+type GoogleCalendarEvent = {
+  id: string;
+  status?: string;
+  summary?: string;
+  description?: string;
+  location?: string;
+  start?: { dateTime?: string; date?: string };
+  end?: { dateTime?: string; date?: string };
+};
+
 async function getValidAccessToken(
   token: typeof googleTokens.$inferSelect
 ): Promise<string | null> {
@@ -97,7 +107,7 @@ const app = new Hono()
     }
 
     const calendarData = await res.json();
-    const googleEvents: any[] = calendarData.items ?? [];
+    const googleEvents: GoogleCalendarEvent[] = calendarData.items ?? [];
 
     const userFilter = eq(events.userId, auth.userId);
 
@@ -109,25 +119,23 @@ const app = new Hono()
       if (gEvent.status === "cancelled") continue;
 
       const allDay = !gEvent.start?.dateTime;
-      const startDate = allDay
-        ? new Date(gEvent.start?.date ?? "")
-        : new Date(gEvent.start.dateTime);
-      const endDate = allDay
-        ? new Date(gEvent.end?.date ?? "")
-        : new Date(gEvent.end.dateTime);
+      const startDate = new Date(
+        gEvent.start?.dateTime ?? gEvent.start?.date ?? ""
+      );
+      const endDate = new Date(gEvent.end?.dateTime ?? gEvent.end?.date ?? "");
 
       const [existing] = await db
         .select({ id: events.id })
         .from(events)
-        .where(and(eq(events.googleEventId, gEvent.id as string), userFilter));
+        .where(and(eq(events.googleEventId, gEvent.id), userFilter));
 
       const payload = {
-        title: (gEvent.summary as string | undefined) ?? "Untitled",
-        description: (gEvent.description as string | undefined) ?? null,
+        title: gEvent.summary ?? "Untitled",
+        description: gEvent.description ?? null,
         startDate,
         endDate,
         allDay,
-        location: (gEvent.location as string | undefined) ?? null,
+        location: gEvent.location ?? null,
         updated_at: now,
         updated_by: auth.userId,
       };
@@ -140,7 +148,7 @@ const app = new Hono()
           id: createId(),
           ...payload,
           color: null,
-          googleEventId: gEvent.id as string,
+          googleEventId: gEvent.id,
           googleCalendarId: "primary",
           notifyBefore: 30,
           notified: false,

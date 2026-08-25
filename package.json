@@ -10,6 +10,7 @@
     "format": "prettier app/ --write",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:db": "VITE_CONFIG_NATIVE_IGNORE_WARNING=true vitest run --config vitest.config.db.mts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
