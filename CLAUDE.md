@@ -11,6 +11,7 @@ npm run lint         # ESLint (flat invocation — `next lint` was removed in Ne
 npm run format       # Prettier format (targets app/ only)
 npm run test         # Run the Vitest unit-test suite once
 npm run test:watch   # Run Vitest in watch mode
+npm run test:db      # Run the DB-backed API test suite (needs local Postgres, see Testing)
 npm run db:generate  # Generate Drizzle migrations from schema changes
 npm run db:migrate   # Apply pending migrations to the database
 npm run db:studio    # Open Drizzle Studio GUI for the database
@@ -29,8 +30,26 @@ field-encryption round-trip. Tests are colocated as `*.test.ts` next to the
 module they cover and run against plain Node — no database or Next.js runtime
 required, so they're fast and safe to run on every change.
 
-There is no integration/E2E test suite (API routes against a real database,
-or browser-driven flows) yet.
+DB-backed API tests (`npm run test:db`) exercise the Hono route handlers
+directly against a real local Postgres database — no HTTP server, just
+`app.request()` against each router's default export. They're the layer
+that verifies auth and row-level access control end to end (e.g. that
+`GET /api/accounts/:id` 404s rather than leaks when a different profile
+requests it, via `canUserSeeAccount`/`canUserSeeTransaction` in
+`app/api/utils/`), which the unit layer can't reach since it never touches
+the database. Config lives in `vitest.config.db.mts`; connection details
+are in `tests/db-test-env.ts` (a throwaway local `milo_test` database, not
+a secret). `tests/db-global-setup.ts` applies Drizzle migrations to it once
+before the run, and each test's `beforeEach` calls `resetDb()`
+(`tests/db-test-helpers.ts`) to truncate all tables so tests don't leak
+state into each other. Requires a local Postgres reachable at
+`postgres://postgres:devpass@localhost:5432` with a `milo_test` database
+already created (`createdb milo_test` or the equivalent `CREATE DATABASE`).
+Tests are colocated as `*.dbtest.ts` next to the route file they cover —
+a different suffix from the unit layer's `*.test.ts` so `npm run test` and
+`npm run test:db` never pick up each other's files.
+
+There is no browser-driven E2E suite yet.
 
 ## Architecture
 
