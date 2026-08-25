@@ -75,7 +75,11 @@ export default function Navbar() {
         </div>
         <div className="flex flex-col p-4">
           <div className="flex items-center gap-3">
-            {isLoadingProfile ? <Spinner size="lg" /> : <ProfileSwitcher profile={profile} />}
+            {isLoadingProfile ? (
+              <Spinner size="lg" />
+            ) : (
+              <ProfileSwitcher profile={profile} />
+            )}
           </div>
         </div>
       </aside>
@@ -116,7 +120,7 @@ export default function Navbar() {
                   <NavigationMenuItem>
                     <NavigationMenuTrigger
                       className={cn(
-                        pathname.startsWith("/finance") && "bg-accent/50"
+                        pathname.startsWith("/calendar") && "bg-accent/50"
                       )}
                     >
                       Calendar
@@ -150,7 +154,7 @@ export default function Navbar() {
                   <NavigationMenuItem>
                     <NavigationMenuTrigger
                       className={cn(
-                        pathname.startsWith("/finance") && "bg-accent/50"
+                        pathname.startsWith("/tasks") && "bg-accent/50"
                       )}
                     >
                       Tasks
@@ -198,6 +202,46 @@ export default function Navbar() {
                         className={navigationMenuTriggerStyle()}
                       >
                         Habits
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link href="/vendors" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        active={pathname.startsWith("/vendors")}
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Vendors
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link href="/assets" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        active={pathname.startsWith("/assets")}
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Assets
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link href="/maintenance" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        active={pathname.startsWith("/maintenance")}
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Maintenance
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link href="/utilities" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        active={pathname.startsWith("/utilities")}
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Utilities
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
@@ -267,7 +311,10 @@ export default function Navbar() {
                         <NavItem href="/finance/categories" title="Categories">
                           Manage your spending categories.
                         </NavItem>
-                        <NavItem href="/finance/transactions" title="Transactions">
+                        <NavItem
+                          href="/finance/transactions"
+                          title="Transactions"
+                        >
                           Manage your transactions, track your expenses and
                           income.
                         </NavItem>

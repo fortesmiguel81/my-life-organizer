@@ -3,7 +3,15 @@ import { type NextRequest } from "next/server";
 import { and, eq, gte, lte } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
-import { documents, events, habitLogs, habits, profiles } from "@/db/schema";
+import {
+  assets,
+  documents,
+  events,
+  habitLogs,
+  habits,
+  maintenanceTasks,
+  profiles,
+} from "@/db/schema";
 import { decryptField } from "@/lib/encryption";
 
 const NTFY_URL = process.env.NTFY_URL ?? "http://ntfy:80";
@@ -123,6 +131,95 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Asset warranty expiry notifications (30-day window)
+  const expiringWarranties = await db
+    .select()
+    .from(assets)
+    .where(
+      and(
+        gte(assets.warrantyExpiration, now),
+        lte(assets.warrantyExpiration, in30Days),
+        eq(assets.warrantyExpiryNotified, false)
+      )
+    );
+
+  let warrantiesSent = 0;
+
+  for (const asset of expiringWarranties) {
+    const userId = asset.userId;
+    if (!userId) continue;
+
+    try {
+      const topic = await getNtfyTopic(userId);
+      if (!topic) continue;
+
+      const daysLeft = Math.ceil(
+        (asset.warrantyExpiration!.getTime() - now.getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+
+      await pushNotification(
+        topic,
+        `Warranty expiring soon: ${asset.name}`,
+        `Expires in ${daysLeft} day${daysLeft === 1 ? "" : "s"} (${asset.warrantyExpiration!.toLocaleDateString()})`
+      );
+
+      await db
+        .update(assets)
+        .set({ warrantyExpiryNotified: true })
+        .where(eq(assets.id, asset.id));
+
+      warrantiesSent++;
+    } catch {
+      // Skip on error; will retry on next cron run
+    }
+  }
+
+  // Maintenance task due-date notifications (7-day window)
+  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const dueTasks = await db
+    .select()
+    .from(maintenanceTasks)
+    .where(
+      and(
+        gte(maintenanceTasks.dueDate, now),
+        lte(maintenanceTasks.dueDate, in7Days),
+        eq(maintenanceTasks.dueNotified, false)
+      )
+    );
+
+  let tasksSent = 0;
+
+  for (const task of dueTasks) {
+    const userId = task.userId;
+    if (!userId) continue;
+
+    try {
+      const topic = await getNtfyTopic(userId);
+      if (!topic) continue;
+
+      const daysLeft = Math.ceil(
+        (task.dueDate!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      await pushNotification(
+        topic,
+        `Maintenance due soon: ${task.title}`,
+        `Due in ${daysLeft} day${daysLeft === 1 ? "" : "s"} (${task.dueDate!.toLocaleDateString()})`
+      );
+
+      await db
+        .update(maintenanceTasks)
+        .set({ dueNotified: true })
+        .where(eq(maintenanceTasks.id, task.id));
+
+      tasksSent++;
+    } catch {
+      // Skip on error; will retry on next cron run
+    }
+  }
+
   // Habit reminders — fire if reminderTime falls within the current 15-min window and not yet completed today
   const utcHour = now.getUTCHours().toString().padStart(2, "0");
   const utcMin = now.getUTCMinutes();
@@ -184,6 +281,8 @@ export async function POST(req: NextRequest) {
   return Response.json({
     events: { processed: sent, total: upcoming.length },
     documents: { processed: docsSent, total: expiringDocs.length },
+    warranties: { processed: warrantiesSent, total: expiringWarranties.length },
+    maintenance: { processed: tasksSent, total: dueTasks.length },
     habits: { processed: habitsSent, total: allHabits.length },
   });
 }

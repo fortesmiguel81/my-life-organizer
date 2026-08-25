@@ -1,18 +1,23 @@
 import React from "react";
+
 import { useMountedState } from "react-use";
 
 import EditAccountSheet from "@/features/accounts/components/edit-account-sheet";
 import NewAccountSheet from "@/features/accounts/components/new-account-sheet";
+import EditAssetSheet from "@/features/assets/components/edit-asset-sheet";
+import NewAssetSheet from "@/features/assets/components/new-asset-sheet";
 import EditBudgetSheet from "@/features/budgets/components/edit-budget-sheet";
 import NewBudgetSheet from "@/features/budgets/components/new-budget-sheet";
 import EditCategorySheet from "@/features/categories/components/edit-category-sheet";
 import NewCategorySheet from "@/features/categories/components/new-category-sheet";
-import EditEventSheet from "@/features/events/components/edit-event-sheet";
-import NewEventSheet from "@/features/events/components/new-event-sheet";
 import DocumentDetailSheet from "@/features/documents/components/document-detail-sheet";
 import UploadDocumentModal from "@/features/documents/components/upload-document-modal";
+import EditEventSheet from "@/features/events/components/edit-event-sheet";
+import NewEventSheet from "@/features/events/components/new-event-sheet";
 import EditHabitSheet from "@/features/habits/components/edit-habit-sheet";
 import NewHabitSheet from "@/features/habits/components/new-habit-sheet";
+import EditMaintenanceTaskSheet from "@/features/maintenance/components/edit-maintenance-task-sheet";
+import NewMaintenanceTaskSheet from "@/features/maintenance/components/new-maintenance-task-sheet";
 import EditShoppingItemSheet from "@/features/shopping/components/edit-shopping-item-sheet";
 import EditShoppingListSheet from "@/features/shopping/components/edit-shopping-list-sheet";
 import NewShoppingItemSheet from "@/features/shopping/components/new-shopping-item-sheet";
@@ -23,6 +28,10 @@ import NewTaskListSheet from "@/features/tasks/components/new-task-list-sheet";
 import NewTaskSheet from "@/features/tasks/components/new-task-sheet";
 import EditTransactionSheet from "@/features/transactions/components/edit-transaction-sheet";
 import NewTransactionSheet from "@/features/transactions/components/new-transaction-sheet";
+import EditUtilityReadingSheet from "@/features/utilities/components/edit-utility-reading-sheet";
+import NewUtilityReadingSheet from "@/features/utilities/components/new-utility-reading-sheet";
+import EditVendorSheet from "@/features/vendors/components/edit-vendor-sheet";
+import NewVendorSheet from "@/features/vendors/components/new-vendor-sheet";
 
 export default function SheetProvider() {
   const isMounted = useMountedState();
@@ -42,6 +51,9 @@ export default function SheetProvider() {
       <NewAccountSheet />
       <EditAccountSheet />
 
+      <NewAssetSheet />
+      <EditAssetSheet />
+
       <NewBudgetSheet />
       <EditBudgetSheet />
 
@@ -59,10 +71,19 @@ export default function SheetProvider() {
       <NewHabitSheet />
       <EditHabitSheet />
 
+      <NewMaintenanceTaskSheet />
+      <EditMaintenanceTaskSheet />
+
       <NewShoppingListSheet />
       <EditShoppingListSheet />
       <NewShoppingItemSheet />
       <EditShoppingItemSheet />
+
+      <NewVendorSheet />
+      <EditVendorSheet />
+
+      <NewUtilityReadingSheet />
+      <EditUtilityReadingSheet />
     </>
   );
 }

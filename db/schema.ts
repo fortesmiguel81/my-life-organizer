@@ -1,5 +1,15 @@
 import { relations, sql } from "drizzle-orm";
-import { boolean, doublePrecision, integer, pgEnum, pgTable, real, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  doublePrecision,
+  integer,
+  pgEnum,
+  pgTable,
+  real,
+  text,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -304,7 +314,10 @@ export const documents = pgTable("documents", {
   name: text("name").notNull(),
   description: text("description"),
   category: documentCategoryEnum("category").notNull().default("other"),
-  tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
+  tags: text("tags")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
   fileUrl: text("file_url").notNull(),
   fileKey: text("file_key").notNull(),
   mimeType: text("mime_type").notNull(),
@@ -361,7 +374,10 @@ export const habitLogs = pgTable(
     created_at: timestamp("created_at", { mode: "date" }).notNull(),
   },
   (table) => ({
-    habitLogHabitDateIdx: uniqueIndex("habit_log_habit_date_idx").on(table.habitId, table.date),
+    habitLogHabitDateIdx: uniqueIndex("habit_log_habit_date_idx").on(
+      table.habitId,
+      table.date
+    ),
   })
 );
 
@@ -370,3 +386,267 @@ export const habitLogsRelations = relations(habitLogs, ({ one }) => ({
 }));
 
 export const insertHabitLogSchema = createInsertSchema(habitLogs);
+
+export const vendorTradeEnum = pgEnum("vendor_trade", [
+  "plumber",
+  "electrician",
+  "hvac",
+  "general_contractor",
+  "landscaping",
+  "appliance_repair",
+  "pest_control",
+  "cleaning",
+  "roofing",
+  "handyman",
+  "other",
+]);
+
+export const vendors = pgTable("vendors", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  trade: vendorTradeEnum("trade").notNull().default("other"),
+  phone: text("phone"),
+  email: text("email"),
+  website: text("website"),
+  address: text("address"),
+  rating: integer("rating"), // 1-5
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const vendorsRelations = relations(vendors, ({ many }) => ({
+  quotes: many(vendorQuotes),
+  maintenanceTasks: many(maintenanceTasks),
+}));
+
+export const insertVendorSchema = createInsertSchema(vendors, {
+  rating: z.coerce.number().int().min(1).max(5).optional().nullable(),
+});
+
+export const vendorQuoteStatusEnum = pgEnum("vendor_quote_status", [
+  "pending",
+  "accepted",
+  "declined",
+  "expired",
+]);
+
+export const vendorQuotes = pgTable("vendor_quotes", {
+  id: text("id").primaryKey(),
+  vendorId: text("vendor_id")
+    .notNull()
+    .references(() => vendors.id, { onDelete: "cascade" }),
+  description: text("description").notNull(),
+  amount: integer("amount"), // miliunits
+  status: vendorQuoteStatusEnum("status").notNull().default("pending"),
+  quoteDate: timestamp("quote_date", { mode: "date" }),
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const vendorQuotesRelations = relations(vendorQuotes, ({ one }) => ({
+  vendor: one(vendors, {
+    fields: [vendorQuotes.vendorId],
+    references: [vendors.id],
+  }),
+}));
+
+export const insertVendorQuoteSchema = createInsertSchema(vendorQuotes, {
+  amount: z.coerce.number().optional().nullable(),
+  quoteDate: z.coerce.date().optional().nullable(),
+});
+
+export const assetCategoryEnum = pgEnum("asset_category", [
+  "appliance",
+  "electronics",
+  "furniture",
+  "hvac",
+  "vehicle",
+  "tool",
+  "other",
+]);
+
+export const assets = pgTable("assets", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  category: assetCategoryEnum("category").notNull().default("other"),
+  brand: text("brand"),
+  model: text("model"),
+  serialNumber: text("serial_number"),
+  location: text("location"),
+  purchaseDate: timestamp("purchase_date", { mode: "date" }),
+  purchasePrice: integer("purchase_price"), // miliunits
+  insuranceValue: integer("insurance_value"), // miliunits
+  warrantyExpiration: timestamp("warranty_expiration", { mode: "date" }),
+  warrantyExpiryNotified: boolean("warranty_expiry_notified")
+    .notNull()
+    .default(false),
+  manualDocumentId: text("manual_document_id").references(() => documents.id, {
+    onDelete: "set null",
+  }),
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const assetsRelations = relations(assets, ({ one, many }) => ({
+  manual: one(documents, {
+    fields: [assets.manualDocumentId],
+    references: [documents.id],
+  }),
+  maintenanceTasks: many(maintenanceTasks),
+}));
+
+export const insertAssetSchema = createInsertSchema(assets, {
+  purchaseDate: z.coerce.date().optional().nullable(),
+  purchasePrice: z.coerce.number().optional().nullable(),
+  insuranceValue: z.coerce.number().optional().nullable(),
+  warrantyExpiration: z.coerce.date().optional().nullable(),
+});
+
+export const maintenanceCategoryEnum = pgEnum("maintenance_category", [
+  "hvac",
+  "plumbing",
+  "electrical",
+  "appliance",
+  "exterior",
+  "safety",
+  "landscaping",
+  "other",
+]);
+
+export const maintenanceFrequencyEnum = pgEnum("maintenance_frequency", [
+  "none",
+  "monthly",
+  "quarterly",
+  "biannual",
+  "annual",
+  "custom_days",
+]);
+
+export const maintenanceTasks = pgTable("maintenance_tasks", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  category: maintenanceCategoryEnum("category").notNull().default("other"),
+  assetId: text("asset_id").references(() => assets.id, {
+    onDelete: "set null",
+  }),
+  vendorId: text("vendor_id").references(() => vendors.id, {
+    onDelete: "set null",
+  }),
+  frequency: maintenanceFrequencyEnum("frequency").notNull().default("none"),
+  customIntervalDays: integer("custom_interval_days"),
+  dueDate: timestamp("due_date", { mode: "date" }),
+  dueNotified: boolean("due_notified").notNull().default(false),
+  lastCompletedDate: timestamp("last_completed_date", { mode: "date" }),
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const maintenanceTasksRelations = relations(
+  maintenanceTasks,
+  ({ one, many }) => ({
+    asset: one(assets, {
+      fields: [maintenanceTasks.assetId],
+      references: [assets.id],
+    }),
+    vendor: one(vendors, {
+      fields: [maintenanceTasks.vendorId],
+      references: [vendors.id],
+    }),
+    logs: many(maintenanceLogs),
+  })
+);
+
+export const insertMaintenanceTaskSchema = createInsertSchema(
+  maintenanceTasks,
+  {
+    dueDate: z.coerce.date().optional().nullable(),
+    lastCompletedDate: z.coerce.date().optional().nullable(),
+    customIntervalDays: z.coerce
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .nullable(),
+  }
+);
+
+export const maintenanceLogs = pgTable("maintenance_logs", {
+  id: text("id").primaryKey(),
+  taskId: text("task_id")
+    .notNull()
+    .references(() => maintenanceTasks.id, { onDelete: "cascade" }),
+  completedDate: timestamp("completed_date", { mode: "date" }).notNull(),
+  vendorId: text("vendor_id").references(() => vendors.id, {
+    onDelete: "set null",
+  }),
+  cost: integer("cost"), // miliunits
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+});
+
+export const maintenanceLogsRelations = relations(
+  maintenanceLogs,
+  ({ one }) => ({
+    task: one(maintenanceTasks, {
+      fields: [maintenanceLogs.taskId],
+      references: [maintenanceTasks.id],
+    }),
+    vendor: one(vendors, {
+      fields: [maintenanceLogs.vendorId],
+      references: [vendors.id],
+    }),
+  })
+);
+
+export const insertMaintenanceLogSchema = createInsertSchema(maintenanceLogs, {
+  completedDate: z.coerce.date(),
+  cost: z.coerce.number().optional().nullable(),
+});
+
+export const utilityTypeEnum = pgEnum("utility_type", [
+  "electricity",
+  "water",
+  "gas",
+  "other",
+]);
+
+export const utilityReadings = pgTable("utility_readings", {
+  id: text("id").primaryKey(),
+  utilityType: utilityTypeEnum("utility_type").notNull(),
+  periodStart: timestamp("period_start", { mode: "date" }).notNull(),
+  periodEnd: timestamp("period_end", { mode: "date" }).notNull(),
+  usage: doublePrecision("usage").notNull(),
+  unit: text("unit").notNull(),
+  cost: integer("cost"), // miliunits
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const insertUtilityReadingSchema = createInsertSchema(utilityReadings, {
+  periodStart: z.coerce.date(),
+  periodEnd: z.coerce.date(),
+  usage: z.coerce.number().positive(),
+  cost: z.coerce.number().optional().nullable(),
+});

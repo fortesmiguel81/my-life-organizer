@@ -2,12 +2,15 @@ import { Hono } from "hono";
 import { handle } from "hono/vercel";
 
 import accounts from "./accounts";
+import assetsRoute from "./assets";
 import budgets from "./budgets";
 import categories from "./categories";
 import documentsRoute from "./documents";
 import events from "./events";
 import googleCalendar from "./google-calendar";
 import habitsRoute from "./habits";
+import maintenanceLogsRoute from "./maintenance-logs";
+import maintenanceTasksRoute from "./maintenance-tasks";
 import profilesRoute from "./profiles";
 import recurring from "./recurring";
 import shoppingItemsRoute from "./shopping-items";
@@ -16,6 +19,9 @@ import summary from "./summary";
 import taskListsRoute from "./task-lists";
 import tasksRoute from "./tasks";
 import transactions from "./transactions";
+import utilityReadingsRoute from "./utility-readings";
+import vendorQuotesRoute from "./vendor-quotes";
+import vendorsRoute from "./vendors";
 
 const app = new Hono().basePath("/api");
 
@@ -34,7 +40,13 @@ const routes = app
   .route("/shopping-lists", shoppingListsRoute)
   .route("/shopping-items", shoppingItemsRoute)
   .route("/documents", documentsRoute)
-  .route("/habits", habitsRoute);
+  .route("/habits", habitsRoute)
+  .route("/vendors", vendorsRoute)
+  .route("/vendor-quotes", vendorQuotesRoute)
+  .route("/assets", assetsRoute)
+  .route("/maintenance-tasks", maintenanceTasksRoute)
+  .route("/maintenance-logs", maintenanceLogsRoute)
+  .route("/utility-readings", utilityReadingsRoute);
 
 export const GET = handle(app);
 export const POST = handle(app);
