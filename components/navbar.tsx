@@ -25,6 +25,20 @@ import { cn } from "@/lib/utils";
 import NavItem from "./nav-item";
 import ProfileSwitcher from "./profile-switcher";
 
+const MOBILE_NAV_LINKS = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/calendar", label: "Calendar" },
+  { href: "/tasks", label: "Tasks" },
+  { href: "/documents", label: "Documents" },
+  { href: "/habits", label: "Habits" },
+  { href: "/vendors", label: "Vendors" },
+  { href: "/assets", label: "Assets" },
+  { href: "/maintenance", label: "Maintenance" },
+  { href: "/utilities", label: "Utilities" },
+  { href: "/shopping", label: "Shopping" },
+  { href: "/finance", label: "Finance" },
+];
+
 export default function Navbar() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const search = useSearch();
@@ -81,6 +95,22 @@ export default function Navbar() {
               <ProfileSwitcher profile={profile} />
             )}
           </div>
+          <nav className="mt-6 flex flex-col gap-1">
+            {MOBILE_NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={handleCollapse}
+                className={cn(
+                  "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+                  pathname.startsWith(link.href) &&
+                    "bg-accent text-accent-foreground"
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </aside>
       <div
