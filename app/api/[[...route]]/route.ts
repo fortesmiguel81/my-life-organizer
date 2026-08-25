@@ -9,6 +9,8 @@ import documentsRoute from "./documents";
 import events from "./events";
 import googleCalendar from "./google-calendar";
 import habitsRoute from "./habits";
+import maintenanceLogsRoute from "./maintenance-logs";
+import maintenanceTasksRoute from "./maintenance-tasks";
 import profilesRoute from "./profiles";
 import recurring from "./recurring";
 import shoppingItemsRoute from "./shopping-items";
@@ -40,7 +42,9 @@ const routes = app
   .route("/habits", habitsRoute)
   .route("/vendors", vendorsRoute)
   .route("/vendor-quotes", vendorQuotesRoute)
-  .route("/assets", assetsRoute);
+  .route("/assets", assetsRoute)
+  .route("/maintenance-tasks", maintenanceTasksRoute)
+  .route("/maintenance-logs", maintenanceLogsRoute);
 
 export const GET = handle(app);
 export const POST = handle(app);

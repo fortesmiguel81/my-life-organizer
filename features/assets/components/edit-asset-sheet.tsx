@@ -11,6 +11,8 @@ import { useDeleteAsset } from "@/features/assets/api/use-delete-asset";
 import { useEditAsset } from "@/features/assets/api/use-edit-asset";
 import { useGetAssets } from "@/features/assets/api/use-get-assets";
 import { useOpenAsset } from "@/features/assets/hooks/use-open-asset";
+import { useGetMaintenanceTasks } from "@/features/maintenance/api/use-get-maintenance-tasks";
+import { useOpenMaintenanceTask } from "@/features/maintenance/hooks/use-open-maintenance-task";
 import { useConfirm } from "@/hooks/use-confirm";
 import {
   convertAmountFromMiliunits,
@@ -27,6 +29,8 @@ function amountToInputValue(miliunits: number | null | undefined) {
 export default function EditAssetSheet() {
   const { id, isOpen, onClose } = useOpenAsset();
   const assetsQuery = useGetAssets();
+  const maintenanceTasksQuery = useGetMaintenanceTasks();
+  const { onOpen: openMaintenanceTask } = useOpenMaintenanceTask();
   const editMutation = useEditAsset(id!);
   const deleteMutation = useDeleteAsset(id!);
   const [ConfirmDialog, confirm] = useConfirm(
@@ -35,6 +39,9 @@ export default function EditAssetSheet() {
   );
 
   const asset = assetsQuery.data?.find((a) => a.id === id);
+  const relatedTasks = (maintenanceTasksQuery.data ?? []).filter(
+    (t) => t.assetId === id
+  );
 
   const onSubmit = (values: AssetFormValues) => {
     editMutation.mutate(
@@ -102,6 +109,29 @@ export default function EditAssetSheet() {
               disabled={isPending}
               submitLabel="Save changes"
             />
+          )}
+          {relatedTasks.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold">
+                Related maintenance tasks
+              </h3>
+              <div className="flex flex-col gap-2">
+                {relatedTasks.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => openMaintenanceTask(t.id)}
+                    className="flex items-center justify-between rounded-lg border p-3 text-left text-sm transition-colors hover:bg-muted"
+                  >
+                    <span className="truncate font-medium">{t.title}</span>
+                    {t.dueDate && (
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        Due {new Date(t.dueDate).toLocaleDateString()}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
           <button
             type="button"

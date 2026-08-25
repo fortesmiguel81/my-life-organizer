@@ -420,6 +420,7 @@ export const vendors = pgTable("vendors", {
 
 export const vendorsRelations = relations(vendors, ({ many }) => ({
   quotes: many(vendorQuotes),
+  maintenanceTasks: many(maintenanceTasks),
 }));
 
 export const insertVendorSchema = createInsertSchema(vendors, {
@@ -498,11 +499,12 @@ export const assets = pgTable("assets", {
   updated_by: text("updated_by").notNull(),
 });
 
-export const assetsRelations = relations(assets, ({ one }) => ({
+export const assetsRelations = relations(assets, ({ one, many }) => ({
   manual: one(documents, {
     fields: [assets.manualDocumentId],
     references: [documents.id],
   }),
+  maintenanceTasks: many(maintenanceTasks),
 }));
 
 export const insertAssetSchema = createInsertSchema(assets, {
@@ -510,4 +512,111 @@ export const insertAssetSchema = createInsertSchema(assets, {
   purchasePrice: z.coerce.number().optional().nullable(),
   insuranceValue: z.coerce.number().optional().nullable(),
   warrantyExpiration: z.coerce.date().optional().nullable(),
+});
+
+export const maintenanceCategoryEnum = pgEnum("maintenance_category", [
+  "hvac",
+  "plumbing",
+  "electrical",
+  "appliance",
+  "exterior",
+  "safety",
+  "landscaping",
+  "other",
+]);
+
+export const maintenanceFrequencyEnum = pgEnum("maintenance_frequency", [
+  "none",
+  "monthly",
+  "quarterly",
+  "biannual",
+  "annual",
+  "custom_days",
+]);
+
+export const maintenanceTasks = pgTable("maintenance_tasks", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  category: maintenanceCategoryEnum("category").notNull().default("other"),
+  assetId: text("asset_id").references(() => assets.id, {
+    onDelete: "set null",
+  }),
+  vendorId: text("vendor_id").references(() => vendors.id, {
+    onDelete: "set null",
+  }),
+  frequency: maintenanceFrequencyEnum("frequency").notNull().default("none"),
+  customIntervalDays: integer("custom_interval_days"),
+  dueDate: timestamp("due_date", { mode: "date" }),
+  dueNotified: boolean("due_notified").notNull().default(false),
+  lastCompletedDate: timestamp("last_completed_date", { mode: "date" }),
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const maintenanceTasksRelations = relations(
+  maintenanceTasks,
+  ({ one, many }) => ({
+    asset: one(assets, {
+      fields: [maintenanceTasks.assetId],
+      references: [assets.id],
+    }),
+    vendor: one(vendors, {
+      fields: [maintenanceTasks.vendorId],
+      references: [vendors.id],
+    }),
+    logs: many(maintenanceLogs),
+  })
+);
+
+export const insertMaintenanceTaskSchema = createInsertSchema(
+  maintenanceTasks,
+  {
+    dueDate: z.coerce.date().optional().nullable(),
+    lastCompletedDate: z.coerce.date().optional().nullable(),
+    customIntervalDays: z.coerce
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .nullable(),
+  }
+);
+
+export const maintenanceLogs = pgTable("maintenance_logs", {
+  id: text("id").primaryKey(),
+  taskId: text("task_id")
+    .notNull()
+    .references(() => maintenanceTasks.id, { onDelete: "cascade" }),
+  completedDate: timestamp("completed_date", { mode: "date" }).notNull(),
+  vendorId: text("vendor_id").references(() => vendors.id, {
+    onDelete: "set null",
+  }),
+  cost: integer("cost"), // miliunits
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+});
+
+export const maintenanceLogsRelations = relations(
+  maintenanceLogs,
+  ({ one }) => ({
+    task: one(maintenanceTasks, {
+      fields: [maintenanceLogs.taskId],
+      references: [maintenanceTasks.id],
+    }),
+    vendor: one(vendors, {
+      fields: [maintenanceLogs.vendorId],
+      references: [vendors.id],
+    }),
+  })
+);
+
+export const insertMaintenanceLogSchema = createInsertSchema(maintenanceLogs, {
+  completedDate: z.coerce.date(),
+  cost: z.coerce.number().optional().nullable(),
 });

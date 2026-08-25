@@ -16,6 +16,8 @@ import EditEventSheet from "@/features/events/components/edit-event-sheet";
 import NewEventSheet from "@/features/events/components/new-event-sheet";
 import EditHabitSheet from "@/features/habits/components/edit-habit-sheet";
 import NewHabitSheet from "@/features/habits/components/new-habit-sheet";
+import EditMaintenanceTaskSheet from "@/features/maintenance/components/edit-maintenance-task-sheet";
+import NewMaintenanceTaskSheet from "@/features/maintenance/components/new-maintenance-task-sheet";
 import EditShoppingItemSheet from "@/features/shopping/components/edit-shopping-item-sheet";
 import EditShoppingListSheet from "@/features/shopping/components/edit-shopping-list-sheet";
 import NewShoppingItemSheet from "@/features/shopping/components/new-shopping-item-sheet";
@@ -66,6 +68,9 @@ export default function SheetProvider() {
 
       <NewHabitSheet />
       <EditHabitSheet />
+
+      <NewMaintenanceTaskSheet />
+      <EditMaintenanceTaskSheet />
 
       <NewShoppingListSheet />
       <EditShoppingListSheet />

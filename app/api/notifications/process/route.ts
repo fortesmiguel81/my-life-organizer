@@ -9,6 +9,7 @@ import {
   events,
   habitLogs,
   habits,
+  maintenanceTasks,
   profiles,
 } from "@/db/schema";
 import { decryptField } from "@/lib/encryption";
@@ -174,6 +175,51 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Maintenance task due-date notifications (7-day window)
+  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const dueTasks = await db
+    .select()
+    .from(maintenanceTasks)
+    .where(
+      and(
+        gte(maintenanceTasks.dueDate, now),
+        lte(maintenanceTasks.dueDate, in7Days),
+        eq(maintenanceTasks.dueNotified, false)
+      )
+    );
+
+  let tasksSent = 0;
+
+  for (const task of dueTasks) {
+    const userId = task.userId;
+    if (!userId) continue;
+
+    try {
+      const topic = await getNtfyTopic(userId);
+      if (!topic) continue;
+
+      const daysLeft = Math.ceil(
+        (task.dueDate!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      await pushNotification(
+        topic,
+        `Maintenance due soon: ${task.title}`,
+        `Due in ${daysLeft} day${daysLeft === 1 ? "" : "s"} (${task.dueDate!.toLocaleDateString()})`
+      );
+
+      await db
+        .update(maintenanceTasks)
+        .set({ dueNotified: true })
+        .where(eq(maintenanceTasks.id, task.id));
+
+      tasksSent++;
+    } catch {
+      // Skip on error; will retry on next cron run
+    }
+  }
+
   // Habit reminders — fire if reminderTime falls within the current 15-min window and not yet completed today
   const utcHour = now.getUTCHours().toString().padStart(2, "0");
   const utcMin = now.getUTCMinutes();
@@ -236,6 +282,7 @@ export async function POST(req: NextRequest) {
     events: { processed: sent, total: upcoming.length },
     documents: { processed: docsSent, total: expiringDocs.length },
     warranties: { processed: warrantiesSent, total: expiringWarranties.length },
+    maintenance: { processed: tasksSent, total: dueTasks.length },
     habits: { processed: habitsSent, total: allHabits.length },
   });
 }

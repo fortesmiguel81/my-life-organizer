@@ -14,6 +14,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { useGetMaintenanceTasks } from "@/features/maintenance/api/use-get-maintenance-tasks";
+import { useOpenMaintenanceTask } from "@/features/maintenance/hooks/use-open-maintenance-task";
 import { useCreateVendorQuote } from "@/features/vendors/api/use-create-vendor-quote";
 import { useDeleteVendor } from "@/features/vendors/api/use-delete-vendor";
 import { useDeleteVendorQuote } from "@/features/vendors/api/use-delete-vendor-quote";
@@ -158,6 +160,8 @@ export default function EditVendorSheet() {
   const [isAddingQuote, setIsAddingQuote] = useState(false);
 
   const vendorQuery = useGetVendor(id);
+  const maintenanceTasksQuery = useGetMaintenanceTasks();
+  const { onOpen: openMaintenanceTask } = useOpenMaintenanceTask();
   const editMutation = useEditVendor(id!);
   const deleteMutation = useDeleteVendor(id!);
   const createQuoteMutation = useCreateVendorQuote(id!);
@@ -214,6 +218,10 @@ export default function EditVendorSheet() {
   const tradeLabel = vendor
     ? TRADE_OPTIONS.find((t) => t.value === vendor.trade)?.label
     : undefined;
+
+  const relatedTasks = (maintenanceTasksQuery.data ?? []).filter(
+    (t) => t.vendorId === id
+  );
 
   return (
     <>
@@ -352,6 +360,30 @@ export default function EditVendorSheet() {
                   </div>
                 )}
               </div>
+
+              {relatedTasks.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold">
+                    Related maintenance tasks
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    {relatedTasks.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => openMaintenanceTask(t.id)}
+                        className="flex items-center justify-between rounded-lg border p-3 text-left text-sm transition-colors hover:bg-muted"
+                      >
+                        <span className="truncate font-medium">{t.title}</span>
+                        {t.dueDate && (
+                          <span className="shrink-0 text-xs text-muted-foreground">
+                            Due {new Date(t.dueDate).toLocaleDateString()}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </SheetContent>
