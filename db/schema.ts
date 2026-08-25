@@ -3,6 +3,7 @@ import {
   boolean,
   doublePrecision,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   real,
@@ -19,10 +20,15 @@ export const profiles = pgTable("profiles", {
   emoji: text("emoji").notNull().default("🙂"),
   color: text("color").notNull().default("#6366f1"),
   ntfyTopic: text("ntfy_topic"),
+  // Per-section ordering of dashboard widget ids, e.g. { today: ["habits", "tasks"] }.
+  // Null/missing sections fall back to the default order in features/dashboard.
+  dashboardLayout: jsonb("dashboard_layout").$type<Record<string, string[]>>(),
   created_at: timestamp("created_at", { mode: "date" }).notNull(),
 });
 
-export const insertProfileSchema = createInsertSchema(profiles);
+export const insertProfileSchema = createInsertSchema(profiles, {
+  dashboardLayout: z.record(z.string(), z.array(z.string())).optional().nullable(),
+});
 
 export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
