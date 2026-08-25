@@ -19,7 +19,7 @@ export default function MainLayout({
       <Navbar />
       <main className="h-screen flex-1 overflow-y-auto pt-20">
         <SearchCommand />
-        <div className="flex flex-col px-14 py-6">
+        <div className="flex flex-col px-4 py-6 sm:px-8 lg:px-14">
           <PageBreadcrumb />
           {children}
         </div>
