@@ -4,6 +4,8 @@ import { useMountedState } from "react-use";
 
 import EditAccountSheet from "@/features/accounts/components/edit-account-sheet";
 import NewAccountSheet from "@/features/accounts/components/new-account-sheet";
+import EditAssetSheet from "@/features/assets/components/edit-asset-sheet";
+import NewAssetSheet from "@/features/assets/components/new-asset-sheet";
 import EditBudgetSheet from "@/features/budgets/components/edit-budget-sheet";
 import NewBudgetSheet from "@/features/budgets/components/new-budget-sheet";
 import EditCategorySheet from "@/features/categories/components/edit-category-sheet";
@@ -44,6 +46,9 @@ export default function SheetProvider() {
 
       <NewAccountSheet />
       <EditAccountSheet />
+
+      <NewAssetSheet />
+      <EditAssetSheet />
 
       <NewBudgetSheet />
       <EditBudgetSheet />

@@ -15,6 +15,13 @@
       "when": 1787621853775,
       "tag": "0001_public_maximus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787645374322,
+      "tag": "0002_elite_katie_power",
+      "breakpoints": true
     }
   ]
 }

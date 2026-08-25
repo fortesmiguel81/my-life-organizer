@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { handle } from "hono/vercel";
 
 import accounts from "./accounts";
+import assetsRoute from "./assets";
 import budgets from "./budgets";
 import categories from "./categories";
 import documentsRoute from "./documents";
@@ -38,7 +39,8 @@ const routes = app
   .route("/documents", documentsRoute)
   .route("/habits", habitsRoute)
   .route("/vendors", vendorsRoute)
-  .route("/vendor-quotes", vendorQuotesRoute);
+  .route("/vendor-quotes", vendorQuotesRoute)
+  .route("/assets", assetsRoute);
 
 export const GET = handle(app);
 export const POST = handle(app);

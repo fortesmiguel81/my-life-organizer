@@ -461,3 +461,53 @@ export const insertVendorQuoteSchema = createInsertSchema(vendorQuotes, {
   amount: z.coerce.number().optional().nullable(),
   quoteDate: z.coerce.date().optional().nullable(),
 });
+
+export const assetCategoryEnum = pgEnum("asset_category", [
+  "appliance",
+  "electronics",
+  "furniture",
+  "hvac",
+  "vehicle",
+  "tool",
+  "other",
+]);
+
+export const assets = pgTable("assets", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  category: assetCategoryEnum("category").notNull().default("other"),
+  brand: text("brand"),
+  model: text("model"),
+  serialNumber: text("serial_number"),
+  location: text("location"),
+  purchaseDate: timestamp("purchase_date", { mode: "date" }),
+  purchasePrice: integer("purchase_price"), // miliunits
+  insuranceValue: integer("insurance_value"), // miliunits
+  warrantyExpiration: timestamp("warranty_expiration", { mode: "date" }),
+  warrantyExpiryNotified: boolean("warranty_expiry_notified")
+    .notNull()
+    .default(false),
+  manualDocumentId: text("manual_document_id").references(() => documents.id, {
+    onDelete: "set null",
+  }),
+  notes: text("notes"),
+  userId: text("user_id"),
+  created_at: timestamp("created_at", { mode: "date" }).notNull(),
+  created_by: text("created_by").notNull(),
+  updated_at: timestamp("updated_at", { mode: "date" }).notNull(),
+  updated_by: text("updated_by").notNull(),
+});
+
+export const assetsRelations = relations(assets, ({ one }) => ({
+  manual: one(documents, {
+    fields: [assets.manualDocumentId],
+    references: [documents.id],
+  }),
+}));
+
+export const insertAssetSchema = createInsertSchema(assets, {
+  purchaseDate: z.coerce.date().optional().nullable(),
+  purchasePrice: z.coerce.number().optional().nullable(),
+  insuranceValue: z.coerce.number().optional().nullable(),
+  warrantyExpiration: z.coerce.date().optional().nullable(),
+});
