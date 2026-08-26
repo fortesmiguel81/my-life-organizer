@@ -1,5 +1,5 @@
-import AccountCard from "@/components/bank-card";
+import DashboardView from "@/features/dashboard/components/dashboard-view";
 
 export default function Dashboard() {
-  return <AccountCard account="Miguel Fortes" showBalance={true} />;
+  return <DashboardView />;
 }

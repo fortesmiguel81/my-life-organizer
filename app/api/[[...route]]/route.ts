@@ -5,6 +5,7 @@ import accounts from "./accounts";
 import assetsRoute from "./assets";
 import budgets from "./budgets";
 import categories from "./categories";
+import dashboardRoute from "./dashboard";
 import documentsRoute from "./documents";
 import events from "./events";
 import googleCalendar from "./google-calendar";
@@ -32,6 +33,7 @@ const routes = app
   .route("/categories", categories)
   .route("/budgets", budgets)
   .route("/summary", summary)
+  .route("/dashboard", dashboardRoute)
   .route("/recurring", recurring)
   .route("/events", events)
   .route("/google-calendar", googleCalendar)
