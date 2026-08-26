@@ -94,7 +94,7 @@ function renderWidget(
 
 function SectionSkeleton({ count }: { count: number }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {Array.from({ length: count }).map((_, i) => (
         <Skeleton key={i} className="h-40" />
       ))}
@@ -157,7 +157,7 @@ export default function DashboardView() {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
                   >
                     {layout[section].map((widgetId, index) => (
                       <Draggable
