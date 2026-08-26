@@ -236,44 +236,33 @@ export default function Navbar() {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
-                    <Link href="/vendors" legacyBehavior passHref>
-                      <NavigationMenuLink
-                        active={pathname.startsWith("/vendors")}
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        Vendors
-                      </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <Link href="/assets" legacyBehavior passHref>
-                      <NavigationMenuLink
-                        active={pathname.startsWith("/assets")}
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        Assets
-                      </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <Link href="/maintenance" legacyBehavior passHref>
-                      <NavigationMenuLink
-                        active={pathname.startsWith("/maintenance")}
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        Maintenance
-                      </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <Link href="/utilities" legacyBehavior passHref>
-                      <NavigationMenuLink
-                        active={pathname.startsWith("/utilities")}
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        Utilities
-                      </NavigationMenuLink>
-                    </Link>
+                    <NavigationMenuTrigger
+                      className={cn(
+                        (pathname.startsWith("/vendors") ||
+                          pathname.startsWith("/assets") ||
+                          pathname.startsWith("/maintenance") ||
+                          pathname.startsWith("/utilities")) &&
+                          "bg-accent/50"
+                      )}
+                    >
+                      Home
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid gap-3 p-4 md:w-[400px] md:grid-cols-2">
+                        <NavItem href="/vendors" title="Vendors">
+                          Plumbers, electricians, and contractors.
+                        </NavItem>
+                        <NavItem href="/assets" title="Assets">
+                          Appliances, electronics, and valuables.
+                        </NavItem>
+                        <NavItem href="/maintenance" title="Maintenance">
+                          Recurring and one-off upkeep tasks.
+                        </NavItem>
+                        <NavItem href="/utilities" title="Utilities">
+                          Usage trends and unusual-usage flags.
+                        </NavItem>
+                      </ul>
+                    </NavigationMenuContent>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger
